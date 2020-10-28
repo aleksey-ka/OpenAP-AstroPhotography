@@ -6,12 +6,37 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1019</width>
-    <height>679</height>
+    <width>1033</width>
+    <height>644</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MyASICap</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget {
+	color: #E0E0E0;
+	background-color: #303030;
+	border-width: 1px;
+	border-style: solid;
+	border-color: #505050;
+}
+QFrame {
+	border-color: #505050;
+}
+QPushButton {
+	padding: 5;
+}
+QPushButton::hover {
+	color: #FFFFFF;
+	border-color: #707070;
+}
+QPushButton::pressed {
+	background-color: #505050;
+}
+QPushButton:focus {
+	outline: none;
+}</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
