@@ -12,3 +12,13 @@ MainFrame::~MainFrame()
 {
     delete ui;
 }
+
+void MainFrame::on_pushButton_clicked()
+{
+    bool isFullScreen = windowState().testFlag( Qt::WindowFullScreen );
+    if( isFullScreen ) {
+        showNormal();
+    } else {
+        showFullScreen();
+    }
+}
