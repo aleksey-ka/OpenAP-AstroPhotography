@@ -16,10 +16,14 @@ public:
     ~MainFrame();
 
 private slots:
-    void on_pushButton_clicked();
+    void on_toggleFullScreenButton_clicked();
+
+    void on_captureFrameButton_clicked();
 
 private:
     Ui::MainFrame *ui;
+
+    ulong render( const ushort* raw, int width, int height );
 };
 
 #endif // MAINFRAME_H

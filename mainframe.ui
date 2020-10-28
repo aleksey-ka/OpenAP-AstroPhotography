@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1033</width>
-    <height>644</height>
+    <width>1225</width>
+    <height>702</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -41,12 +41,9 @@ QPushButton:focus {
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <widget class="QFrame" name="imageView">
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
+     <widget class="QLabel" name="imageView">
+      <property name="text">
+       <string>ImageView</string>
       </property>
      </widget>
     </item>
@@ -72,9 +69,16 @@ QPushButton:focus {
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QPushButton" name="pushButton">
+        <widget class="QPushButton" name="toggleFullScreenButton">
          <property name="text">
           <string>Toggle Full Screen</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="captureFrameButton">
+         <property name="text">
+          <string>Capture</string>
          </property>
         </widget>
        </item>
