@@ -1,0 +1,10 @@
+CMakeFiles
+CMakeCache.txt
+*.cmake
+Makefile
+
+Debug
+Release
+*.vcproj
+*.sln
+*.user
