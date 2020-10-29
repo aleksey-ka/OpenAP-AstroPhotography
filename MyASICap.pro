@@ -36,6 +36,8 @@ FORMS += \
 
 LIBS += -lASICamera2
 
+unix:INCLUDEPATH += /usr/include/libasi
+
 win32:contains(QMAKE_HOST.arch, x86_64) {
     INCLUDEPATH += "..\ASI SDK\include"
     LIBS += -L"..\ASI SDK\lib\x64"
