@@ -3,7 +3,9 @@
 
 #include <QDebug>
 
-#include <libasi/ASICamera2.h>
+#include <ASICamera2.h>
+
+#include <chrono>
 
 MainFrame::MainFrame(QWidget *parent) :
     QMainWindow(parent),
@@ -112,8 +114,7 @@ void MainFrame::on_captureFrameButton_clicked()
 
 ulong MainFrame::render( const ushort* raw, int width, int height )
 {
-    struct timespec start;
-    clock_gettime( CLOCK_MONOTONIC_RAW, &start );
+    auto start = std::chrono::steady_clock::now();
 
     size_t w = width / 2;
     size_t h = height / 2;
@@ -137,9 +138,6 @@ ulong MainFrame::render( const ushort* raw, int width, int height )
 
     qApp->processEvents();
 
-    struct timespec end;
-    clock_gettime( CLOCK_MONOTONIC_RAW, &end );
-
-    ulong msec = 1000 * ( end.tv_sec - start.tv_sec ) + ( end.tv_nsec - start.tv_nsec ) / 1000000;
-    return msec;
+    auto end = std::chrono::steady_clock::now();
+    return std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();
 }

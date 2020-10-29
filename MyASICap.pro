@@ -36,6 +36,14 @@ FORMS += \
 
 LIBS += -lASICamera2
 
+win32:contains(QMAKE_HOST.arch, x86_64) {
+    INCLUDEPATH += "..\ASI SDK\include"
+    LIBS += -L"..\ASI SDK\lib\x64"
+} else {
+    INCLUDEPATH += "..\ASI SDK\include"
+    LIBS += -L"..\ASI SDK\lib\x86"
+}
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
