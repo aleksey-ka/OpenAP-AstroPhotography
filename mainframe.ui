@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1225</width>
+    <width>1290</width>
     <height>702</height>
    </rect>
   </property>
@@ -43,7 +43,7 @@ QPushButton:focus {
     <item>
      <widget class="QLabel" name="imageView">
       <property name="text">
-       <string>ImageView</string>
+       <string>Image</string>
       </property>
      </widget>
     </item>
@@ -51,13 +51,13 @@ QPushButton:focus {
      <widget class="QFrame" name="controlsPanel">
       <property name="minimumSize">
        <size>
-        <width>188</width>
+        <width>268</width>
         <height>0</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>188</width>
+        <width>268</width>
         <height>16777215</height>
        </size>
       </property>
@@ -76,6 +76,13 @@ QPushButton:focus {
         </widget>
        </item>
        <item>
+        <widget class="QLabel" name="histogramView">
+         <property name="text">
+          <string>Histogram</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="captureFrameButton">
          <property name="text">
           <string>Capture</string>
@@ -88,7 +95,7 @@ QPushButton:focus {
    </layout>
   </widget>
  </widget>
- <layoutdefault spacing="3" margin="5"/>
+ <layoutdefault spacing="3" margin="3"/>
  <resources/>
  <connections/>
 </ui>
