@@ -71,7 +71,7 @@ QPushButton:focus {
        <item>
         <widget class="QPushButton" name="toggleFullScreenButton">
          <property name="text">
-          <string>Toggle Full Screen</string>
+          <string>Full Screen [Ctrl+F]</string>
          </property>
         </widget>
        </item>

@@ -1,6 +1,6 @@
 #include "mainframe.h"
 #include "ui_mainframe.h"
-
+#include <QShortcut>
 #include <QDebug>
 
 #include <ASICamera2.h>
@@ -22,6 +22,8 @@ MainFrame::MainFrame(QWidget *parent) :
     ui->histogramView->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
     ui->histogramView->setScaledContents( false );
     ui->histogramView->setAlignment( Qt::AlignCenter );
+
+    new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_F ), this, SLOT( on_toggleFullScreenButton_clicked() ) );
 }
 
 MainFrame::~MainFrame()
