@@ -14,6 +14,7 @@ public:
     static std::shared_ptr<ASICamera> Open( int id );
     void Close();
 
+    // Exposure in microsectods
     long GetExposure( bool& isAuto ) const;
     void SetExposure( long value, bool isAuto = false );
 
@@ -22,6 +23,11 @@ public:
 
     void GetROIFormat( int& width, int& height, int& bin, ASI_IMG_TYPE& imgType ) const;
     void SetROIFormat( int width, int height, int bin, ASI_IMG_TYPE imgType );
+
+    ASI_IMG_TYPE GetFormat() const { lazyROIFormat(); return imgType; }
+    int GetWidth() const { lazyROIFormat(); return width; }
+    int GetHeight() const { lazyROIFormat(); return height; }
+    int GetBinning() const { lazyROIFormat(); return bin; }
 
     const unsigned short* DoExposure( int width, int height ) const;
 
@@ -33,8 +39,15 @@ public:
 private:
 
     int id;
+
+    mutable int width = 0;
+    mutable int height = 0;
+    mutable int bin = 0;
+    mutable ASI_IMG_TYPE imgType = ASI_IMG_END;
+
     mutable std::vector<unsigned short> buf;
 
+    void lazyROIFormat() const;
     static void checkResult( ASI_ERROR_CODE );
 };
 

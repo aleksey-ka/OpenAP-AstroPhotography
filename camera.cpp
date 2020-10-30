@@ -21,12 +21,17 @@ std::shared_ptr<ASICamera> ASICamera::Open( int id )
 
 void ASICamera::Close()
 {
-    checkResult( ASICloseCamera( id ) );
+    if( id != -1 ) {
+        checkResult( ASICloseCamera( id ) );
+        id = -1;
+    }
 }
 
 
 ASICamera::ASICamera( int _id ) : id( _id )
 {
+    assert( id != -1 );
+
     checkResult( ASIOpenCamera( id ) );
     checkResult( ASIInitCamera( id ) );
     checkResult( ASIDisableDarkSubtract( id ) );
@@ -71,18 +76,33 @@ void ASICamera::SetGain( long value, bool isAuto )
     checkResult( ASISetControlValue( id, ASI_GAIN, value, isAutoExposure ) );
 }
 
-void ASICamera::GetROIFormat( int& width, int& height, int& bin, ASI_IMG_TYPE& imgType ) const
+void ASICamera::GetROIFormat( int& _width, int& _height, int& _bin, ASI_IMG_TYPE& _imgType ) const
 {
-    checkResult( ASIGetROIFormat( id, &width, &height, &bin, &imgType ) );
+    lazyROIFormat();
+
+    _width = width;
+    _height = height;
+    _bin = bin;
+    _imgType = imgType;
+}
+
+void ASICamera::lazyROIFormat() const
+{
+    if( imgType == ASI_IMG_END ) {
+        checkResult( ASIGetROIFormat( id, &width, &height, &bin, &imgType ) );
+    }
 }
 
 void ASICamera::SetROIFormat( int width, int height, int bin, ASI_IMG_TYPE imgType )
 {
     checkResult( ASISetROIFormat( id, width, height, bin, imgType ) );
+    imgType == ASI_IMG_END;
 }
 
 const ushort* ASICamera::DoExposure( int width, int height ) const
 {
+    lazyROIFormat();
+
     if( buf.size() < width * height ) {
         buf.resize( width * height );
     }
@@ -93,8 +113,8 @@ const ushort* ASICamera::DoExposure( int width, int height ) const
         ASI_EXPOSURE_STATUS status;
         checkResult( ASIGetExpStatus( id, &status ) );
         switch( status ) {
-            case ASI_EXP_SUCCESS: printf( "OK\n" ); capture = false; break;
-            case ASI_EXP_FAILED: printf( "Failed\n" ); capture = false; break;
+            case ASI_EXP_SUCCESS: qDebug() << "OK"; capture = false; break;
+            case ASI_EXP_FAILED: qDebug() << "Failed"; capture = false; break;
         }
     } while( capture );
     checkResult( ASIGetDataAfterExp( id, (unsigned char*)buf.data(), buf.size() * sizeof( ushort ) ) );
