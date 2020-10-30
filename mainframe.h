@@ -3,8 +3,10 @@
 
 #include <QMainWindow>
 
+#include "camera.h"
+
 namespace Ui {
-class MainFrame;
+    class MainFrame;
 }
 
 class MainFrame : public QMainWindow
@@ -24,6 +26,9 @@ private slots:
 
 private:
     Ui::MainFrame *ui;
+
+    std::vector<std::shared_ptr<ASI_CAMERA_INFO>> camerasInfo;
+    std::shared_ptr<ASICamera> camera;
 
     ulong render( const ushort* raw, int width, int height );
     void renderHistogram( const uint* r, const uint* g, const uint* b, int size );

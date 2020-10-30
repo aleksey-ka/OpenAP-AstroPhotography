@@ -3,8 +3,6 @@
 #include <QShortcut>
 #include <QDebug>
 
-#include "camera.h"
-
 #include <chrono>
 
 MainFrame::MainFrame( QWidget *parent ) :
@@ -27,6 +25,15 @@ MainFrame::MainFrame( QWidget *parent ) :
 
     new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_F ), this, SLOT( on_toggleFullScreenButton_clicked() ) );
     new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_Q ), this, SLOT( on_closeButton_clicked() ) );
+
+    int count = ASICamera::GetCount();
+    for( int i = 0; i < count; i++ ) {
+        camerasInfo.emplace_back( ASICamera::GetInfo( i ) );
+    }
+
+    for( int i = 0; i < count; i++ ) {
+        ui->cameraSelectionCombo->addItem( camerasInfo[i]->Name, QVariant( i ) );
+    }
 }
 
 MainFrame::~MainFrame()
@@ -53,52 +60,66 @@ void MainFrame::on_toggleFullScreenButton_clicked()
 
 void MainFrame::on_captureFrameButton_clicked()
 {
-    int count = ASICamera::GetCount();
-    if( count > 0 ) {
-        auto cameraInfo = ASICamera::GetInfo( 0 );
-        printf( "%s\n", cameraInfo->Name );
+    if( camerasInfo.size() > 0 ) {
+        auto start = std::chrono::steady_clock::now();
 
-        auto camera = ASICamera::Open( cameraInfo->CameraID );
+        if( camera == nullptr ) {
+            int index = ui->cameraSelectionCombo->currentData().toInt();
 
-        camera->SetExposure( 100000 );
-        bool isAuto = false;
-        int exposure = camera->GetExposure( isAuto );
-        printf( "Exposure %d %s\n", exposure, isAuto ? "(auto)" : "" );
+            std::shared_ptr<ASI_CAMERA_INFO> cameraInfo = camerasInfo[index];
+            qDebug() << cameraInfo->Name;
+
+            camera = ASICamera::Open( cameraInfo->CameraID );
+
+            camera->SetExposure( 100000 );
+            bool isAuto = false;
+            int exposure = camera->GetExposure( isAuto );
+            qDebug() << "Exposure "<< exposure << ( isAuto ? " (auto)" : "" );
 
 
-        camera->SetGain( 0 );
-        int gain = camera->GetGain( isAuto );
-        printf( "Gain %ld %s\n", gain, isAuto == ASI_TRUE ? "(auto)" : "" );
+            camera->SetGain( 0 );
+            int gain = camera->GetGain( isAuto );
+            qDebug() << "Gain " << gain << ( isAuto ? "(auto)" : "" );
 
-        int width = 0;
-        int height = 0;
-        int bin = 0;
-        ASI_IMG_TYPE imgType = ASI_IMG_END;
-        camera->GetROIFormat( width, height, bin, imgType );
-        imgType = ASI_IMG_RAW16;
-        camera->SetROIFormat( width, height, bin, imgType );
-        camera->GetROIFormat( width, height, bin, imgType );
-        printf( "%dx%d bin%d ", width, height, bin );
-        switch( imgType ) {
-            case ASI_IMG_RAW8: printf( "RAW8\n" ); break;
-            case ASI_IMG_RGB24: printf( "RGB24\n" ); break;
-            case ASI_IMG_RAW16: printf( "RAW16\n" ); break;
-            case ASI_IMG_Y8: printf( "Y8\n" ); break;
-            default:
-                assert( false );
+            int width = 0;
+            int height = 0;
+            int bin = 0;
+            ASI_IMG_TYPE imgType = ASI_IMG_END;
+            camera->GetROIFormat( width, height, bin, imgType );
+            imgType = ASI_IMG_RAW16;
+            camera->SetROIFormat( width, height, bin, imgType );
+            camera->GetROIFormat( width, height, bin, imgType );
+            qDebug() << width << "x" << height << " bin" << bin;
+            switch( imgType ) {
+                case ASI_IMG_RAW8: qDebug() << "RAW8"; break;
+                case ASI_IMG_RGB24: qDebug() << "RGB24"; break;
+                case ASI_IMG_RAW16: qDebug() << "RAW16"; break;
+                case ASI_IMG_Y8: qDebug() << "Y8"; break;
+                default:
+                    assert( false );
+            }
+
+            auto end = std::chrono::steady_clock::now();
+            auto msec = std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();
+            qDebug() << "Camera initialized in" << msec << "msec";
         }
 
-        const ushort* raw = camera->DoExposure( width, height );
+        int width = camera->GetWidth();
+        int height = camera->GetHeight();
 
-        camera->Close();
+        const ushort* raw = camera->DoExposure( width, height );
 
         /*FILE* out = fopen( "image.cfa", "wb" );
         fwrite( buf.data(), 1, size, out );
         fclose( out );*/
 
-        render( raw, width, height );
+        auto end = std::chrono::steady_clock::now();
+        auto msec = std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();
+        qDebug() << "Data ready in" << msec << "msec";
 
-        printf( "DONE\n" );
+        msec = render( raw, width, height );
+
+        qDebug() << "Rendered in " << msec << "msec";
     } else {
         qDebug() << "No camera";
 
