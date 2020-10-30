@@ -25,10 +25,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        camera.cpp \
         main.cpp \
         mainframe.cpp
 
 HEADERS += \
+        camera.h \
         mainframe.h
 
 FORMS += \

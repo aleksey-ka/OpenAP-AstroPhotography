@@ -3,7 +3,7 @@
 #include <QShortcut>
 #include <QDebug>
 
-#include <ASICamera2.h>
+#include "camera.h"
 
 #include <chrono>
 
@@ -53,64 +53,50 @@ void MainFrame::on_toggleFullScreenButton_clicked()
 
 void MainFrame::on_captureFrameButton_clicked()
 {
-    int count = ASIGetNumOfConnectedCameras();
+    int count = ASICamera::GetCount();
     if( count > 0 ) {
-        ASI_CAMERA_INFO cameraInfo;
-        ASIGetCameraProperty( &cameraInfo, 0 );
-        printf( "%s\n", cameraInfo.Name );
+        auto cameraInfo = ASICamera::GetInfo( 0 );
+        printf( "%s\n", cameraInfo->Name );
 
-        int cameraID = cameraInfo.CameraID;
-        ASIOpenCamera( cameraID );
-        ASIInitCamera( cameraID );
+        auto camera = ASICamera::Open( cameraInfo->CameraID );
 
-        long exposure = 100000;
-        ASI_BOOL isAutoExposure = ASI_FALSE;
-        ASISetControlValue( cameraID, ASI_EXPOSURE, exposure, isAutoExposure );
-        exposure = 0;
-        ASIGetControlValue( cameraID, ASI_EXPOSURE, &exposure, &isAutoExposure );
-        printf( "Exposure %ld %s\n", exposure, isAutoExposure == ASI_TRUE ? "(auto)" : "" );
+        camera->SetExposure( 100000 );
+        bool isAuto = false;
+        int exposure = camera->GetExposure( isAuto );
+        printf( "Exposure %d %s\n", exposure, isAuto ? "(auto)" : "" );
 
-        long gain = 0;
-        ASI_BOOL isAutoGain = ASI_FALSE;
-        ASISetControlValue( cameraID, ASI_GAIN, gain, isAutoGain );
-        ASIGetControlValue( cameraID, ASI_GAIN, &gain, &isAutoGain );
-        printf( "Gain %ld %s\n", gain, isAutoGain == ASI_TRUE ? "(auto)" : "" );
+
+        camera->SetGain( 0 );
+        int gain = camera->GetGain( isAuto );
+        printf( "Gain %ld %s\n", gain, isAuto == ASI_TRUE ? "(auto)" : "" );
 
         int width = 0;
         int height = 0;
         int bin = 0;
         ASI_IMG_TYPE imgType = ASI_IMG_END;
-        ASIGetROIFormat( cameraID, &width, &height, &bin, &imgType );
+        camera->GetROIFormat( width, height, bin, imgType );
         imgType = ASI_IMG_RAW16;
-        ASISetROIFormat( cameraID, width, height, bin, imgType );
+        camera->SetROIFormat( width, height, bin, imgType );
+        camera->GetROIFormat( width, height, bin, imgType );
         printf( "%dx%d bin%d ", width, height, bin );
         switch( imgType ) {
             case ASI_IMG_RAW8: printf( "RAW8\n" ); break;
             case ASI_IMG_RGB24: printf( "RGB24\n" ); break;
             case ASI_IMG_RAW16: printf( "RAW16\n" ); break;
             case ASI_IMG_Y8: printf( "Y8\n" ); break;
+            default:
+                assert( false );
         }
 
-        ASIStartExposure( cameraID, ASI_FALSE );
-        bool capture = true;
-        do {
-            ASI_EXPOSURE_STATUS status;
-            ASIGetExpStatus( cameraID, &status );
-            switch( status ) {
-                case ASI_EXP_SUCCESS: printf( "OK\n" ); capture = false; break;
-                case ASI_EXP_FAILED: printf( "Failed\n" ); capture = false; break;
-            }
-        } while( capture );
-        std::vector<ushort> buf( width * height );
-        size_t size = buf.size() * sizeof( ushort );
-        ASIGetDataAfterExp( cameraID, (unsigned char*)buf.data(), size );
-        ASICloseCamera( cameraID );
+        const ushort* raw = camera->DoExposure( width, height );
 
-        FILE* out = fopen( "image.cfa", "wb" );
+        camera->Close();
+
+        /*FILE* out = fopen( "image.cfa", "wb" );
         fwrite( buf.data(), 1, size, out );
-        fclose( out );
+        fclose( out );*/
 
-        render( buf.data(), width, height );
+        render( raw, width, height );
 
         printf( "DONE\n" );
     } else {
