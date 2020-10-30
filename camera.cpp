@@ -60,6 +60,11 @@ void ASICamera::SetExposure( long value, bool isAuto )
     checkResult( ASISetControlValue( id, ASI_EXPOSURE, value, isAuto ? ASI_TRUE : ASI_FALSE ) );
 }
 
+void ASICamera::GetExposureCaps( long& min, long& max, long& defaultVal ) const
+{
+    getControlCaps( ASI_EXPOSURE, min, max, defaultVal );
+}
+
 long ASICamera::GetGain( bool& isAuto ) const
 {
     long exposure = -1;
@@ -74,6 +79,11 @@ void ASICamera::SetGain( long value, bool isAuto )
     checkResult( ASISetControlValue( id, ASI_GAIN, value, isAuto ? ASI_TRUE : ASI_FALSE ) );
 }
 
+void ASICamera::GetGainCaps( long& min, long& max, long& defaultVal ) const
+{
+    getControlCaps( ASI_GAIN, min, max, defaultVal );
+}
+
 long ASICamera::GetWhiteBalanceR() const
 {
     long wb = -1;
@@ -82,9 +92,14 @@ long ASICamera::GetWhiteBalanceR() const
     return wb;
 }
 
-void ASICamera::SetWhiteBalanceR( long value )
+void ASICamera::SetWhiteBalanceR( long value, bool isAuto )
 {
-    checkResult( ASISetControlValue( id, ASI_WB_R, value, ASI_FALSE ) );
+    checkResult( ASISetControlValue( id, ASI_WB_R, value, isAuto ? ASI_TRUE : ASI_FALSE ) );
+}
+
+void ASICamera::GetWhiteBalanceRCaps( long& min, long& max, long& defaultVal ) const
+{
+    getControlCaps( ASI_WB_R, min, max, defaultVal );
 }
 
 long ASICamera::GetWhiteBalanceB() const
@@ -95,9 +110,14 @@ long ASICamera::GetWhiteBalanceB() const
     return wb;
 }
 
-void ASICamera::SetWhiteBalanceB( long value )
+void ASICamera::SetWhiteBalanceB( long value, bool isAuto )
 {
-    checkResult( ASISetControlValue( id, ASI_WB_B, value, ASI_FALSE ) );
+    checkResult( ASISetControlValue( id, ASI_WB_B, value, isAuto ? ASI_TRUE : ASI_FALSE ) );
+}
+
+void ASICamera::GetWhiteBalanceBCaps( long& min, long& max, long& defaultVal ) const
+{
+    getControlCaps( ASI_WB_B, min, max, defaultVal );
 }
 
 long ASICamera::GetOffset() const
@@ -111,6 +131,11 @@ long ASICamera::GetOffset() const
 void ASICamera::SetOffset( long value )
 {
     checkResult( ASISetControlValue( id, ASI_OFFSET, value, ASI_FALSE ) );
+}
+
+void ASICamera::GetOffsetCaps( long& min, long& max, long& defaultVal ) const
+{
+    getControlCaps( ASI_OFFSET, min, max, defaultVal );
 }
 
 void ASICamera::GetROIFormat( int& _width, int& _height, int& _bin, ASI_IMG_TYPE& _imgType ) const
@@ -133,7 +158,7 @@ void ASICamera::lazyROIFormat() const
 void ASICamera::SetROIFormat( int width, int height, int bin, ASI_IMG_TYPE imgType )
 {
     checkResult( ASISetROIFormat( id, width, height, bin, imgType ) );
-    imgType == ASI_IMG_END;
+    this->imgType = ASI_IMG_END;
 }
 
 const ushort* ASICamera::DoExposure() const
@@ -175,6 +200,46 @@ double ASICamera::GetTemperature() const
     ASI_BOOL isAutoTemperature = ASI_FALSE;
     checkResult( ASIGetControlValue( id, ASI_TEMPERATURE, &temperature, &isAutoTemperature ) );
     return static_cast<double>( temperature ) / 10.0;
+}
+
+void ASICamera::PrintDebugInfo()
+{
+    qDebug() << "ASI SDK" << ASIGetSDKVersion();
+
+    lazyControlCaps();
+
+    for( auto cap : controlCaps ) {
+        qDebug() << cap.Name << cap.Description;
+        qDebug() << "[" << cap.MinValue << cap.MaxValue << cap.DefaultValue <<
+            ( cap.IsAutoSupported ? "auto" : "" ) << ( cap.IsWritable ? "rw" : "r" ) << "]";
+    }
+}
+
+void ASICamera::lazyControlCaps() const
+{
+    if( controlCaps.size() == 0 ) {
+        int count = 0;
+        checkResult( ASIGetNumOfControls( id, &count ) );
+        controlCaps.resize( count );
+        for( int i = 0; i < count; i++ ) {
+            checkResult( ASIGetControlCaps( id, i, &controlCaps[i] ) );
+        }
+    }
+}
+
+void ASICamera::getControlCaps( ASI_CONTROL_TYPE controlType, long& min, long& max, long& defaultVal ) const
+{
+    lazyControlCaps();
+
+    for( auto cap : controlCaps ) {
+        if( cap.ControlType == controlType ) {
+            min = cap.MinValue;
+            max = cap.MaxValue;
+            defaultVal = cap.DefaultValue;
+            return;
+        }
+    }
+    assert( false );
 }
 
 class ASIException : public std::exception {

@@ -21,18 +21,25 @@ public:
     // Exposure in microsectods
     long GetExposure( bool& isAuto ) const;
     void SetExposure( long value, bool isAuto = false );
+    void GetExposureCaps( long& min, long& max, long& defaultVal ) const;
+
     // Gain
     long GetGain( bool& isAuto ) const;
     void SetGain( long value, bool isAuto = false );
+    void GetGainCaps( long& min, long& max, long& defaultVal ) const;
 
     // White balance
     long GetWhiteBalanceR() const;
-    void SetWhiteBalanceR( long value );
+    void SetWhiteBalanceR( long value, bool isAuto = false );
+    void GetWhiteBalanceRCaps( long& min, long& max, long& defaultVal ) const;
     long GetWhiteBalanceB() const;
-    void SetWhiteBalanceB( long value );
+    void SetWhiteBalanceB( long value, bool isAuto = false );
+    void GetWhiteBalanceBCaps( long& min, long& max, long& defaultVal ) const;
+
     // Offset
     long GetOffset() const;
     void SetOffset( long value );
+    void GetOffsetCaps( long& min, long& max, long& defaultVal ) const;
 
     // Image format
     ASI_IMG_TYPE GetFormat() const { lazyROIFormat(); return imgType; }
@@ -51,11 +58,14 @@ public:
     // Temperature
     double GetTemperature() const;
 
+    void PrintDebugInfo();
+
     ASICamera( int id );
     ~ASICamera();
 
 private:
     int id;
+    mutable std::vector<ASI_CONTROL_CAPS> controlCaps;
 
     mutable int width = 0;
     mutable int height = 0;
@@ -65,6 +75,8 @@ private:
     mutable std::vector<unsigned short> buf;
 
     void lazyROIFormat() const;
+    void lazyControlCaps() const;
+    void getControlCaps( ASI_CONTROL_TYPE, long& min, long& max, long& defaultVal ) const;
     static void checkResult( ASI_ERROR_CODE );
 };
 

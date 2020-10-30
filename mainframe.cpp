@@ -73,23 +73,35 @@ void MainFrame::on_captureFrameButton_clicked()
 
             setWindowTitle( cameraInfo->Name );
 
-            camera->SetExposure( 100000 );
             bool isAuto = false;
-            long exposure = camera->GetExposure( isAuto );
-            qDebug() << "Exposure "<< exposure << ( isAuto ? " (auto)" : "" );
+            long min, max, defaultVal;
 
+            camera->SetExposure( 100000 );
+            long exposure = camera->GetExposure( isAuto );
+            camera->GetExposureCaps( min, max, defaultVal );
+            qDebug() << "Exposure "<< exposure << ( isAuto ? " (auto)" : "" ) <<
+                "[" << min << max << defaultVal << "]";
 
             camera->SetGain( 0 );
             long gain = camera->GetGain( isAuto );
-            qDebug() << "Gain " << gain << ( isAuto ? "(auto)" : "" );
+            camera->GetGainCaps( min, max, defaultVal );
+            qDebug() << "Gain " << gain << ( isAuto ? "(auto)" : "" ) <<
+                "[" << min << max << defaultVal << "]";
 
             camera->SetWhiteBalanceR( 50 );
+            camera->GetWhiteBalanceRCaps( min, max, defaultVal );
+            qDebug() << "WB_R" << camera->GetWhiteBalanceR() <<
+                "[" << min << max << defaultVal << "]";
+
             camera->SetWhiteBalanceB( 50 );
-            qDebug() << "WB_R" << camera->GetWhiteBalanceR();
-            qDebug() << "WB_B" << camera->GetWhiteBalanceB();
+            camera->GetWhiteBalanceBCaps( min, max, defaultVal );
+            qDebug() << "WB_B" << camera->GetWhiteBalanceB() <<
+                "[" << min << max << defaultVal << "]";
 
             camera->SetOffset( 64 );
-            qDebug() << "Offset" << camera->GetOffset();
+            camera->GetOffsetCaps( min, max, defaultVal );
+            qDebug() << "Offset" << camera->GetOffset() <<
+                "[" << min << max << defaultVal << "]";
 
             int width = 0;
             int height = 0;
