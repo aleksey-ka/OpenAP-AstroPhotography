@@ -25,6 +25,15 @@ public:
     long GetGain( bool& isAuto ) const;
     void SetGain( long value, bool isAuto = false );
 
+    // White balance
+    long GetWhiteBalanceR() const;
+    void SetWhiteBalanceR( long value );
+    long GetWhiteBalanceB() const;
+    void SetWhiteBalanceB( long value );
+    // Offset
+    long GetOffset() const;
+    void SetOffset( long value );
+
     // Image format
     ASI_IMG_TYPE GetFormat() const { lazyROIFormat(); return imgType; }
     int GetWidth() const { lazyROIFormat(); return width; }

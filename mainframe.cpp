@@ -75,13 +75,21 @@ void MainFrame::on_captureFrameButton_clicked()
 
             camera->SetExposure( 100000 );
             bool isAuto = false;
-            int exposure = camera->GetExposure( isAuto );
+            long exposure = camera->GetExposure( isAuto );
             qDebug() << "Exposure "<< exposure << ( isAuto ? " (auto)" : "" );
 
 
             camera->SetGain( 0 );
-            int gain = camera->GetGain( isAuto );
+            long gain = camera->GetGain( isAuto );
             qDebug() << "Gain " << gain << ( isAuto ? "(auto)" : "" );
+
+            camera->SetWhiteBalanceR( 50 );
+            camera->SetWhiteBalanceB( 50 );
+            qDebug() << "WB_R" << camera->GetWhiteBalanceR();
+            qDebug() << "WB_B" << camera->GetWhiteBalanceB();
+
+            camera->SetOffset( 64 );
+            qDebug() << "Offset" << camera->GetOffset();
 
             int width = 0;
             int height = 0;
@@ -118,6 +126,7 @@ void MainFrame::on_captureFrameButton_clicked()
 
         int width = camera->GetWidth();
         int height = camera->GetHeight();
+
         msec = render( raw, width, height );
 
         qDebug() << "Rendered in " << msec << "msec";

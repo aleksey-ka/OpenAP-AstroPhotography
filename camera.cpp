@@ -51,14 +51,13 @@ long ASICamera::GetExposure( bool& isAuto ) const
     long exposure = -1;
     ASI_BOOL isAutoExposure = ASI_FALSE;
     checkResult( ASIGetControlValue( id, ASI_EXPOSURE, &exposure, &isAutoExposure ) );
-    isAuto = isAutoExposure = ASI_TRUE;
+    isAuto = isAutoExposure == ASI_TRUE;
     return exposure;
 }
 
 void ASICamera::SetExposure( long value, bool isAuto )
 {
-    ASI_BOOL isAutoExposure = isAuto ? ASI_TRUE : ASI_FALSE;
-    checkResult( ASISetControlValue( id, ASI_EXPOSURE, value, isAutoExposure ) );
+    checkResult( ASISetControlValue( id, ASI_EXPOSURE, value, isAuto ? ASI_TRUE : ASI_FALSE ) );
 }
 
 long ASICamera::GetGain( bool& isAuto ) const
@@ -66,14 +65,52 @@ long ASICamera::GetGain( bool& isAuto ) const
     long exposure = -1;
     ASI_BOOL isAutoExposure = ASI_FALSE;
     checkResult( ASIGetControlValue( id, ASI_GAIN, &exposure, &isAutoExposure ) );
-    isAuto = isAutoExposure = ASI_TRUE;
+    isAuto = isAutoExposure == ASI_TRUE;
     return exposure;
 }
 
 void ASICamera::SetGain( long value, bool isAuto )
 {
-    ASI_BOOL isAutoExposure = isAuto ? ASI_TRUE : ASI_FALSE;
-    checkResult( ASISetControlValue( id, ASI_GAIN, value, isAutoExposure ) );
+    checkResult( ASISetControlValue( id, ASI_GAIN, value, isAuto ? ASI_TRUE : ASI_FALSE ) );
+}
+
+long ASICamera::GetWhiteBalanceR() const
+{
+    long wb = -1;
+    ASI_BOOL isAuto = ASI_FALSE;
+    checkResult( ASIGetControlValue( id, ASI_WB_R, &wb, &isAuto ) );
+    return wb;
+}
+
+void ASICamera::SetWhiteBalanceR( long value )
+{
+    checkResult( ASISetControlValue( id, ASI_WB_R, value, ASI_FALSE ) );
+}
+
+long ASICamera::GetWhiteBalanceB() const
+{
+    long wb = -1;
+    ASI_BOOL isAuto = ASI_FALSE;
+    checkResult( ASIGetControlValue( id, ASI_WB_B, &wb, &isAuto ) );
+    return wb;
+}
+
+void ASICamera::SetWhiteBalanceB( long value )
+{
+    checkResult( ASISetControlValue( id, ASI_WB_B, value, ASI_FALSE ) );
+}
+
+long ASICamera::GetOffset() const
+{
+    long wb = -1;
+    ASI_BOOL isAuto = ASI_FALSE;
+    checkResult( ASIGetControlValue( id, ASI_OFFSET, &wb, &isAuto ) );
+    return wb;
+}
+
+void ASICamera::SetOffset( long value )
+{
+    checkResult( ASISetControlValue( id, ASI_OFFSET, value, ASI_FALSE ) );
 }
 
 void ASICamera::GetROIFormat( int& _width, int& _height, int& _bin, ASI_IMG_TYPE& _imgType ) const
@@ -115,6 +152,9 @@ const ushort* ASICamera::DoExposure() const
         switch( status ) {
             case ASI_EXP_SUCCESS: qDebug() << "OK"; capture = false; break;
             case ASI_EXP_FAILED: qDebug() << "Failed"; capture = false; break;
+            case ASI_EXP_WORKING: continue;
+            default:
+                assert( false );
         }
     } while( capture );
     checkResult( ASIGetDataAfterExp( id, (unsigned char*)buf.data(), buf.size() * sizeof( ushort ) ) );
