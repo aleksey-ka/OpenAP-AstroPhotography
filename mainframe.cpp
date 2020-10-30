@@ -71,6 +71,8 @@ void MainFrame::on_captureFrameButton_clicked()
 
             camera = ASICamera::Open( cameraInfo->CameraID );
 
+            setWindowTitle( cameraInfo->Name );
+
             camera->SetExposure( 100000 );
             bool isAuto = false;
             int exposure = camera->GetExposure( isAuto );
@@ -120,6 +122,8 @@ void MainFrame::on_captureFrameButton_clicked()
         msec = render( raw, width, height );
 
         qDebug() << "Rendered in " << msec << "msec";
+
+        qDebug() << "Camera temperature is" << camera->GetTemperature();
     } else {
         qDebug() << "No camera";
 

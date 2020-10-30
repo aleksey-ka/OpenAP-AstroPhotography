@@ -129,6 +129,14 @@ int ASICamera::GetDroppedFrames() const
     return dropped;
 }
 
+double ASICamera::GetTemperature() const
+{
+    long temperature = 0;
+    ASI_BOOL isAutoTemperature = ASI_FALSE;
+    checkResult( ASIGetControlValue( id, ASI_TEMPERATURE, &temperature, &isAutoTemperature ) );
+    return static_cast<double>( temperature ) / 10.0;
+}
+
 class ASIException : public std::exception {
 public:
     ASIException( ASI_ERROR_CODE _errorCode ) :

@@ -32,6 +32,7 @@ public:
     const unsigned short* DoExposure( int width, int height ) const;
 
     int GetDroppedFrames() const;
+    double GetTemperature() const;
 
     ASICamera( int id );
     ~ASICamera();
