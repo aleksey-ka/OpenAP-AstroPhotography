@@ -7,11 +7,13 @@
 
 #include <chrono>
 
-MainFrame::MainFrame(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainFrame)
+MainFrame::MainFrame( QWidget *parent ) :
+    QMainWindow( parent ),
+    ui( new Ui::MainFrame )
 {
     ui->setupUi( this ) ;
+
+    ui->closeButton->hide();
 
     ui->imageView->setBackgroundRole( QPalette::Base );
     ui->imageView->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
@@ -24,6 +26,7 @@ MainFrame::MainFrame(QWidget *parent) :
     ui->histogramView->setAlignment( Qt::AlignCenter );
 
     new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_F ), this, SLOT( on_toggleFullScreenButton_clicked() ) );
+    new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_Q ), this, SLOT( on_closeButton_clicked() ) );
 }
 
 MainFrame::~MainFrame()
@@ -31,13 +34,20 @@ MainFrame::~MainFrame()
     delete ui;
 }
 
+void MainFrame::on_closeButton_clicked()
+{
+    close();
+}
+
 void MainFrame::on_toggleFullScreenButton_clicked()
 {
     bool isFullScreen = windowState().testFlag( Qt::WindowFullScreen );
     if( isFullScreen ) {
-        showNormal();
+        ui->closeButton->hide();
+        showNormal();  
     } else {
         showFullScreen();
+        ui->closeButton->show();
     }
 }
 

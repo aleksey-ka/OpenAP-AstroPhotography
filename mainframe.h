@@ -16,6 +16,8 @@ public:
     ~MainFrame();
 
 private slots:
+    void on_closeButton_clicked();
+
     void on_toggleFullScreenButton_clicked();
 
     void on_captureFrameButton_clicked();
