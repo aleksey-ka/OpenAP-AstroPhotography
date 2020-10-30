@@ -99,7 +99,7 @@ void ASICamera::SetROIFormat( int width, int height, int bin, ASI_IMG_TYPE imgTy
     imgType == ASI_IMG_END;
 }
 
-const ushort* ASICamera::DoExposure( int width, int height ) const
+const ushort* ASICamera::DoExposure() const
 {
     lazyROIFormat();
 

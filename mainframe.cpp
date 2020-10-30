@@ -106,10 +106,7 @@ void MainFrame::on_captureFrameButton_clicked()
             qDebug() << "Camera initialized in" << msec << "msec";
         }
 
-        int width = camera->GetWidth();
-        int height = camera->GetHeight();
-
-        const ushort* raw = camera->DoExposure( width, height );
+        const ushort* raw = camera->DoExposure();
 
         /*FILE* out = fopen( "image.cfa", "wb" );
         fwrite( buf.data(), 1, size, out );
@@ -119,6 +116,8 @@ void MainFrame::on_captureFrameButton_clicked()
         auto msec = std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();
         qDebug() << "Data ready in" << msec << "msec";
 
+        int width = camera->GetWidth();
+        int height = camera->GetHeight();
         msec = render( raw, width, height );
 
         qDebug() << "Rendered in " << msec << "msec";

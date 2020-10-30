@@ -8,37 +8,44 @@
 
 class ASICamera {
 public:
+    // Get attached cameras count
     static int GetCount();
+    // Get attachecd camera info
     static std::shared_ptr<ASI_CAMERA_INFO> GetInfo( int index );
 
+    // Open and initialize the camera by id (see camera info)
     static std::shared_ptr<ASICamera> Open( int id );
+    // Close the camera
     void Close();
 
     // Exposure in microsectods
     long GetExposure( bool& isAuto ) const;
     void SetExposure( long value, bool isAuto = false );
-
+    // Gain
     long GetGain( bool& isAuto ) const;
     void SetGain( long value, bool isAuto = false );
 
-    void GetROIFormat( int& width, int& height, int& bin, ASI_IMG_TYPE& imgType ) const;
-    void SetROIFormat( int width, int height, int bin, ASI_IMG_TYPE imgType );
-
+    // Image format
     ASI_IMG_TYPE GetFormat() const { lazyROIFormat(); return imgType; }
     int GetWidth() const { lazyROIFormat(); return width; }
     int GetHeight() const { lazyROIFormat(); return height; }
     int GetBinning() const { lazyROIFormat(); return bin; }
+    // Image format (all in one)
+    void GetROIFormat( int& width, int& height, int& bin, ASI_IMG_TYPE& imgType ) const;
+    void SetROIFormat( int width, int height, int bin, ASI_IMG_TYPE imgType );
 
-    const unsigned short* DoExposure( int width, int height ) const;
+    // Do single exposure and get result on internal buffer
+    const unsigned short* DoExposure() const;
 
+    // Number of dropped frames
     int GetDroppedFrames() const;
+    // Temperature
     double GetTemperature() const;
 
     ASICamera( int id );
     ~ASICamera();
 
 private:
-
     int id;
 
     mutable int width = 0;
