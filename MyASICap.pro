@@ -26,11 +26,13 @@ CONFIG += c++11
 
 SOURCES += \
         camera.cpp \
+        image.cpp \
         main.cpp \
         mainframe.cpp
 
 HEADERS += \
         camera.h \
+        image.h \
         mainframe.h
 
 FORMS += \

@@ -6,6 +6,8 @@
 
 #include <ASICamera2.h>
 
+#include "image.h"
+
 class ASICamera {
 public:
     // Get attached cameras count
@@ -50,12 +52,8 @@ public:
     void GetROIFormat( int& width, int& height, int& bin, ASI_IMG_TYPE& imgType ) const;
     void SetROIFormat( int width, int height, int bin, ASI_IMG_TYPE imgType );
 
-    struct Image {
-        const unsigned short* RawPixels;
-    };
-
     // Do single exposure
-    std::shared_ptr<const ASICamera::Image> DoExposure() const;
+    std::shared_ptr<const Raw16Image> DoExposure() const;
 
     // Number of dropped frames
     int GetDroppedFrames() const;

@@ -161,27 +161,13 @@ void ASICamera::SetROIFormat( int width, int height, int bin, ASI_IMG_TYPE imgTy
     this->imgType = ASI_IMG_END;
 }
 
-class ImageImpl : public ASICamera::Image {
-public:
-    ImageImpl( int width, int height ) : buf( width * height)
-    {
-        RawPixels = buf.data();
-    }
-
-    unsigned char* Buffer() { return reinterpret_cast<unsigned char*>( buf.data() ); }
-    int Size() { return buf.size() * sizeof( ushort ); }
-
-private:
-    mutable std::vector<unsigned short> buf;
-};
-
-std::shared_ptr<const ASICamera::Image> ASICamera::DoExposure() const
+std::shared_ptr<const Raw16Image> ASICamera::DoExposure() const
 {
     checkResult( ASIStartExposure( id, ASI_FALSE ) );
 
     lazyROIFormat();
 
-    auto result = std::make_shared<ImageImpl>( width, height );
+    auto result = std::make_shared<Raw16Image>( width, height );
 
     bool capture = true;
     do {
@@ -195,7 +181,7 @@ std::shared_ptr<const ASICamera::Image> ASICamera::DoExposure() const
                 assert( false );
         }
     } while( capture );
-    checkResult( ASIGetDataAfterExp( id, result->Buffer(), result->Size() ) );
+    checkResult( ASIGetDataAfterExp( id, result->Buffer(), result->BufferSize() ) );
 
     return result;
 }

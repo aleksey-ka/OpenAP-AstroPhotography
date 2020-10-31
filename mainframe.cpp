@@ -27,7 +27,7 @@ MainFrame::MainFrame( QWidget *parent ) :
     new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_F ), this, SLOT( on_toggleFullScreenButton_clicked() ) );
     new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_Q ), this, SLOT( on_closeButton_clicked() ) );
 
-    connect( &imageReadyWatcher, &QFutureWatcher<std::shared_ptr<ASICamera::Image>>::finished, this, &MainFrame::imageReady );
+    connect( &imageReadyWatcher, &QFutureWatcher<std::shared_ptr<Raw16Image>>::finished, this, &MainFrame::imageReady );
 
     connect( &exposureTimer, &QTimer::timeout, [=]() { exposureRemainingTime--; showCaptureStatus(); }
     );
@@ -186,26 +186,20 @@ void MainFrame::on_captureButton_clicked()
             return camera->DoExposure();
         } ) );
 
-        exposureRemainingTime = exposure / 1000000;
-        exposureTimer.start( 1000 );
-        showCaptureStatus();
-
-        ui->captureButton->setEnabled( false );
-
     } else {
         qDebug() << "No camera";
 
-        FILE* file = fopen( "image.cfa", "rb" );
-        int width = 1936;
-        int height = 1096;
-        std::vector<ushort> raw( width * height );
-        fread( raw.data(), sizeof( ushort ), width * height, file );
-        fclose( file );
-
-        auto msec = render( raw.data(), width, height );
-
-        qDebug() << msec << "msec";
+        imageReadyWatcher.setFuture( QtConcurrent::run( [=]() {
+            QThread::usleep( exposure );
+            return Raw16Image::LoadFromFile( "image.cfa" );
+        } ) );
     }
+
+    exposureRemainingTime = exposure / 1000000;
+    exposureTimer.start( 1000 );
+    showCaptureStatus();
+
+    ui->captureButton->setEnabled( false );
 }
 
 void MainFrame::showCaptureStatus()
@@ -219,24 +213,19 @@ void MainFrame::imageReady()
     exposureTimer.stop();
     ui->captureButton->setText( "Capture" );
 
-    auto raw = imageReadyWatcher.result()->RawPixels;
-
-    /*FILE* out = fopen( "image.cfa", "wb" );
-    fwrite( buf.data(), 1, size, out );
-    fclose( out );*/
+    auto result = imageReadyWatcher.result();
 
     /*auto end = std::chrono::steady_clock::now();
     auto msec = std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();
     qDebug() << "Data ready in" << msec << "msec";*/
 
-    int width = camera->GetWidth();
-    int height = camera->GetHeight();
-
-    auto msec = render( raw, width, height );
+    auto msec = render( result->RawPixels(), result->Width(), result->Height() );
 
     qDebug() << "Rendered in " << msec << "msec";
 
-    qDebug() << "Camera temperature is" << camera->GetTemperature();
+    if( camera ) {
+        qDebug() << "Camera temperature is" << camera->GetTemperature();
+    }
 
     if( ui->continuousCaptureCheckBox->isChecked() ) {
         capturedFrames++;
