@@ -41,6 +41,7 @@ private:
     int exposureRemainingTime;
     int capturedFrames = 0;
     QTimer exposureTimer;
+    void showCaptureStatus();
     void imageReady();
 
     ulong render( const ushort* raw, int width, int height );

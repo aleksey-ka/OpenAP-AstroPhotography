@@ -20,6 +20,7 @@
 	border-width: 1px;
 	border-style: solid;
 	border-color: #303030;
+	font-size:15px;
 }
 QFrame {
 	border-color: #303030;
@@ -51,7 +52,7 @@ QPushButton:focus {
      <widget class="QFrame" name="controlsPanel">
       <property name="minimumSize">
        <size>
-        <width>268</width>
+        <width>300</width>
         <height>0</height>
        </size>
       </property>
@@ -150,6 +151,7 @@ QPushButton:focus {
             </property>
             <property name="font">
              <font>
+              <pointsize>-1</pointsize>
               <weight>75</weight>
               <bold>true</bold>
              </font>
@@ -229,7 +231,7 @@ QPushButton:focus {
             </property>
             <property name="font">
              <font>
-              <pointsize>9</pointsize>
+              <pointsize>-1</pointsize>
               <weight>75</weight>
               <bold>true</bold>
              </font>
@@ -240,6 +242,19 @@ QPushButton:focus {
            </widget>
           </item>
          </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="histogramView">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>174</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Histogram</string>
+         </property>
         </widget>
        </item>
        <item>
@@ -261,7 +276,7 @@ QPushButton:focus {
            <number>2</number>
           </property>
           <property name="topMargin">
-           <number>0</number>
+           <number>11</number>
           </property>
           <property name="rightMargin">
            <number>0</number>
@@ -271,13 +286,25 @@ QPushButton:focus {
           </property>
           <item>
            <widget class="QLabel" name="exposureLabel">
+            <property name="layoutDirection">
+             <enum>Qt::LeftToRight</enum>
+            </property>
             <property name="text">
              <string>Exposure</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QSpinBox" name="exposureSpinBox">
+            <property name="maximumSize">
+             <size>
+              <width>75</width>
+              <height>16777215</height>
+             </size>
+            </property>
             <property name="suffix">
              <string> ms</string>
             </property>
@@ -322,7 +349,7 @@ QPushButton:focus {
           <enum>Qt::Horizontal</enum>
          </property>
          <property name="tickPosition">
-          <enum>QSlider::TicksBelow</enum>
+          <enum>QSlider::TicksAbove</enum>
          </property>
          <property name="tickInterval">
           <number>10</number>
@@ -348,7 +375,7 @@ QPushButton:focus {
            <number>0</number>
           </property>
           <property name="topMargin">
-           <number>0</number>
+           <number>11</number>
           </property>
           <property name="rightMargin">
            <number>0</number>
@@ -358,13 +385,25 @@ QPushButton:focus {
           </property>
           <item>
            <widget class="QLabel" name="gainLabel">
+            <property name="layoutDirection">
+             <enum>Qt::LeftToRight</enum>
+            </property>
             <property name="text">
              <string>Gain</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QSpinBox" name="gainSpinBox">
+            <property name="maximumSize">
+             <size>
+              <width>75</width>
+              <height>16777215</height>
+             </size>
+            </property>
             <property name="maximum">
              <number>600</number>
             </property>
@@ -393,14 +432,109 @@ QPushButton:focus {
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="histogramView">
+        <widget class="QFrame" name="offsetFrame">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <property name="leftMargin">
+           <number>2</number>
+          </property>
+          <property name="topMargin">
+           <number>11</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="offsetLabel">
+            <property name="layoutDirection">
+             <enum>Qt::LeftToRight</enum>
+            </property>
+            <property name="text">
+             <string>Offset</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="offsetSpinBox">
+            <property name="maximumSize">
+             <size>
+              <width>75</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="suffix">
+             <string/>
+            </property>
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>500</number>
+            </property>
+            <property name="value">
+             <number>64</number>
+            </property>
+            <property name="displayIntegerBase">
+             <number>10</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="whiteBalanceCheckBox">
          <property name="text">
-          <string>Histogram</string>
+          <string>Use camera white balance</string>
          </property>
         </widget>
        </item>
        <item>
+        <widget class="QFrame" name="spacer">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <property name="leftMargin">
+           <number>2</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QCheckBox" name="continuousCaptureCheckBox">
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
          <property name="text">
           <string>Continuous Capture</string>
          </property>
@@ -408,6 +542,21 @@ QPushButton:focus {
        </item>
        <item>
         <widget class="QPushButton" name="captureButton">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>50</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: #801515;</string>
+         </property>
          <property name="text">
           <string>Capture</string>
          </property>

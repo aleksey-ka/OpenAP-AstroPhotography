@@ -29,10 +29,7 @@ MainFrame::MainFrame( QWidget *parent ) :
 
     connect( &imageReadyWatcher, &QFutureWatcher<std::shared_ptr<ASICamera::Image>>::finished, this, &MainFrame::imageReady );
 
-    connect( &exposureTimer, &QTimer::timeout, [=]() {
-            exposureRemainingTime--;
-            ui->captureButton->setText( QString::number( exposureRemainingTime ) );
-        }
+    connect( &exposureTimer, &QTimer::timeout, [=]() { exposureRemainingTime--; showCaptureStatus(); }
     );
 
     int count = ASICamera::GetCount();
@@ -118,6 +115,8 @@ void MainFrame::on_captureButton_clicked()
     }
 
     auto gain = ui->gainSpinBox->value();
+    auto offset = ui->offsetSpinBox->value();
+    auto useCameraWhiteBalance = ui->whiteBalanceCheckBox->isChecked();
 
     if( camerasInfo.size() > 0 ) {
         auto start = std::chrono::steady_clock::now();
@@ -168,17 +167,17 @@ void MainFrame::on_captureButton_clicked()
         qDebug() << "Gain " << gain << ( isAuto ? "(auto)" : "" ) <<
             "[" << min << max << defaultVal << "]";
 
-        camera->SetWhiteBalanceR( 50 ); // 52
+        camera->SetWhiteBalanceR( useCameraWhiteBalance ? 52 : 50 );
         camera->GetWhiteBalanceRCaps( min, max, defaultVal );
         qDebug() << "WB_R" << camera->GetWhiteBalanceR() <<
             "[" << min << max << defaultVal << "]";
 
-        camera->SetWhiteBalanceB( 50 ); // 95
+        camera->SetWhiteBalanceB( useCameraWhiteBalance ? 95 : 50 );
         camera->GetWhiteBalanceBCaps( min, max, defaultVal );
         qDebug() << "WB_B" << camera->GetWhiteBalanceB() <<
             "[" << min << max << defaultVal << "]";
 
-        camera->SetOffset( 64 );
+        camera->SetOffset( offset );
         camera->GetOffsetCaps( min, max, defaultVal );
         qDebug() << "Offset" << camera->GetOffset() <<
             "[" << min << max << defaultVal << "]";
@@ -189,9 +188,9 @@ void MainFrame::on_captureButton_clicked()
 
         exposureRemainingTime = exposure / 1000000;
         exposureTimer.start( 1000 );
+        showCaptureStatus();
 
         ui->captureButton->setEnabled( false );
-        ui->captureButton->setText( QString::number( exposureRemainingTime ) );
 
     } else {
         qDebug() << "No camera";
@@ -207,6 +206,12 @@ void MainFrame::on_captureButton_clicked()
 
         qDebug() << msec << "msec";
     }
+}
+
+void MainFrame::showCaptureStatus()
+{
+    ui->captureButton->setText( QString::number( exposureRemainingTime ) +
+        ( capturedFrames > 0 ? " (" + QString::number( capturedFrames ) + ")" : "" ) );
 }
 
 void MainFrame::imageReady()
@@ -235,7 +240,7 @@ void MainFrame::imageReady()
 
     if( ui->continuousCaptureCheckBox->isChecked() ) {
         capturedFrames++;
-        ui->continuousCaptureCheckBox->setText( "Continuous capture: " + QString::number( capturedFrames ) + " captured" );
+        ui->continuousCaptureCheckBox->setText( "Continuous capture (uncheck to stop)" );
         on_captureButton_clicked();
     } else {
         capturedFrames = 0;
