@@ -122,36 +122,6 @@ void MainFrame::on_captureButton_clicked()
 
             setWindowTitle( cameraInfo->Name );
 
-            bool isAuto = false;
-            long min, max, defaultVal;
-
-            camera->SetExposure( exposure );
-            long exposure = camera->GetExposure( isAuto );
-            camera->GetExposureCaps( min, max, defaultVal );
-            qDebug() << "Exposure "<< exposure << ( isAuto ? " (auto)" : "" ) <<
-                "[" << min << max << defaultVal << "]";
-
-            camera->SetGain( gain );
-            long gain = camera->GetGain( isAuto );
-            camera->GetGainCaps( min, max, defaultVal );
-            qDebug() << "Gain " << gain << ( isAuto ? "(auto)" : "" ) <<
-                "[" << min << max << defaultVal << "]";
-
-            camera->SetWhiteBalanceR( 50 );
-            camera->GetWhiteBalanceRCaps( min, max, defaultVal );
-            qDebug() << "WB_R" << camera->GetWhiteBalanceR() <<
-                "[" << min << max << defaultVal << "]";
-
-            camera->SetWhiteBalanceB( 50 );
-            camera->GetWhiteBalanceBCaps( min, max, defaultVal );
-            qDebug() << "WB_B" << camera->GetWhiteBalanceB() <<
-                "[" << min << max << defaultVal << "]";
-
-            camera->SetOffset( 64 );
-            camera->GetOffsetCaps( min, max, defaultVal );
-            qDebug() << "Offset" << camera->GetOffset() <<
-                "[" << min << max << defaultVal << "]";
-
             int width = 0;
             int height = 0;
             int bin = 0;
@@ -174,6 +144,36 @@ void MainFrame::on_captureButton_clicked()
             auto msec = std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();
             qDebug() << "Camera initialized in" << msec << "msec";
         }
+
+        bool isAuto = false;
+        long min, max, defaultVal;
+
+        camera->SetExposure( exposure );
+        long exposure = camera->GetExposure( isAuto );
+        camera->GetExposureCaps( min, max, defaultVal );
+        qDebug() << "Exposure "<< exposure << ( isAuto ? " (auto)" : "" ) <<
+            "[" << min << max << defaultVal << "]";
+
+        camera->SetGain( gain );
+        long gain = camera->GetGain( isAuto );
+        camera->GetGainCaps( min, max, defaultVal );
+        qDebug() << "Gain " << gain << ( isAuto ? "(auto)" : "" ) <<
+            "[" << min << max << defaultVal << "]";
+
+        camera->SetWhiteBalanceR( 50 ); // 52
+        camera->GetWhiteBalanceRCaps( min, max, defaultVal );
+        qDebug() << "WB_R" << camera->GetWhiteBalanceR() <<
+            "[" << min << max << defaultVal << "]";
+
+        camera->SetWhiteBalanceB( 50 ); // 95
+        camera->GetWhiteBalanceBCaps( min, max, defaultVal );
+        qDebug() << "WB_B" << camera->GetWhiteBalanceB() <<
+            "[" << min << max << defaultVal << "]";
+
+        camera->SetOffset( 64 );
+        camera->GetOffsetCaps( min, max, defaultVal );
+        qDebug() << "Offset" << camera->GetOffset() <<
+            "[" << min << max << defaultVal << "]";
 
         const ushort* raw = camera->DoExposure();
 
