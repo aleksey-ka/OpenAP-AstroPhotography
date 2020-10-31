@@ -3,6 +3,9 @@
 
 #include <QMainWindow>
 
+#include <QFutureWatcher>
+#include <QTimer>
+
 #include "camera.h"
 
 namespace Ui {
@@ -33,6 +36,11 @@ private:
 
     std::vector<std::shared_ptr<ASI_CAMERA_INFO>> camerasInfo;
     std::shared_ptr<ASICamera> camera;
+
+    QFutureWatcher<std::shared_ptr<const ASICamera::Image>> imageReadyWatcher;
+    int exposureRemainingTime;
+    QTimer exposureTimer;
+    void imageReady();
 
     ulong render( const ushort* raw, int width, int height );
     void renderHistogram( const uint* r, const uint* g, const uint* b, int size );

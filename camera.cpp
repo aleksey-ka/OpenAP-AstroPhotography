@@ -161,15 +161,28 @@ void ASICamera::SetROIFormat( int width, int height, int bin, ASI_IMG_TYPE imgTy
     this->imgType = ASI_IMG_END;
 }
 
-const ushort* ASICamera::DoExposure() const
-{
-    lazyROIFormat();
-
-    if( buf.size() < width * height ) {
-        buf.resize( width * height );
+class ImageImpl : public ASICamera::Image {
+public:
+    ImageImpl( int width, int height ) : buf( width * height)
+    {
+        RawPixels = buf.data();
     }
 
+    unsigned char* Buffer() { return reinterpret_cast<unsigned char*>( buf.data() ); }
+    int Size() { return buf.size() * sizeof( ushort ); }
+
+private:
+    mutable std::vector<unsigned short> buf;
+};
+
+std::shared_ptr<const ASICamera::Image> ASICamera::DoExposure() const
+{
     checkResult( ASIStartExposure( id, ASI_FALSE ) );
+
+    lazyROIFormat();
+
+    auto result = std::make_shared<ImageImpl>( width, height );
+
     bool capture = true;
     do {
         ASI_EXPOSURE_STATUS status;
@@ -182,9 +195,9 @@ const ushort* ASICamera::DoExposure() const
                 assert( false );
         }
     } while( capture );
-    checkResult( ASIGetDataAfterExp( id, (unsigned char*)buf.data(), buf.size() * sizeof( ushort ) ) );
+    checkResult( ASIGetDataAfterExp( id, result->Buffer(), result->Size() ) );
 
-    return buf.data();
+    return result;
 }
 
 int ASICamera::GetDroppedFrames() const
@@ -269,8 +282,7 @@ public:
             case ASI_ERROR_EXPOSURE_IN_PROGRESS: return "Exposure in progress";
             case ASI_ERROR_GENERAL_ERROR: return "General error, eg: value is out of valid range";
             case ASI_ERROR_INVALID_MODE: return "The current mode is wrong";
-            case ASI_SUCCESS:
-            case ASI_ERROR_END:
+            default:
                 return 0;
         }
     }

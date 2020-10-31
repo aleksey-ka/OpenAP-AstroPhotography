@@ -1,6 +1,7 @@
 #include "mainframe.h"
 #include "ui_mainframe.h"
 #include <QShortcut>
+#include <QtConcurrent/QtConcurrent>
 #include <QDebug>
 
 #include <chrono>
@@ -25,6 +26,14 @@ MainFrame::MainFrame( QWidget *parent ) :
 
     new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_F ), this, SLOT( on_toggleFullScreenButton_clicked() ) );
     new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_Q ), this, SLOT( on_closeButton_clicked() ) );
+
+    connect( &imageReadyWatcher, &QFutureWatcher<std::shared_ptr<ASICamera::Image>>::finished, this, &MainFrame::imageReady );
+
+    connect( &exposureTimer, &QTimer::timeout, [=]() {
+            exposureRemainingTime--;
+            ui->captureButton->setText( QString::number( exposureRemainingTime ) );
+        }
+    );
 
     int count = ASICamera::GetCount();
     for( int i = 0; i < count; i++ ) {
@@ -110,7 +119,6 @@ void MainFrame::on_captureButton_clicked()
 
     auto gain = ui->gainSpinBox->value();
 
-
     if( camerasInfo.size() > 0 ) {
         auto start = std::chrono::steady_clock::now();
 
@@ -175,24 +183,16 @@ void MainFrame::on_captureButton_clicked()
         qDebug() << "Offset" << camera->GetOffset() <<
             "[" << min << max << defaultVal << "]";
 
-        const ushort* raw = camera->DoExposure();
+        imageReadyWatcher.setFuture( QtConcurrent::run( [=]() {
+            return camera->DoExposure();
+        } ) );
 
-        /*FILE* out = fopen( "image.cfa", "wb" );
-        fwrite( buf.data(), 1, size, out );
-        fclose( out );*/
+        exposureRemainingTime = exposure / 1000000;
+        exposureTimer.start( 1000 );
 
-        auto end = std::chrono::steady_clock::now();
-        auto msec = std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();
-        qDebug() << "Data ready in" << msec << "msec";
+        ui->captureButton->setEnabled( false );
+        ui->captureButton->setText( QString::number( exposureRemainingTime ) );
 
-        int width = camera->GetWidth();
-        int height = camera->GetHeight();
-
-        msec = render( raw, width, height );
-
-        qDebug() << "Rendered in " << msec << "msec";
-
-        qDebug() << "Camera temperature is" << camera->GetTemperature();
     } else {
         qDebug() << "No camera";
 
@@ -207,6 +207,33 @@ void MainFrame::on_captureButton_clicked()
 
         qDebug() << msec << "msec";
     }
+}
+
+void MainFrame::imageReady()
+{
+    exposureTimer.stop();
+    ui->captureButton->setText( "Capture" );
+
+    auto raw = imageReadyWatcher.result()->RawPixels;
+
+    /*FILE* out = fopen( "image.cfa", "wb" );
+    fwrite( buf.data(), 1, size, out );
+    fclose( out );*/
+
+    /*auto end = std::chrono::steady_clock::now();
+    auto msec = std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();
+    qDebug() << "Data ready in" << msec << "msec";*/
+
+    int width = camera->GetWidth();
+    int height = camera->GetHeight();
+
+    auto msec = render( raw, width, height );
+
+    qDebug() << "Rendered in " << msec << "msec";
+
+    qDebug() << "Camera temperature is" << camera->GetTemperature();
+
+    ui->captureButton->setEnabled( true );
 }
 
 ulong MainFrame::render( const ushort* raw, int width, int height )

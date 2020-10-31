@@ -50,8 +50,12 @@ public:
     void GetROIFormat( int& width, int& height, int& bin, ASI_IMG_TYPE& imgType ) const;
     void SetROIFormat( int width, int height, int bin, ASI_IMG_TYPE imgType );
 
-    // Do single exposure and get result on internal buffer
-    const unsigned short* DoExposure() const;
+    struct Image {
+        const unsigned short* RawPixels;
+    };
+
+    // Do single exposure
+    std::shared_ptr<const ASICamera::Image> DoExposure() const;
 
     // Number of dropped frames
     int GetDroppedFrames() const;
@@ -71,8 +75,6 @@ private:
     mutable int height = 0;
     mutable int bin = 0;
     mutable ASI_IMG_TYPE imgType = ASI_IMG_END;
-
-    mutable std::vector<unsigned short> buf;
 
     void lazyROIFormat() const;
     void lazyControlCaps() const;
