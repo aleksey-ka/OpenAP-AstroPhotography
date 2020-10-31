@@ -14,7 +14,7 @@ class MainFrame : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainFrame(QWidget *parent = nullptr);
+    explicit MainFrame( QWidget *parent = nullptr );
     ~MainFrame();
 
 private slots:
@@ -22,7 +22,11 @@ private slots:
 
     void on_toggleFullScreenButton_clicked();
 
-    void on_captureFrameButton_clicked();
+    void on_exposureSlider_valueChanged( int value );
+
+    void on_gainSlider_valueChanged( int value );
+
+    void on_captureButton_clicked();
 
 private:
     Ui::MainFrame *ui;

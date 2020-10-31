@@ -58,15 +58,64 @@ void MainFrame::on_toggleFullScreenButton_clicked()
     }
 }
 
-void MainFrame::on_captureFrameButton_clicked()
+void MainFrame::on_exposureSlider_valueChanged( int value )
 {
+    // Slider position to exposure translation table (quasi logorithmic)
+    static int exposures[] =
+        { 1, 1, 1, 2, 2, 3, 4, 5, 6, 8,
+          10, 12, 15, 20, 25, 30, 40, 50, 60, 80,
+          100, 125, 150, 200, 250, 300, 400, 500, 600, 800,
+          1000, 1250, 1500, 2000, 2500, 3000, 4000, 5000, 6000, 8000,
+          10000, 12500, 15000, 20000, 25000, 30000, 40000, 50000, 60000, 80000,
+          100000, 125000, 150000, 200000, 250000, 300000, 400000, 500000, 600000, 800000,
+          1000000, 1250000, 1500000, 2000000, 2500000, 3000000, 4000000, 5000000, 6000000, 8000000,
+          10000000, 12500000, 15000000, 20000000, 25000000, 30000000, 40000000, 50000000, 60000000, 80000000,
+          100000000 };
+
+    // Set exposure in the exposure spin box with convinient time units
+    int exp = exposures[value];
+    if( exp >= 10000000 ) {
+        // Seconds for exposures equal or above 10 s
+        ui->exposureSpinBox->setSuffix( " s" );
+        ui->exposureSpinBox->setValue( exp / 1000000 );
+    } else if( exp >= 10000 ) {
+        // Milliseconds for exposures equal or above 10 ms
+        ui->exposureSpinBox->setSuffix( " ms" );
+        ui->exposureSpinBox->setValue( exp / 1000 );
+    } else {
+        // Microseconds for exposures below 10 ms
+        ui->exposureSpinBox->setSuffix( " us" );
+        ui->exposureSpinBox->setValue( exp );
+    }
+}
+
+void MainFrame::on_gainSlider_valueChanged( int value )
+{
+    ui->gainSpinBox->setValue( value );
+}
+
+void MainFrame::on_captureButton_clicked()
+{
+    int selectedIndex = ui->cameraSelectionCombo->currentData().toInt();
+
+    auto exposure = ui->exposureSpinBox->value();
+    auto exposureUnits = ui->exposureSpinBox->suffix();
+    if( exposureUnits == " s" ) {
+        exposure *= 1000000;
+    } else if( exposureUnits == " ms" ) {
+        exposure *= 1000;
+    } else {
+        assert( exposureUnits == " us" );
+    }
+
+    auto gain = ui->gainSpinBox->value();
+
+
     if( camerasInfo.size() > 0 ) {
         auto start = std::chrono::steady_clock::now();
 
         if( camera == nullptr ) {
-            int index = ui->cameraSelectionCombo->currentData().toInt();
-
-            std::shared_ptr<ASI_CAMERA_INFO> cameraInfo = camerasInfo[index];
+            std::shared_ptr<ASI_CAMERA_INFO> cameraInfo = camerasInfo[selectedIndex];
             qDebug() << cameraInfo->Name;
 
             camera = ASICamera::Open( cameraInfo->CameraID );
@@ -76,13 +125,13 @@ void MainFrame::on_captureFrameButton_clicked()
             bool isAuto = false;
             long min, max, defaultVal;
 
-            camera->SetExposure( 100000 );
+            camera->SetExposure( exposure );
             long exposure = camera->GetExposure( isAuto );
             camera->GetExposureCaps( min, max, defaultVal );
             qDebug() << "Exposure "<< exposure << ( isAuto ? " (auto)" : "" ) <<
                 "[" << min << max << defaultVal << "]";
 
-            camera->SetGain( 0 );
+            camera->SetGain( gain );
             long gain = camera->GetGain( isAuto );
             camera->GetGainCaps( min, max, defaultVal );
             qDebug() << "Gain " << gain << ( isAuto ? "(auto)" : "" ) <<
