@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1290</width>
-    <height>702</height>
+    <width>1314</width>
+    <height>819</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -37,6 +37,12 @@ QPushButton::pressed {
 }
 QPushButton:focus {
 	outline: none;
+}
+QSlider {
+	border: none;
+}
+QCheckBox {
+	border: none;
 }</string>
   </property>
   <widget class="QWidget" name="centralWidget">
@@ -44,7 +50,10 @@ QPushButton:focus {
     <item>
      <widget class="QLabel" name="imageView">
       <property name="text">
-       <string>Image</string>
+       <string>No image</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
       </property>
      </widget>
     </item>
@@ -75,13 +84,13 @@ QPushButton:focus {
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <property name="leftMargin">
-        <number>0</number>
+        <number>5</number>
        </property>
        <property name="topMargin">
         <number>0</number>
        </property>
        <property name="rightMargin">
-        <number>0</number>
+        <number>5</number>
        </property>
        <item>
         <widget class="QFrame" name="topToolbar">
@@ -253,7 +262,10 @@ QPushButton:focus {
           </size>
          </property>
          <property name="text">
-          <string>Histogram</string>
+          <string>No image</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
          </property>
         </widget>
        </item>
