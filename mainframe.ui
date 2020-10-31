@@ -400,6 +400,13 @@ QPushButton:focus {
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="continuousCaptureCheckBox">
+         <property name="text">
+          <string>Continuous Capture</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="captureButton">
          <property name="text">
           <string>Capture</string>

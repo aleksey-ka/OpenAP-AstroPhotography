@@ -39,6 +39,7 @@ private:
 
     QFutureWatcher<std::shared_ptr<const ASICamera::Image>> imageReadyWatcher;
     int exposureRemainingTime;
+    int capturedFrames = 0;
     QTimer exposureTimer;
     void imageReady();
 

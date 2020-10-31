@@ -233,7 +233,15 @@ void MainFrame::imageReady()
 
     qDebug() << "Camera temperature is" << camera->GetTemperature();
 
-    ui->captureButton->setEnabled( true );
+    if( ui->continuousCaptureCheckBox->isChecked() ) {
+        capturedFrames++;
+        ui->continuousCaptureCheckBox->setText( "Continuous capture: " + QString::number( capturedFrames ) + " captured" );
+        on_captureButton_clicked();
+    } else {
+        capturedFrames = 0;
+        ui->continuousCaptureCheckBox->setText( "Continuous capture" );
+        ui->captureButton->setEnabled( true );
+    }
 }
 
 ulong MainFrame::render( const ushort* raw, int width, int height )
