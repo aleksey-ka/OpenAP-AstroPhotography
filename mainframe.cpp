@@ -28,6 +28,7 @@ MainFrame::MainFrame( QWidget *parent ) :
     new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_Q ), this, SLOT( on_closeButton_clicked() ) );
 
     connect( &imageReadyWatcher, &QFutureWatcher<std::shared_ptr<Raw16Image>>::finished, this, &MainFrame::imageReady );
+    connect( &imageSavedWatcher, &QFutureWatcher<QString>::finished, this, &MainFrame::imageSaved );
 
     connect( &exposureTimer, &QTimer::timeout, [=]() { exposureRemainingTime--; showCaptureStatus(); }
     );
@@ -101,6 +102,19 @@ void MainFrame::on_gainSlider_valueChanged( int value )
 }
 
 void MainFrame::on_captureButton_clicked()
+{
+    if( ui->saveToCheckBox->isChecked() ) {
+        auto path = ui->saveToEdit->text();
+        auto name = QDateTime::currentDateTime().toString("yyyy-MM-ddThh-mm-ss");
+        saveToPath = path + QDir::separator() + name;
+    } else {
+        saveToPath.clear();
+    }
+
+    startCapture();
+}
+
+void MainFrame::startCapture()
 {
     int selectedIndex = ui->cameraSelectionCombo->currentData().toInt();
 
@@ -215,27 +229,36 @@ void MainFrame::imageReady()
 
     auto result = imageReadyWatcher.result();
 
-    /*auto end = std::chrono::steady_clock::now();
-    auto msec = std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();
-    qDebug() << "Data ready in" << msec << "msec";*/
-
-    auto msec = render( result->RawPixels(), result->Width(), result->Height() );
-
-    qDebug() << "Rendered in " << msec << "msec";
-
     if( camera ) {
         qDebug() << "Camera temperature is" << camera->GetTemperature();
     }
 
+    if( saveToPath.length() > 0 ) {
+        imageSavedWatcher.setFuture( QtConcurrent::run( [=]() {
+            QDir().mkpath( saveToPath );
+            auto name = QString::number( capturedFrames ).rightJustified( 5, '0' ) + ".cfa";
+            result->SaveToFile( ( saveToPath + QDir::separator() + name ).toStdString().c_str() );
+            return QString( name );
+        } ) );
+    }
+
+    auto msec = render( result->RawPixels(), result->Width(), result->Height() );
+    qDebug() << "Rendered in " << msec << "msec";
+
     if( ui->continuousCaptureCheckBox->isChecked() ) {
         capturedFrames++;
         ui->continuousCaptureCheckBox->setText( "Continuous capture (uncheck to stop)" );
-        on_captureButton_clicked();
+        startCapture();
     } else {
         capturedFrames = 0;
         ui->continuousCaptureCheckBox->setText( "Continuous capture" );
         ui->captureButton->setEnabled( true );
     }
+}
+
+void MainFrame::imageSaved()
+{
+    // On image saved
 }
 
 ulong MainFrame::render( const ushort* raw, int width, int height )

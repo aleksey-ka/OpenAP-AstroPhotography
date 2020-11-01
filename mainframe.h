@@ -38,11 +38,15 @@ private:
     std::shared_ptr<ASICamera> camera;
 
     QFutureWatcher<std::shared_ptr<const Raw16Image>> imageReadyWatcher;
+    QFutureWatcher<QString> imageSavedWatcher;
     int exposureRemainingTime;
     int capturedFrames = 0;
     QTimer exposureTimer;
+    void startCapture();
     void showCaptureStatus();
     void imageReady();
+    QString saveToPath;
+    void imageSaved();
 
     ulong render( const ushort* raw, int width, int height );
     void renderHistogram( const uint* r, const uint* g, const uint* b, int size );

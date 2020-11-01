@@ -14,7 +14,7 @@ std::shared_ptr<const Raw16Image> Raw16Image::LoadFromFile( const char* filePath
     return result;
 }
 
-void Raw16Image::SaveToFile( const char* filePath )
+void Raw16Image::SaveToFile( const char* filePath ) const
 {
     FILE* out = fopen( filePath, "wb" );
     fwrite( Buffer(), 1, BufferSize(), out );

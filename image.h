@@ -18,11 +18,12 @@ public:
     int Width() const { return width; }
     int Height() const { return height; }
 
+    const unsigned char* Buffer() const { return reinterpret_cast<unsigned char*>( buf.data() ); }
     unsigned char* Buffer() { return reinterpret_cast<unsigned char*>( buf.data() ); }
     int BufferSize() const { return buf.size() * sizeof( unsigned short ); }
 
     static std::shared_ptr<const Raw16Image> LoadFromFile( const char* filePath );
-    void SaveToFile( const char* filePath );
+    void SaveToFile( const char* filePath ) const;
 
 private:
     int width;
