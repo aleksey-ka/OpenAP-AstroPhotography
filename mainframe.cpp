@@ -10,6 +10,8 @@ MainFrame::MainFrame( QWidget *parent ) :
     QMainWindow( parent ),
     ui( new Ui::MainFrame )
 {
+    setWindowIcon( QIcon( ":stars.ico" ) );
+
     ui->setupUi( this ) ;
 
     ui->closeButton->hide();
