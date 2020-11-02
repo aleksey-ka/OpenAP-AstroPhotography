@@ -6,6 +6,10 @@
 int main( int argc, char *argv[] )
 {
     QApplication a( argc, argv );
+
+    QCoreApplication::setOrganizationName( "aleksey-ka" );
+    QCoreApplication::setApplicationName( "MyASICap" );
+
     MainFrame w;
 
     // Center main frame on the screen

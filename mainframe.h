@@ -5,6 +5,7 @@
 
 #include <QFutureWatcher>
 #include <QTimer>
+#include <QSettings>
 
 #include "camera.h"
 
@@ -33,6 +34,8 @@ private slots:
 
 private:
     Ui::MainFrame *ui;
+
+    QSettings settings;
 
     std::vector<std::shared_ptr<ASI_CAMERA_INFO>> camerasInfo;
     std::shared_ptr<ASICamera> camera;

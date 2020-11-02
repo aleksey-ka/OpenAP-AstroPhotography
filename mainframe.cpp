@@ -41,6 +41,14 @@ MainFrame::MainFrame( QWidget *parent ) :
     for( int i = 0; i < count; i++ ) {
         ui->cameraSelectionCombo->addItem( camerasInfo[i]->Name, QVariant( i ) );
     }
+
+    saveToPath = settings.value( "SaveTo" ).toString();
+    ui->saveToEdit->setText( saveToPath );
+
+    ui->exposureSlider->setValue( settings.value( "Exposure", 40 ).toInt() );
+    ui->gainSlider->setValue( settings.value( "Gain", 0 ).toInt() );
+    ui->offsetSpinBox->setValue( settings.value( "Offset", 64 ).toInt() );
+    ui->useCameraWhiteBalanceCheckBox->setChecked( settings.value( "UseCameraWhiteBalance", false ).toBool() );
 }
 
 MainFrame::~MainFrame()
@@ -105,11 +113,18 @@ void MainFrame::on_captureButton_clicked()
 {
     if( ui->saveToCheckBox->isChecked() ) {
         auto path = ui->saveToEdit->text();
+        settings.setValue( "SaveTo", path );
+
         auto name = QDateTime::currentDateTime().toString("yyyy-MM-ddThh-mm-ss");
-        saveToPath = path + QDir::separator() + name;
+        saveToPath = path + QDir::separator() + name;   
     } else {
         saveToPath.clear();
     }
+
+    settings.setValue( "Exposure", ui->exposureSlider->value() );
+    settings.setValue( "Gain", ui->gainSlider->value() );
+    settings.setValue( "Offset", ui->offsetSpinBox->value() );
+    settings.setValue( "UseCameraWhiteBalance", ui->useCameraWhiteBalanceCheckBox->isChecked() );
 
     startCapture();
 }
@@ -130,7 +145,7 @@ void MainFrame::startCapture()
 
     auto gain = ui->gainSpinBox->value();
     auto offset = ui->offsetSpinBox->value();
-    auto useCameraWhiteBalance = ui->whiteBalanceCheckBox->isChecked();
+    auto useCameraWhiteBalance = ui->useCameraWhiteBalanceCheckBox->isChecked();
 
     if( camerasInfo.size() > 0 ) {
         auto start = std::chrono::steady_clock::now();

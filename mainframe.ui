@@ -38,12 +38,46 @@ QPushButton::pressed {
 QPushButton:focus {
 	outline: none;
 }
+QCheckBox {
+	color: gray;
+	border: none;
+}
+QCheckBox::indicator:unchecked {
+	border: 1px solid gray;
+}
+QCheckBox::indicator:unchecked:hover {
+	border: 2px solid gray;
+}
+QCheckBox::indicator:checked {
+}
+QLabel {
+	color: gray;
+}
 QSlider {
 	border: none;
 }
-QCheckBox {
+QSlider::groove:horizontal {
 	border: none;
-}</string>
+	height: 3px;
+}
+QSlider::add-page:horizontal {
+	background: gray;
+	border: 1px solid #777;
+}
+QSlider::sub-page:horizontal {
+	background: gray;
+	border: 1px solid #777;
+}
+QSlider::handle:horizontal {
+	background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+		stop:0 #eee, stop:1 #ccc);
+	border: 1px solid #777;
+	width: 4px;
+	margin-top: -2px;
+	margin-bottom: -2px;
+	border-radius: 4px;
+}
+</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
@@ -169,8 +203,11 @@ QCheckBox {
              <string>Exit application</string>
             </property>
             <property name="styleSheet">
-             <string notr="true">background-color: #801515;
-border-radius: 5px;</string>
+             <string notr="true">QPushButton {
+	background-color: #801515;
+	border-radius: 5px;
+}
+</string>
             </property>
             <property name="text">
              <string>X</string>
@@ -303,7 +340,7 @@ border-radius: 5px;</string>
              <enum>Qt::LeftToRight</enum>
             </property>
             <property name="text">
-             <string>Exposure</string>
+             <string>Exposure:</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -362,7 +399,7 @@ border-radius: 5px;</string>
           <enum>Qt::Horizontal</enum>
          </property>
          <property name="tickPosition">
-          <enum>QSlider::TicksAbove</enum>
+          <enum>QSlider::NoTicks</enum>
          </property>
          <property name="tickInterval">
           <number>10</number>
@@ -402,7 +439,7 @@ border-radius: 5px;</string>
              <enum>Qt::LeftToRight</enum>
             </property>
             <property name="text">
-             <string>Gain</string>
+             <string>Gain:</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -477,7 +514,7 @@ border-radius: 5px;</string>
              <enum>Qt::LeftToRight</enum>
             </property>
             <property name="text">
-             <string>Offset</string>
+             <string>Offset:</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -513,7 +550,7 @@ border-radius: 5px;</string>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="whiteBalanceCheckBox">
+        <widget class="QCheckBox" name="useCameraWhiteBalanceCheckBox">
          <property name="text">
           <string>Use camera white balance</string>
          </property>
