@@ -60,6 +60,10 @@ public:
     // Temperature
     double GetTemperature() const;
 
+    // Guiding
+    void GuideOn( ASI_GUIDE_DIRECTION ) const;
+    void GuideOff( ASI_GUIDE_DIRECTION ) const;
+
     void PrintDebugInfo();
 
     ASICamera( int id );

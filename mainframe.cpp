@@ -29,6 +29,11 @@ MainFrame::MainFrame( QWidget *parent ) :
     new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_F ), this, SLOT( on_toggleFullScreenButton_clicked() ) );
     new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_Q ), this, SLOT( on_closeButton_clicked() ) );
 
+    new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_Up ), this, SLOT( on_guideUp() ) );
+    new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_Down ), this, SLOT( on_guideDown() ) );
+    new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_Left ), this, SLOT( on_guideLeft() ) );
+    new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_Right ), this, SLOT( on_guideRight() ) );
+
     connect( &imageReadyWatcher, &QFutureWatcher<std::shared_ptr<Raw16Image>>::finished, this, &MainFrame::imageReady );
     connect( &imageSavedWatcher, &QFutureWatcher<QString>::finished, this, &MainFrame::imageSaved );
 
@@ -55,6 +60,7 @@ MainFrame::MainFrame( QWidget *parent ) :
 
 MainFrame::~MainFrame()
 {
+    guideStop();
     delete ui;
 }
 
@@ -109,6 +115,47 @@ void MainFrame::on_exposureSlider_valueChanged( int value )
 void MainFrame::on_gainSlider_valueChanged( int value )
 {
     ui->gainSpinBox->setValue( value );
+}
+
+void MainFrame::on_guideUp()
+{
+    guide( ASI_GUIDE_NORTH );
+}
+
+void MainFrame::on_guideDown()
+{
+    guide( ASI_GUIDE_SOUTH );
+}
+
+void MainFrame::on_guideLeft()
+{
+    guide( ASI_GUIDE_EAST );
+}
+
+void MainFrame::on_guideRight()
+{
+    guide( ASI_GUIDE_WEST );
+}
+
+void MainFrame::guide( ASI_GUIDE_DIRECTION direction )
+{
+    if( guiding != -1 ) {
+        camera->GuideOff( (ASI_GUIDE_DIRECTION)guiding );
+    }
+    if( guiding != direction ) {
+        camera->GuideOn( direction );
+        guiding = direction;
+    } else {
+        guiding = -1;
+    }
+}
+
+void MainFrame::guideStop()
+{
+    if( guiding != -1 ) {
+        camera->GuideOff( (ASI_GUIDE_DIRECTION)guiding );
+        guiding = -1;
+    }
 }
 
 void MainFrame::on_captureButton_clicked()

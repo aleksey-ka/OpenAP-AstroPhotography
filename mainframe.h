@@ -32,6 +32,11 @@ private slots:
 
     void on_captureButton_clicked();
 
+    void on_guideUp();
+    void on_guideDown();
+    void on_guideLeft();
+    void on_guideRight();
+
 private:
     Ui::MainFrame *ui;
 
@@ -50,6 +55,10 @@ private:
     void imageReady();
     QString saveToPath;
     void imageSaved();
+
+    int guiding = -1;
+    void guide( ASI_GUIDE_DIRECTION );
+    void guideStop();
 
     ulong render( const ushort* raw, int width, int height );
     void renderHistogram( const uint* r, const uint* g, const uint* b, int size );

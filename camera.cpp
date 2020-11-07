@@ -201,6 +201,16 @@ double ASICamera::GetTemperature() const
     return static_cast<double>( temperature ) / 10.0;
 }
 
+void ASICamera::GuideOn( ASI_GUIDE_DIRECTION direction ) const
+{
+    checkResult( ASIPulseGuideOn( id, direction ) );
+}
+
+void ASICamera::GuideOff( ASI_GUIDE_DIRECTION direction ) const
+{
+    checkResult( ASIPulseGuideOff( id, direction ) );
+}
+
 void ASICamera::PrintDebugInfo()
 {
     qDebug() << "ASI SDK" << ASIGetSDKVersion();
