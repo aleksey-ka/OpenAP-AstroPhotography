@@ -12,13 +12,16 @@ class ASICamera {
 public:
     // Get attached cameras count
     static int GetCount();
-    // Get attachecd camera info
+    // Get attached camera info by index
     static std::shared_ptr<ASI_CAMERA_INFO> GetInfo( int index );
 
     // Open and initialize the camera by id (see camera info)
     static std::shared_ptr<ASICamera> Open( int id );
     // Close the camera
     void Close();
+
+    // Get camera info
+    std::shared_ptr<ASI_CAMERA_INFO> GetInfo() const;
 
     // Exposure in microsectods
     long GetExposure( bool& isAuto ) const;
@@ -30,6 +33,11 @@ public:
     void SetGain( long value, bool isAuto = false );
     void GetGainCaps( long& min, long& max, long& defaultVal ) const;
 
+    // Offset
+    long GetOffset() const;
+    void SetOffset( long value );
+    void GetOffsetCaps( long& min, long& max, long& defaultVal ) const;
+
     // White balance
     long GetWhiteBalanceR() const;
     void SetWhiteBalanceR( long value, bool isAuto = false );
@@ -37,11 +45,6 @@ public:
     long GetWhiteBalanceB() const;
     void SetWhiteBalanceB( long value, bool isAuto = false );
     void GetWhiteBalanceBCaps( long& min, long& max, long& defaultVal ) const;
-
-    // Offset
-    long GetOffset() const;
-    void SetOffset( long value );
-    void GetOffsetCaps( long& min, long& max, long& defaultVal ) const;
 
     // Image format
     ASI_IMG_TYPE GetFormat() const { lazyROIFormat(); return imgType; }
@@ -71,7 +74,20 @@ public:
 
 private:
     int id;
+    mutable std::shared_ptr<ASI_CAMERA_INFO> cameraInfo;
+
     mutable std::vector<ASI_CONTROL_CAPS> controlCaps;
+
+    mutable long exposure = -1;
+    mutable ASI_BOOL isAutoExposure = ASI_FALSE;
+    mutable long gain = -1;
+    mutable ASI_BOOL isAutoGain = ASI_FALSE;
+    mutable long offset = -1;
+    mutable ASI_BOOL isAutoOffset = ASI_FALSE;
+    mutable long WB_R = -1;
+    mutable ASI_BOOL isAutoWB_R = ASI_FALSE;
+    mutable long WB_B = -1;
+    mutable ASI_BOOL isAutoWB_B = ASI_FALSE;
 
     mutable int width = 0;
     mutable int height = 0;
