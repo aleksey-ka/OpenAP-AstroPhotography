@@ -37,8 +37,7 @@ MainFrame::MainFrame( QWidget *parent ) :
     connect( &imageReadyWatcher, &QFutureWatcher<std::shared_ptr<Raw16Image>>::finished, this, &MainFrame::imageReady );
     connect( &imageSavedWatcher, &QFutureWatcher<QString>::finished, this, &MainFrame::imageSaved );
 
-    connect( &exposureTimer, &QTimer::timeout, [=]() { exposureRemainingTime--; showCaptureStatus(); }
-    );
+    connect( &exposureTimer, &QTimer::timeout, [=]() { exposureRemainingTime--; showCaptureStatus(); } );
 
     int count = ASICamera::GetCount();
     for( int i = 0; i < count; i++ ) {
@@ -52,8 +51,8 @@ MainFrame::MainFrame( QWidget *parent ) :
     saveToPath = settings.value( "SaveTo" ).toString();
     ui->saveToEdit->setText( saveToPath );
 
-    ui->exposureSlider->setValue( settings.value( "Exposure", 40 ).toInt() );
-    ui->gainSlider->setValue( settings.value( "Gain", 0 ).toInt() );
+    setExposureInSpinBox( settings.value( "Exposure", 100000 ).toInt() );
+    ui->gainSpinBox->setValue( settings.value( "Gain", 0 ).toInt() );
     ui->offsetSpinBox->setValue( settings.value( "Offset", 64 ).toInt() );
     ui->useCameraWhiteBalanceCheckBox->setChecked( settings.value( "UseCameraWhiteBalance", false ).toBool() );
 }
@@ -81,35 +80,21 @@ void MainFrame::on_toggleFullScreenButton_clicked()
     }
 }
 
-void MainFrame::on_exposureSlider_valueChanged( int value )
+void MainFrame::on_exposureSpinBox_valueChanged( int value )
 {
-    // Slider position to exposure translation table (quasi logorithmic)
-    static int exposures[] =
-        { 1, 1, 1, 2, 2, 3, 4, 5, 6, 8,
-          10, 12, 15, 20, 25, 30, 40, 50, 60, 80,
-          100, 125, 150, 200, 250, 300, 400, 500, 600, 800,
-          1000, 1250, 1500, 2000, 2500, 3000, 4000, 5000, 6000, 8000,
-          10000, 12500, 15000, 20000, 25000, 30000, 40000, 50000, 60000, 80000,
-          100000, 125000, 150000, 200000, 250000, 300000, 400000, 500000, 600000, 800000,
-          1000000, 1250000, 1500000, 2000000, 2500000, 3000000, 4000000, 5000000, 6000000, 8000000,
-          10000000, 12500000, 15000000, 20000000, 25000000, 30000000, 40000000, 50000000, 60000000, 80000000,
-          100000000 };
+    int exposure = exposureFromValueAndSuffix( value, ui->exposureSpinBox->suffix() );
+    ui->exposureSlider->setValue( exposureToSliderPos( exposure ) );
+}
 
-    // Set exposure in the exposure spin box with convinient time units
-    int exp = exposures[value];
-    if( exp >= 10000000 ) {
-        // Seconds for exposures equal or above 10 s
-        ui->exposureSpinBox->setSuffix( " s" );
-        ui->exposureSpinBox->setValue( exp / 1000000 );
-    } else if( exp >= 10000 ) {
-        // Milliseconds for exposures equal or above 10 ms
-        ui->exposureSpinBox->setSuffix( " ms" );
-        ui->exposureSpinBox->setValue( exp / 1000 );
-    } else {
-        // Microseconds for exposures below 10 ms
-        ui->exposureSpinBox->setSuffix( " us" );
-        ui->exposureSpinBox->setValue( exp );
-    }
+void MainFrame::on_exposureSlider_valueChanged( int pos )
+{
+    int exposure = sliderPosToExposure( pos );
+    setExposureInSpinBox( exposure );
+}
+
+void MainFrame::on_gainSpinBox_valueChanged( int value )
+{
+    ui->gainSlider->setValue( value );
 }
 
 void MainFrame::on_gainSlider_valueChanged( int value )
@@ -170,8 +155,8 @@ void MainFrame::on_captureButton_clicked()
         saveToPath.clear();
     }
 
-    settings.setValue( "Exposure", ui->exposureSlider->value() );
-    settings.setValue( "Gain", ui->gainSlider->value() );
+    settings.setValue( "Exposure", ui->exposureSpinBox->value() * exposureSuffixToScale( ui->exposureSpinBox->suffix() ) );
+    settings.setValue( "Gain", ui->gainSpinBox->value() );
     settings.setValue( "Offset", ui->offsetSpinBox->value() );
     settings.setValue( "UseCameraWhiteBalance", ui->useCameraWhiteBalanceCheckBox->isChecked() );
 
@@ -182,16 +167,7 @@ void MainFrame::startCapture()
 {
     int selectedIndex = ui->cameraSelectionCombo->currentData().toInt();
 
-    auto exposure = ui->exposureSpinBox->value();
-    auto exposureUnits = ui->exposureSpinBox->suffix();
-    if( exposureUnits == " s" ) {
-        exposure *= 1000000;
-    } else if( exposureUnits == " ms" ) {
-        exposure *= 1000;
-    } else {
-        assert( exposureUnits == " us" );
-    }
-
+    auto exposure = exposureFromValueAndSuffix( ui->exposureSpinBox->value(), ui->exposureSpinBox->suffix() );
     auto gain = ui->gainSpinBox->value();
     auto offset = ui->offsetSpinBox->value();
     auto useCameraWhiteBalance = ui->useCameraWhiteBalanceCheckBox->isChecked();
@@ -436,4 +412,82 @@ void MainFrame::renderHistogram( const uint* r, const uint* g, const uint* b, in
 
     QImage image( p, size, h, QImage::Format_RGB888 );
     ui->histogramView->setPixmap( QPixmap::fromImage( image ) );
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Exposure scaling
+
+void MainFrame::setExposureInSpinBox( int exposure )
+{
+    // First set the slider to the appropriate range
+    ui->exposureSlider->setValue( exposureToSliderPos( exposure ) );
+
+    // Now set the exposure in the exposure spin box to the exact value
+    // with convinient time units (s/ms/us)
+    QString suffix;
+    exposure /= exposureToScaleAndSuffix( exposure, suffix );
+    ui->exposureSpinBox->setSuffix( suffix );
+    ui->exposureSpinBox->setValue( exposure );
+}
+
+// Slider position to exposure translation table (quasi logorithmic)
+static int exposures[] =
+    { 1, 1, 1, 2, 2, 3, 4, 5, 6, 8,
+      10, 12, 15, 20, 25, 30, 40, 50, 60, 80,
+      100, 120, 150, 200, 250, 300, 400, 500, 600, 800,
+      1000, 1200, 1500, 2000, 2500, 3000, 4000, 5000, 6000, 8000,
+      10000, 12000, 15000, 20000, 25000, 30000, 40000, 50000, 60000, 80000,
+      100000, 120000, 150000, 200000, 250000, 300000, 400000, 500000, 600000, 800000,
+      1000000, 1200000, 1500000, 2000000, 2500000, 3000000, 4000000, 5000000, 6000000, 8000000,
+      10000000, 12000000, 15000000, 20000000, 25000000, 30000000, 40000000, 50000000, 60000000, 80000000,
+      100000000 };
+
+int MainFrame::sliderPosToExposure( int pos )
+{
+    return exposures[pos];
+}
+
+int MainFrame::exposureToSliderPos( int exposure )
+{
+    const int lastPos = sizeof( exposures ) / sizeof( int ) - 1;
+    for( int i = 0; i <= lastPos; i++ ) {
+        if( exposures[i] > exposure ) {
+            return i - 1;
+        }
+    }
+    return lastPos;
+}
+
+int MainFrame::exposureSuffixToScale( const QString& suffix )
+{
+    if( suffix == " s" ) {
+        return 1000000;
+    } else if( suffix == " ms" ) {
+        return 1000;
+    } else {
+        assert( suffix == " us");
+        return 1;
+    }
+}
+
+int MainFrame::exposureToScaleAndSuffix( int exposure, QString& suffix )
+{
+    if( exposure >= 10000000 ) {
+        // Seconds for exposures equal or above 10 s
+        suffix = " s";
+        return 1000000;
+    } else if( exposure >= 10000 ) {
+        // Milliseconds for exposures equal or above 10 ms
+        suffix = " ms";
+        return 1000;
+    } else {
+        // Microseconds for exposures below 10 ms
+        suffix = " us";
+        return 1;
+    }
+}
+
+int MainFrame::exposureFromValueAndSuffix( int value, const QString& suffix )
+{
+    return value *  exposureSuffixToScale( suffix );
 }
