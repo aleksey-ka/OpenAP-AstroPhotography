@@ -149,8 +149,14 @@ void MainFrame::on_captureButton_clicked()
         auto path = ui->saveToEdit->text();
         settings.setValue( "SaveTo", path );
 
-        auto name = QDateTime::currentDateTime().toString("yyyy-MM-ddThh-mm-ss");
-        saveToPath = path + QDir::separator() + name;   
+        static const QString TIMESTAMP( "{TIMESTAMP}" );
+        auto timestamp = QDateTime::currentDateTime().toString("yyyy-MM-ddThh-mm-ss");
+        if( path.contains( TIMESTAMP ) ) {
+            path.replace( TIMESTAMP, timestamp );
+        } else {
+            path = path + QDir::separator() + timestamp;
+        }
+        saveToPath = path;
     } else {
         saveToPath.clear();
     }
