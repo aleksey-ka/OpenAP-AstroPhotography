@@ -10,7 +10,7 @@ MainFrame::MainFrame( QWidget *parent ) :
     QMainWindow( parent ),
     ui( new Ui::MainFrame )
 {
-    setWindowIcon( QIcon( ":stars.ico" ) );
+    setWindowIcon( QIcon( ":mainframe.ico" ) );
 
     ui->setupUi( this ) ;
 
