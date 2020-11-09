@@ -4,19 +4,28 @@
 #include <memory>
 #include <vector>
 
+struct ImageInfo {
+    int Width;
+    int Height;
+    int Offset;
+    int Gain;
+    int Exposure;
+    int64_t Timestamp;
+    std::string Camera;
+};
+
 class Raw16Image {
 public:
-    Raw16Image( int _width, int _height ) :
-        width( _width ),
-        height( _height ),
-        buf( _width * _height )
+    Raw16Image( const ImageInfo& _imageInfo ) :
+        imageInfo( _imageInfo ),
+        buf( _imageInfo.Width * _imageInfo.Height )
     {
     }
 
     const unsigned short* RawPixels() const { return buf.data(); };
 
-    int Width() const { return width; }
-    int Height() const { return height; }
+    int Width() const { return imageInfo.Width; }
+    int Height() const { return imageInfo.Height; }
 
     const unsigned char* Buffer() const { return reinterpret_cast<unsigned char*>( buf.data() ); }
     unsigned char* Buffer() { return reinterpret_cast<unsigned char*>( buf.data() ); }
@@ -26,8 +35,7 @@ public:
     void SaveToFile( const char* filePath ) const;
 
 private:
-    int width;
-    int height;
+    ImageInfo imageInfo;
     mutable std::vector<unsigned short> buf;
 };
 
