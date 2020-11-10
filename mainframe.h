@@ -11,6 +11,7 @@
 #include <QSettings>
 
 #include "camera.h"
+#include "focuser.h"
 
 namespace Ui {
     class MainFrame;
@@ -74,6 +75,9 @@ private:
     int guiding = -1;
     void guide( ASI_GUIDE_DIRECTION );
     void guideStop();
+
+    // Focuser
+    Focuser focuser;
 
     // Rendering
     ulong render( const ushort* raw, int width, int height );
