@@ -618,7 +618,11 @@ QSlider::handle:horizontal {
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="saveToEdit"/>
+           <widget class="QLineEdit" name="saveToEdit">
+            <property name="styleSheet">
+             <string notr="true">font-size:10px;</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>

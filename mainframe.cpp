@@ -50,6 +50,7 @@ MainFrame::MainFrame( QWidget *parent ) :
 
     saveToPath = settings.value( "SaveTo" ).toString();
     ui->saveToEdit->setText( saveToPath );
+    ui->saveToEdit->home( false );
 
     setExposureInSpinBox( settings.value( "Exposure", 100000 ).toInt() );
     ui->gainSpinBox->setValue( settings.value( "Gain", 0 ).toInt() );
