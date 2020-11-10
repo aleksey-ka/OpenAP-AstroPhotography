@@ -2,6 +2,7 @@
 #include "ui_mainframe.h"
 #include <QShortcut>
 #include <QtConcurrent/QtConcurrent>
+#include <QPainter>
 #include <QDebug>
 
 #include <chrono>
@@ -33,6 +34,8 @@ MainFrame::MainFrame( QWidget *parent ) :
     new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_Down ), this, SLOT( on_guideDown() ) );
     new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_Left ), this, SLOT( on_guideLeft() ) );
     new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_Right ), this, SLOT( on_guideRight() ) );
+
+    new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_T ), this, [=]() { drawTargetingCircle = !drawTargetingCircle; } );
 
     connect( &imageReadyWatcher, &QFutureWatcher<std::shared_ptr<Raw16Image>>::finished, this, &MainFrame::imageReady );
     connect( &imageSavedWatcher, &QFutureWatcher<QString>::finished, this, &MainFrame::imageSaved );
@@ -351,7 +354,15 @@ ulong MainFrame::render( const ushort* raw, int width, int height )
     }
 
     QImage image( rgb, w, h, QImage::Format_RGB888 );
-    ui->imageView->setPixmap( QPixmap::fromImage( image ) );
+    QPixmap pixmap = QPixmap::fromImage( image );
+    if( drawTargetingCircle ) {
+        QPainter painter( &pixmap );
+        QPen pen( QColor::fromRgb( 0xFF, 0, 0 ) );
+        pen.setWidth( 3 );
+        painter.setPen( pen );
+        painter.drawEllipse( w / 2 - 30, h / 2 - 30, 60, 60 );
+    }
+    ui->imageView->setPixmap( pixmap );
 
     renderHistogram( histR.data(), histG.data(), histB.data(), histR.size() );
 
