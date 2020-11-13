@@ -19,7 +19,7 @@
 static void fwprintf_no_trailing_zeroes( FILE* file, const wchar_t* name, float value )
 {
     char buf[50];
-    sprintf_s( buf, sizeof( buf ), "%f", value );
+    sprintf( buf, "%f", value );
     int pos = strlen( buf );
     for( int i = pos - 1; i > 0; i-- ) {
         if( buf[i] == '.' ) {
