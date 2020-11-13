@@ -38,7 +38,8 @@ MainFrame::MainFrame( QWidget *parent ) :
     new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_Left ), this, SLOT( on_guideLeft() ) );
     new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_Right ), this, SLOT( on_guideRight() ) );
 
-    new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_T ), this, [=]() { drawTargetingCircle = !drawTargetingCircle; } );
+    // TODO: In Qt 5.15 lambdas can be used in QShortcut constructor
+    connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_T ), this ), &QShortcut::activated, [=]() { drawTargetingCircle = !drawTargetingCircle; } );
 
     connect( &imageReadyWatcher, &QFutureWatcher<std::shared_ptr<Raw16Image>>::finished, this, &MainFrame::imageReady );
     connect( &imageSavedWatcher, &QFutureWatcher<QString>::finished, this, &MainFrame::imageSaved );
