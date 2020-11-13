@@ -63,11 +63,17 @@ MainFrame::MainFrame( QWidget *parent ) :
     ui->gainSpinBox->setValue( settings.value( "Gain", 0 ).toInt() );
     ui->offsetSpinBox->setValue( settings.value( "Offset", 64 ).toInt() );
     ui->useCameraWhiteBalanceCheckBox->setChecked( settings.value( "UseCameraWhiteBalance", false ).toBool() );
+
+   if( focuser.Open() ) {
+       // TODO: In Qt 5.15 lambdas can be used in QShortcut constructor
+       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_F ), this ), &QShortcut::activated, [=]() { focuser.ToggleMotorPower(); } );
+   }
 }
 
 MainFrame::~MainFrame()
 {
     guideStop();
+    focuser.Close();
     delete ui;
 }
 
