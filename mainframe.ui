@@ -195,8 +195,6 @@ QSlider::handle:horizontal {
             <property name="font">
              <font>
               <pointsize>-1</pointsize>
-              <weight>75</weight>
-              <bold>true</bold>
              </font>
             </property>
             <property name="toolTip">
@@ -263,6 +261,15 @@ QSlider::handle:horizontal {
               <height>25</height>
              </size>
             </property>
+            <property name="styleSheet">
+             <string notr="true">QComboBox {
+	color: red; 
+	font-weight: bold;
+}</string>
+            </property>
+            <property name="editable">
+             <bool>true</bool>
+            </property>
             <property name="frame">
              <bool>true</bool>
             </property>
@@ -279,8 +286,6 @@ QSlider::handle:horizontal {
             <property name="font">
              <font>
               <pointsize>-1</pointsize>
-              <weight>75</weight>
-              <bold>true</bold>
              </font>
             </property>
             <property name="text">

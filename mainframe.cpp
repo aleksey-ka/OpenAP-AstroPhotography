@@ -51,6 +51,10 @@ MainFrame::MainFrame( QWidget *parent ) :
         camerasInfo.emplace_back( ASICamera::GetInfo( i ) );
     }
 
+    // TODO: Fixing a bug with text color on Raspberry Pi (old Qt?). It shows always gray
+    // To fix it needs changing the combo to editable and the edit inside the combo to read-only
+    ui->cameraSelectionCombo->lineEdit()->setReadOnly( true );
+
     for( int i = 0; i < count; i++ ) {
         ui->cameraSelectionCombo->addItem( camerasInfo[i]->Name, QVariant( i ) );
     }
