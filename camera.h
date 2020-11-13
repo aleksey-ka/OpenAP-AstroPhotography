@@ -66,6 +66,7 @@ public:
     // Temperature
     double GetCurrentTemperature() const;
     // Cooler control
+    bool HasCooler() const;
     bool IsCoolerOn() const;
     void SetCoolerOn( bool );
     double GetTargetTemperature() const;
@@ -106,6 +107,7 @@ private:
 
     void lazyROIFormat() const;
     void lazyControlCaps() const;
+    bool hasControlCaps( ASI_CONTROL_TYPE ) const;
     void getControlCaps( ASI_CONTROL_TYPE, long& min, long& max, long& defaultVal ) const;
     static void checkResult( ASI_ERROR_CODE );
 };

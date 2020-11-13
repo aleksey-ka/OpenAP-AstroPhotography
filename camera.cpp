@@ -222,6 +222,11 @@ double ASICamera::GetCurrentTemperature() const
     return static_cast<double>( temperature ) / 10.0;
 }
 
+bool ASICamera::HasCooler() const
+{
+    return hasControlCaps( ASI_COOLER_ON );
+}
+
 bool ASICamera::IsCoolerOn() const
 {
     if( coolerOn == -1 ) {
@@ -289,6 +294,18 @@ void ASICamera::lazyControlCaps() const
             checkResult( ASIGetControlCaps( id, i, &controlCaps[i] ) );
         }
     }
+}
+
+bool ASICamera::hasControlCaps( ASI_CONTROL_TYPE controlType ) const
+{
+    lazyControlCaps();
+
+    for( auto cap : controlCaps ) {
+        if( cap.ControlType == controlType ) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void ASICamera::getControlCaps( ASI_CONTROL_TYPE controlType, long& min, long& max, long& defaultVal ) const

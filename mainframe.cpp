@@ -237,7 +237,9 @@ void MainFrame::startCapture()
                     assert( false );
             }
 
-            setCooler( coolerOn, targetTemperature );
+            if( camera->HasCooler() ) {
+                setCooler( coolerOn, targetTemperature );
+            }
 
             //camera->PrintDebugInfo();
 
