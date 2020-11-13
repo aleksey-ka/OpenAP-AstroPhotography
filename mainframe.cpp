@@ -65,9 +65,8 @@ MainFrame::MainFrame( QWidget *parent ) :
     ui->useCameraWhiteBalanceCheckBox->setChecked( settings.value( "UseCameraWhiteBalance", false ).toBool() );
 
    if( focuser.Open() ) {
-       new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_F ), this, [=]() {
-           focuser.ToggleMotorPower();
-       } );
+       // TODO: In Qt 5.15 lambdas can be used in QShortcut constructor
+       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_F ), this ), &QShortcut::activated, [=]() { focuser.ToggleMotorPower(); } );
    }
 }
 

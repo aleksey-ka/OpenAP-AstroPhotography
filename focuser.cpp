@@ -10,7 +10,8 @@ bool Focuser::Open()
 {
     QString portName;
     foreach( const QSerialPortInfo &serialPortInfo, QSerialPortInfo::availablePorts() ) {
-        if( serialPortInfo.description() == "USB-SERIAL CH340" ) {
+        QString desc = serialPortInfo.description();
+        if( desc == "USB-SERIAL CH340" || desc == "USB2.0-Serial" ) {
             portName = serialPortInfo.portName();
             break;
         }
