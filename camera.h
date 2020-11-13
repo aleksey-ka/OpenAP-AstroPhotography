@@ -64,7 +64,12 @@ public:
     // Number of dropped frames
     int GetDroppedFrames() const;
     // Temperature
-    double GetTemperature() const;
+    double GetCurrentTemperature() const;
+    // Cooler control
+    bool IsCoolerOn() const;
+    void SetCoolerOn( bool );
+    double GetTargetTemperature() const;
+    void SetTargetTemperature( double );
 
     // Guiding
     void GuideOn( ASI_GUIDE_DIRECTION ) const;
@@ -91,6 +96,8 @@ private:
     mutable ASI_BOOL isAutoWB_R = ASI_FALSE;
     mutable long WB_B = -1;
     mutable ASI_BOOL isAutoWB_B = ASI_FALSE;
+    mutable long coolerOn = -1;
+    mutable long targetTemperature = -1;
 
     mutable int width = 0;
     mutable int height = 0;

@@ -109,6 +109,16 @@ void MainFrame::on_gainSlider_valueChanged( int value )
     ui->gainSpinBox->setValue( value );
 }
 
+void MainFrame::on_coolerCheckBox_stateChanged( int state )
+{
+    setCooler( state == Qt::Checked, ui->temperatureSpinBox->value() );
+}
+
+void MainFrame::on_temperatureSpinBox_valueChanged( int targetTemperature )
+{
+    setCooler( ui->coolerCheckBox->isChecked(), targetTemperature );
+}
+
 void MainFrame::on_guideUp()
 {
     guide( ASI_GUIDE_NORTH );
@@ -184,6 +194,8 @@ void MainFrame::startCapture()
     auto gain = ui->gainSpinBox->value();
     auto offset = ui->offsetSpinBox->value();
     auto useCameraWhiteBalance = ui->useCameraWhiteBalanceCheckBox->isChecked();
+    auto coolerOn = ui->coolerCheckBox->isChecked();
+    auto targetTemperature = ui->temperatureSpinBox->value();
 
     if( camerasInfo.size() > 0 ) {
         auto start = std::chrono::steady_clock::now();
@@ -213,6 +225,10 @@ void MainFrame::startCapture()
                 default:
                     assert( false );
             }
+
+            setCooler( coolerOn, targetTemperature );
+
+            //camera->PrintDebugInfo();
 
             auto end = std::chrono::steady_clock::now();
             auto msec = std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();
@@ -283,7 +299,7 @@ void MainFrame::imageReady()
     auto result = imageReadyWatcher.result();
 
     if( camera ) {
-        qDebug() << "Camera temperature is" << camera->GetTemperature();
+        qDebug() << "Camera temperature is" << camera->GetCurrentTemperature();
     }
 
     if( saveToPath.length() > 0 ) {
@@ -511,4 +527,13 @@ int MainFrame::exposureToScaleAndSuffix( int exposure, QString& suffix )
 int MainFrame::exposureFromValueAndSuffix( int value, const QString& suffix )
 {
     return value *  exposureSuffixToScale( suffix );
+}
+
+ // Temperature control
+void MainFrame::setCooler( bool coolerOn, int targetTemperature )
+{
+    if( coolerOn ) {
+        camera->SetTargetTemperature( targetTemperature );
+    }
+    camera->SetCoolerOn( coolerOn );
 }

@@ -40,9 +40,16 @@ private slots:
     void on_captureButton_clicked();
 
     void on_guideUp();
+
     void on_guideDown();
+
     void on_guideLeft();
+
     void on_guideRight();
+
+    void on_coolerCheckBox_stateChanged( int );
+
+    void on_temperatureSpinBox_valueChanged( int );
 
 private:
     Ui::MainFrame *ui;
@@ -81,7 +88,8 @@ private:
     static int exposureToScaleAndSuffix( int exposure, QString& suffix );
     static int exposureFromValueAndSuffix( int value, const QString& suffix );
 
-
+    // Temperature control
+    void setCooler( bool isOn, int targetTemperature );
 };
 
 #endif // MAINFRAME_H

@@ -214,12 +214,46 @@ int ASICamera::GetDroppedFrames() const
     return dropped;
 }
 
-double ASICamera::GetTemperature() const
+double ASICamera::GetCurrentTemperature() const
 {
     long temperature = 0;
-    ASI_BOOL isAutoTemperature = ASI_FALSE;
-    checkResult( ASIGetControlValue( id, ASI_TEMPERATURE, &temperature, &isAutoTemperature ) );
+    ASI_BOOL isAuto = ASI_FALSE;
+    checkResult( ASIGetControlValue( id, ASI_TEMPERATURE, &temperature, &isAuto ) );
     return static_cast<double>( temperature ) / 10.0;
+}
+
+bool ASICamera::IsCoolerOn() const
+{
+    if( coolerOn == -1 ) {
+        ASI_BOOL isAuto = ASI_FALSE;
+        checkResult( ASIGetControlValue( id, ASI_COOLER_ON, &coolerOn, &isAuto ) );
+    }
+    return coolerOn == 1;
+}
+
+void ASICamera::SetCoolerOn( bool value )
+{
+    if( coolerOn != value ) {
+        checkResult( ASISetControlValue( id, ASI_COOLER_ON, value ? 1 : 0, ASI_FALSE ) );
+        coolerOn = value;
+    }
+}
+
+double ASICamera::GetTargetTemperature() const
+{
+    if( targetTemperature == -1 ) {
+        ASI_BOOL isAuto = ASI_FALSE;
+        checkResult( ASIGetControlValue( id, ASI_TARGET_TEMP, &targetTemperature, &isAuto ) );
+    }
+    return targetTemperature;
+}
+
+void ASICamera::SetTargetTemperature( double temperature )
+{
+    if( targetTemperature != temperature ) {
+        checkResult( ASISetControlValue( id, ASI_TARGET_TEMP, (long)temperature, ASI_FALSE ) );
+        targetTemperature = temperature;
+    }
 }
 
 void ASICamera::GuideOn( ASI_GUIDE_DIRECTION direction ) const
