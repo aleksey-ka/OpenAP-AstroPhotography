@@ -263,7 +263,7 @@ QSlider::handle:horizontal {
             </property>
             <property name="styleSheet">
              <string notr="true">QComboBox {
-	color: red; 
+	color: #801515; 
 	font-weight: bold;
 }</string>
             </property>
