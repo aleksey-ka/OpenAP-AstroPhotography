@@ -30,6 +30,8 @@ private slots:
 
     void on_toggleFullScreenButton_clicked();
 
+    void on_cameraInfoButton_clicked();
+
     void on_exposureSpinBox_valueChanged( int value );
 
     void on_exposureSlider_valueChanged( int value );
@@ -90,6 +92,7 @@ private:
     static int exposureToSliderPos( int exposure );
     static int exposureSuffixToScale( const QString& suffix );
     static int exposureToScaleAndSuffix( int exposure, QString& suffix );
+    static QString exposureToString( int exposure );
     static int exposureFromValueAndSuffix( int value, const QString& suffix );
 
     // Temperature control

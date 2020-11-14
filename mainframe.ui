@@ -645,6 +645,19 @@ QSlider::handle:horizontal {
           <property name="bottomMargin">
            <number>0</number>
           </property>
+          <item>
+           <widget class="QLabel" name="infoLabel">
+            <property name="styleSheet">
+             <string notr="true">font-size:14px;</string>
+            </property>
+            <property name="text">
+             <string>No image</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

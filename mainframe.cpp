@@ -6,6 +6,7 @@
 #include <QShortcut>
 #include <QtConcurrent/QtConcurrent>
 #include <QPainter>
+#include <QMessageBox>
 #include <QDebug>
 
 #include <chrono>
@@ -96,6 +97,29 @@ void MainFrame::on_toggleFullScreenButton_clicked()
         showFullScreen();
         ui->closeButton->show();
     }
+}
+
+void MainFrame::on_cameraInfoButton_clicked()
+{
+    std::shared_ptr<ASI_CAMERA_INFO> info;
+    if( camera != 0 ) {
+        info = camera->GetInfo();
+    } else {
+        int selectedIndex = ui->cameraSelectionCombo->currentData().toInt();
+        info = camerasInfo[selectedIndex];
+    }
+
+    const static QString namedValue( "%1: <span style='color:#008800;'>%2</span><br>");
+
+    QString txt;
+    txt.append( namedValue.arg( "Electrons per ADU", QString::number( info->ElecPerADU, 'f', 3 ) ) );
+    txt.append( namedValue.arg( "Bit depth", QString::number( info->BitDepth ) ) );
+    txt.append( namedValue.arg( "Pixel size", QString::number( info->PixelSize ) ) );
+
+    QMessageBox msgBox( this );
+    msgBox.setWindowTitle( info->Name );
+    msgBox.setText( txt );
+    msgBox.exec();
 }
 
 void MainFrame::on_exposureSpinBox_valueChanged( int value )
@@ -307,22 +331,30 @@ void MainFrame::showCaptureStatus()
 void MainFrame::imageReady()
 {
     exposureTimer.stop();
-    ui->captureButton->setText( "Capture" );
 
     auto result = imageReadyWatcher.result();
 
-    if( camera ) {
-        qDebug() << "Camera temperature is" << camera->GetCurrentTemperature();
-    }
+    imageSavedWatcher.setFuture( QtConcurrent::run( [=]() {
+        const static QString namedValue( "%1: <span style='color:#008800;'>%2</span>%3<br>");
 
-    if( saveToPath.length() > 0 ) {
-        imageSavedWatcher.setFuture( QtConcurrent::run( [=]() {
+        QString txt;
+        const auto& info = result->Info();
+        txt.append( namedValue.arg( "Size", QString::number( info.Width ) + "x" + QString::number( info.Height ), "" ) );
+        txt.append( namedValue.arg( "Exposure", exposureToString( info.Exposure ), "" ) );
+        txt.append( namedValue.arg( "Gain", QString::number( info.Gain ), "" ) );
+        txt.append( namedValue.arg( "Offset", QString::number( info.Offset ), "" ) );
+        txt.append( namedValue.arg( "Temperature", QString::number( info.Temperature, 'f', 1 ), " <sup>0</sup>C<br>" ) );
+
+        if( saveToPath.length() > 0 ) {
             QDir().mkpath( saveToPath );
             auto name = QString::number( capturedFrames ).rightJustified( 5, '0' ) + ".cfa";
             result->SaveToFile( ( saveToPath + QDir::separator() + name ).toStdString().c_str() );
-            return QString( name );
-        } ) );
-    }
+            txt.append( namedValue.arg( "Saved As", name, "" ) );
+        }
+
+        return txt;
+
+    } ) );
 
     auto msec = render( result->RawPixels(), result->Width(), result->Height() );
     qDebug() << "Rendered in " << msec << "msec";
@@ -334,13 +366,14 @@ void MainFrame::imageReady()
     } else {
         capturedFrames = 0;
         ui->continuousCaptureCheckBox->setText( "Continuous capture" );
+        ui->captureButton->setText( "Capture" );
         ui->captureButton->setEnabled( true );
     }
 }
 
 void MainFrame::imageSaved()
 {
-    // On image saved
+    ui->infoLabel->setText( imageSavedWatcher.result() );
 }
 
 ulong MainFrame::render( const ushort* raw, int width, int height )
@@ -451,7 +484,7 @@ void MainFrame::renderHistogram( const uint* r, const uint* g, const uint* b, in
                         p0[2] = 0x50;
                     }
                 } else if( j == B ){
-                    // Make blue outline briter
+                    // Make blue outline brighter
                     p0[0] = 0x80;
                     p0[1] = 0x80;
                     p0[2] = j < 127 ? 0xFF : 0;
@@ -535,6 +568,13 @@ int MainFrame::exposureToScaleAndSuffix( int exposure, QString& suffix )
         suffix = " us";
         return 1;
     }
+}
+
+QString MainFrame::exposureToString( int exposure )
+{
+    QString suffix;
+    int scale = exposureToScaleAndSuffix( exposure, suffix );
+    return QString::number( exposure / scale ) + suffix;
 }
 
 int MainFrame::exposureFromValueAndSuffix( int value, const QString& suffix )
