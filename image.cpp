@@ -78,6 +78,8 @@ std::shared_ptr<const Raw16Image> Raw16Image::LoadFromFile( const char* filePath
     float exposure;
     swscanf( map[L"EXPOSURE"].c_str(), L"%f", &exposure );
     imageInfo.Exposure = (int)( 1000000 * exposure );
+    swscanf( map[L"TEMPERATURE"].c_str(), L"%lf", &imageInfo.Temperature );
+    imageInfo.Exposure = (int)( 1000000 * exposure );
     swscanf( map[L"TIMESTAMP"].c_str(), L"%I64d", &imageInfo.Timestamp );
     imageInfo.Camera = toString( map[L"CAMERA"] );
 
@@ -102,6 +104,7 @@ void Raw16Image::SaveToFile( const char* filePath ) const
     fwprintf( info, L"PATTERN RGGB\n" );
     fwprintf( info, L"GAIN %d\n", imageInfo.Gain );
     fwprintf_no_trailing_zeroes( info, L"EXPOSURE", 0.000001f * imageInfo.Exposure );
+    fwprintf_no_trailing_zeroes( info, L"TEMPERATURE", imageInfo.Temperature );
     fwprintf( info, L"TIMESTAMP %I64d\n", imageInfo.Timestamp );
     fwprintf( info, L"CAMERA %s\n", imageInfo.Camera.c_str() );
     fclose( info );

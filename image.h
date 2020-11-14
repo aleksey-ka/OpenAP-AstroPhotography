@@ -14,6 +14,7 @@ struct ImageInfo {
     int Gain;
     int Exposure;
     int64_t Timestamp;
+    double Temperature;
     std::string Camera;
 };
 
@@ -36,6 +37,8 @@ public:
 
     static std::shared_ptr<const Raw16Image> LoadFromFile( const char* filePath );
     void SaveToFile( const char* filePath ) const;
+
+    const ImageInfo& Info() const { return imageInfo; }
 
 private:
     ImageInfo imageInfo;

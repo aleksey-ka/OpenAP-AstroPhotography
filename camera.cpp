@@ -181,6 +181,7 @@ std::shared_ptr<const Raw16Image> ASICamera::DoExposure() const
     imageInfo.Exposure = exposure != -1 ? exposure : GetExposure( isAuto );
     imageInfo.Gain = gain != -1 ? gain : GetGain( isAuto );
     imageInfo.Offset = offset != -1 ? offset : GetOffset();
+    imageInfo.Temperature = GetCurrentTemperature();
 
     auto now = std::chrono::system_clock::now();
     auto timestamp = std::chrono::system_clock::to_time_t( now );
