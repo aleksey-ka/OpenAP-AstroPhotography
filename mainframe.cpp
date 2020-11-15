@@ -112,7 +112,7 @@ void MainFrame::on_cameraInfoButton_clicked()
     const static QString namedValue( "%1: <span style='color:#008800;'>%2</span><br>");
 
     QString txt;
-    txt.append( namedValue.arg( "Electrons per ADU", QString::number( info->ElecPerADU, 'f', 3 ) ) );
+    txt.append( namedValue.arg( "e<sup>-</sup>/ADU", QString::number( info->ElecPerADU, 'f', 3 ) ) );
     txt.append( namedValue.arg( "Bit depth", QString::number( info->BitDepth ) ) );
     txt.append( namedValue.arg( "Pixel size", QString::number( info->PixelSize ) ) );
 
@@ -301,6 +301,9 @@ void MainFrame::startCapture()
         camera->GetOffsetCaps( min, max, defaultVal );
         qDebug() << "Offset" << camera->GetOffset() <<
             "[" << min << max << defaultVal << "]";
+
+        auto info = camera->GetInfo();
+        ui->ePerADULabel->setText( QString( "e<sup>-</sup>/ADU: <span style='color:#008800;'>%1</span>" ).arg( QString::number( info->ElecPerADU, 'f', 3 ) ) );
 
         imageReadyWatcher.setFuture( QtConcurrent::run( [=]() {
             return camera->DoExposure();
