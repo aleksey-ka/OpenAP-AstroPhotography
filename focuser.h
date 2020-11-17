@@ -12,11 +12,14 @@ public:
     void Close();
 
     void ToggleMotorPower();
+    void StepForward();
+    void StepBackward();
 
 private:
     // Focuser (arduino)
     QSerialPort* serial = nullptr;
     bool isOn = false;
+    void writeToSerial( const char* );
     void readSerial();
 };
 

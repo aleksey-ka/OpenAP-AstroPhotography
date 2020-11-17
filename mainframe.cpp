@@ -72,6 +72,8 @@ MainFrame::MainFrame( QWidget *parent ) :
    if( focuser.Open() ) {
        // TODO: In Qt 5.15 lambdas can be used in QShortcut constructor
        connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_F ), this ), &QShortcut::activated, [=]() { focuser.ToggleMotorPower(); } );
+       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Up ), this ), &QShortcut::activated, [=]() { focuser.StepForward(); } );
+       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Down ), this ), &QShortcut::activated, [=]() { focuser.StepBackward(); } );
    }
 }
 

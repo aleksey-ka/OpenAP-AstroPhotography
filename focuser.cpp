@@ -48,9 +48,24 @@ void Focuser::Close()
 
 void Focuser::ToggleMotorPower()
 {
-    assert( serial->isWritable() );
-    serial->write( isOn ? "OFF\n" : "ON\n" );
+    writeToSerial( isOn ? "OFF\n" : "ON\n" );
     isOn = !isOn;
+}
+
+void Focuser::StepForward()
+{
+    writeToSerial( "FWD 100\n" );
+}
+
+void Focuser::StepBackward()
+{
+    writeToSerial( "BWD 100\n" );
+}
+
+void Focuser::writeToSerial( const char* command )
+{
+    assert( serial->isWritable() );
+    serial->write( command );
     serial->waitForBytesWritten( 5000) ;
 }
 
