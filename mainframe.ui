@@ -25,9 +25,6 @@
 QFrame {
 	border-color: #303030;
 }
-QPushButton {
-	padding: 5;
-}
 QPushButton::hover {
 	color: #FFFFFF;
 	border-color: #707070;
@@ -118,13 +115,13 @@ QSlider::handle:horizontal {
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <property name="leftMargin">
-        <number>5</number>
+        <number>0</number>
        </property>
        <property name="topMargin">
         <number>0</number>
        </property>
        <property name="rightMargin">
-        <number>5</number>
+        <number>0</number>
        </property>
        <item>
         <widget class="QFrame" name="topToolbar">
@@ -223,6 +220,12 @@ QSlider::handle:horizontal {
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
          <property name="maximumSize">
           <size>
            <width>16777215</width>
@@ -258,7 +261,7 @@ QSlider::handle:horizontal {
             <property name="minimumSize">
              <size>
               <width>0</width>
-              <height>25</height>
+              <height>30</height>
              </size>
             </property>
             <property name="styleSheet">
@@ -279,8 +282,8 @@ QSlider::handle:horizontal {
            <widget class="QPushButton" name="cameraOpenCloseButton">
             <property name="maximumSize">
              <size>
-              <width>25</width>
-              <height>25</height>
+              <width>30</width>
+              <height>30</height>
              </size>
             </property>
             <property name="font">
@@ -683,40 +686,16 @@ QSlider::handle:horizontal {
         </widget>
        </item>
        <item>
-        <widget class="QFrame" name="spacer">
-         <property name="frameShape">
-          <enum>QFrame::StyledPanel</enum>
+        <widget class="QLabel" name="infoLabel">
+         <property name="styleSheet">
+          <string notr="true">font-size:14px;</string>
          </property>
-         <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
+         <property name="text">
+          <string/>
          </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_7">
-          <property name="leftMargin">
-           <number>2</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>0</number>
-          </property>
-          <item>
-           <widget class="QLabel" name="infoLabel">
-            <property name="styleSheet">
-             <string notr="true">font-size:14px;</string>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-         </layout>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
         </widget>
        </item>
        <item>
@@ -726,6 +705,12 @@ QSlider::handle:horizontal {
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>90</height>
+          </size>
          </property>
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
@@ -741,6 +726,9 @@ QSlider::handle:horizontal {
            <number>0</number>
           </property>
           <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
            <number>0</number>
           </property>
           <property name="bottomMargin">
@@ -761,6 +749,9 @@ QSlider::handle:horizontal {
              <enum>QFrame::Raised</enum>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_8">
+             <property name="spacing">
+              <number>3</number>
+             </property>
              <property name="leftMargin">
               <number>0</number>
              </property>
@@ -805,12 +796,6 @@ QSlider::handle:horizontal {
           </item>
           <item>
            <widget class="QPushButton" name="captureButton">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
             <property name="maximumSize">
              <size>
               <width>16777215</width>

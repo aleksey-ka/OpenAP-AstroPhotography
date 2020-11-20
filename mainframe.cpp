@@ -340,30 +340,32 @@ void MainFrame::imageReady()
 
     auto result = imageReadyWatcher.result();
 
-    imageSavedWatcher.setFuture( QtConcurrent::run( [=]() {
-        const static QString namedValue( "%1: <span style='color:#008800;'>%2</span>%3<br>");
+    if( result != 0 ) {
+        imageSavedWatcher.setFuture( QtConcurrent::run( [=]() {
+            const static QString namedValue( "%1: <span style='color:#008800;'>%2</span>%3<br>");
 
-        QString txt;
-        const auto& info = result->Info();
-        txt.append( namedValue.arg( "Size", QString::number( info.Width ) + "x" + QString::number( info.Height ), "" ) );
-        txt.append( namedValue.arg( "Exposure", exposureToString( info.Exposure ), "" ) );
-        txt.append( namedValue.arg( "Gain", QString::number( info.Gain ), "" ) );
-        txt.append( namedValue.arg( "Offset", QString::number( info.Offset ), "" ) );
-        txt.append( namedValue.arg( "Temperature", QString::number( info.Temperature, 'f', 1 ), " <sup>0</sup>C<br>" ) );
+            QString txt;
+            const auto& info = result->Info();
+            txt.append( namedValue.arg( "Size", QString::number( info.Width ) + "x" + QString::number( info.Height ), "" ) );
+            txt.append( namedValue.arg( "Exposure", exposureToString( info.Exposure ), "" ) );
+            txt.append( namedValue.arg( "Gain", QString::number( info.Gain ), "" ) );
+            txt.append( namedValue.arg( "Offset", QString::number( info.Offset ), "" ) );
+            txt.append( namedValue.arg( "Temperature", QString::number( info.Temperature, 'f', 1 ), " <sup>0</sup>C<br>" ) );
 
-        if( saveToPath.length() > 0 ) {
-            QDir().mkpath( saveToPath );
-            auto name = QString::number( capturedFrames ).rightJustified( 5, '0' ) + ".cfa";
-            result->SaveToFile( ( saveToPath + QDir::separator() + name ).toStdString().c_str() );
-            txt.append( namedValue.arg( "Saved As", name, "" ) );
-        }
+            if( saveToPath.length() > 0 ) {
+                QDir().mkpath( saveToPath );
+                auto name = QString::number( capturedFrames ).rightJustified( 5, '0' ) + ".cfa";
+                result->SaveToFile( ( saveToPath + QDir::separator() + name ).toStdString().c_str() );
+                txt.append( namedValue.arg( "Saved As", name, "" ) );
+            }
 
-        return txt;
+            return txt;
 
-    } ) );
+        } ) );
 
-    auto msec = render( result->RawPixels(), result->Width(), result->Height() );
-    qDebug() << "Rendered in " << msec << "msec";
+        auto msec = render( result->RawPixels(), result->Width(), result->Height() );
+        qDebug() << "Rendered in " << msec << "msec";
+    }
 
     if( ui->continuousCaptureCheckBox->isChecked() ) {
         capturedFrames++;
