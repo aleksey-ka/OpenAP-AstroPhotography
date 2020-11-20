@@ -6,6 +6,8 @@
 
 #include "camera.h"
 
+#include <atomic>
+
 class MockCamera : public Camera {
 public:
     // Get mock cameras count
@@ -15,7 +17,7 @@ public:
 
     // Open and initialize the camera by id (see camera info)
     static std::shared_ptr<MockCamera> Open( int id );
-    virtual void Close() {}
+    virtual void Close();
 
     // Get camera info
     virtual std::shared_ptr<ASI_CAMERA_INFO> GetInfo() const;
@@ -45,17 +47,11 @@ public:
 
     // Image format
     virtual ASI_IMG_TYPE GetFormat() const { return ASI_IMG_RAW16; }
-    virtual int GetWidth() const { image->Width(); }
-    virtual int GetHeight() const { image->Height(); }
+    virtual int GetWidth() const { info.Width; }
+    virtual int GetHeight() const { info.Height; }
     virtual int GetBinning() const { return 1; }
     // Image format (all in one)
-    virtual void GetROIFormat( int& width, int& height, int& bin, ASI_IMG_TYPE& imgType ) const
-    {
-        width = info.Width;
-        height = info.Height;
-        bin = 1;
-        imgType = ASI_IMG_RAW16;
-    }
+    virtual void GetROIFormat( int& width, int& height, int& bin, ASI_IMG_TYPE& imgType ) const;
     virtual void SetROIFormat( int width, int height, int bin, ASI_IMG_TYPE imgType ) {}
 
     // Do single exposure
@@ -78,11 +74,13 @@ public:
 
     virtual void PrintDebugInfo() {}
 
-    MockCamera();
+    MockCamera( int id );
 
 private:
+    int index;
     ImageInfo info;
-    std::shared_ptr<const Raw16Image> image;
+    mutable std::atomic<bool> isClosing{ false };
+    mutable std::atomic<bool> isExposure{ false };
 };
 
 #endif // MOCKCAMERA_H

@@ -4,48 +4,86 @@
 #include "mockcamera.h"
 
 #include <QThread>
+#include <QDir>
 
 #include <string.h>
 #include <iostream>
 #include <fstream>
 
-static std::shared_ptr<ASI_CAMERA_INFO> createCameraInfo()
+static QStringList files;
+
+static std::shared_ptr<ASI_CAMERA_INFO> createCameraInfo( int index )
 {
     auto cameraInfo = std::make_shared<ASI_CAMERA_INFO>();
-    strcpy( cameraInfo->Name, "MOCK" );
-    cameraInfo->CameraID = -1;
+    strcpy( cameraInfo->Name, files[index].toStdString().c_str() );
+    cameraInfo->CameraID = -( index + 1 );
     return cameraInfo;
+}
+
+static std::shared_ptr<const Raw16Image> loadImage( int index )
+{
+    return Raw16Image::LoadFromFile( files[index].toStdString().c_str() );
 }
 
 int MockCamera::GetCount()
 {
-    std::ifstream file( "image.cfa" );
-    return file ? 1 : 0;
+    files = QDir( "", "*.cfa" ).entryList( QDir::Files );
+    return files.size();
 }
 
 std::shared_ptr<ASI_CAMERA_INFO> MockCamera::GetInfo( int index )
 {
-    return createCameraInfo();
+    return createCameraInfo( index );
 }
 
-MockCamera::MockCamera()
+MockCamera::MockCamera( int id )
 {
-    image = Raw16Image::LoadFromFile( "image.cfa" );
-    info = image->Info();
+    index = -id - 1;
+    info = loadImage( index )->Info();
 }
 
 std::shared_ptr<MockCamera> MockCamera::Open( int id )
 {
-    return std::make_shared<MockCamera>();
+    return std::make_shared<MockCamera>( id );
+}
+
+void MockCamera::Close()
+{
+    isClosing = true;
+    while( isExposure );
 }
 
 std::shared_ptr<ASI_CAMERA_INFO> MockCamera::GetInfo() const
 {
-    return createCameraInfo();
+    return createCameraInfo( index );
+}
+
+void MockCamera::GetROIFormat( int& width, int& height, int& bin, ASI_IMG_TYPE& imgType ) const
+{
+    width = info.Width;
+    height = info.Height;
+    bin = 1;
+    imgType = ASI_IMG_RAW16;
 }
 
 std::shared_ptr<const Raw16Image> MockCamera::DoExposure() const
 {
-    QThread::usleep( info.Exposure );
-    return Raw16Image::LoadFromFile( "image.cfa" );
+    isExposure = true;
+    if( isClosing ) {
+        isExposure = false;
+        return 0;
+    }
+
+    int chunks = info.Exposure / 100000;
+    int delta = info.Exposure % 100000;
+    for( int i = 0; i < chunks; i++ ) {
+        QThread::usleep( 100000 );
+        if( isClosing ) {
+            isExposure = false;
+            return 0;
+        }
+    }
+    QThread::usleep( delta );
+    isExposure = false;
+    return loadImage( index );
 }
