@@ -75,13 +75,25 @@ MainFrame::MainFrame( QWidget *parent ) :
        connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Up ), this ), &QShortcut::activated, [=]() { focuser.StepForward(); } );
        connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Down ), this ), &QShortcut::activated, [=]() { focuser.StepBackward(); } );
    }
+
+   updateUI();
 }
 
 MainFrame::~MainFrame()
 {
-    guideStop();
+    if( camera != 0 ) {
+        closeCamera();
+    }
     focuser.Close();
     delete ui;
+}
+
+void MainFrame::updateUI()
+{
+    ui->histogramView->setVisible( camera != 0 );
+    ui->cameraControlsFrame->setVisible( camera != 0 );
+    ui->captureFrame->setVisible( camera != 0 );
+    ui->temperatureFrame->setVisible( camera != 0 && camera->HasCooler() );
 }
 
 void MainFrame::on_closeButton_clicked()
@@ -101,27 +113,41 @@ void MainFrame::on_toggleFullScreenButton_clicked()
     }
 }
 
-void MainFrame::on_cameraInfoButton_clicked()
+void MainFrame::on_cameraSelectionCombo_currentIndexChanged( int index )
 {
-    std::shared_ptr<ASI_CAMERA_INFO> info;
     if( camera != 0 ) {
-        info = camera->GetInfo();
-    } else {
-        int selectedIndex = ui->cameraSelectionCombo->currentData().toInt();
-        info = camerasInfo[selectedIndex];
+        closeCamera();
+        updateUI();
     }
+
+    auto info = camerasInfo[index];
 
     const static QString namedValue( "%1: <span style='color:#008800;'>%2</span><br>");
 
     QString txt;
-    txt.append( namedValue.arg( "e<sup>-</sup>/ADU", QString::number( info->ElecPerADU, 'f', 3 ) ) );
     txt.append( namedValue.arg( "Bit depth", QString::number( info->BitDepth ) ) );
     txt.append( namedValue.arg( "Pixel size", QString::number( info->PixelSize ) ) );
 
-    QMessageBox msgBox( this );
-    msgBox.setWindowTitle( info->Name );
-    msgBox.setText( txt );
-    msgBox.exec();
+    ui->infoLabel->setText( txt );
+
+    ui->imageView->clear();
+    ui->imageView->setText( "No image" );
+}
+
+void MainFrame::on_cameraOpenCloseButton_clicked()
+{
+    if( camera == 0 ) {
+        int selectedIndex = ui->cameraSelectionCombo->currentData().toInt();
+        auto cameraInfo = openCamera( selectedIndex );
+        ui->cameraOpenCloseButton->setText( "X" );
+        setWindowTitle( cameraInfo->Name );
+    } else {
+        closeCamera();
+        ui->cameraOpenCloseButton->setText( ">" );
+        setWindowTitle( "No camera" );
+
+    }
+    updateUI();
 }
 
 void MainFrame::on_exposureSpinBox_valueChanged( int value )
@@ -223,10 +249,49 @@ void MainFrame::on_captureButton_clicked()
     startCapture();
 }
 
+std::shared_ptr<ASI_CAMERA_INFO> MainFrame::openCamera( int index )
+{
+    auto start = std::chrono::steady_clock::now();
+
+    auto cameraInfo = camerasInfo[index];
+    camera = ASICamera::Open( cameraInfo->CameraID );
+
+    int width = 0;
+    int height = 0;
+    int bin = 0;
+    ASI_IMG_TYPE imgType = ASI_IMG_END;
+    camera->GetROIFormat( width, height, bin, imgType );
+    imgType = ASI_IMG_RAW16;
+    camera->SetROIFormat( width, height, bin, imgType );
+    camera->GetROIFormat( width, height, bin, imgType );
+    qDebug() << width << "x" << height << " bin" << bin;
+    switch( imgType ) {
+        case ASI_IMG_RAW8: qDebug() << "RAW8"; break;
+        case ASI_IMG_RGB24: qDebug() << "RGB24"; break;
+        case ASI_IMG_RAW16: qDebug() << "RAW16"; break;
+        case ASI_IMG_Y8: qDebug() << "Y8"; break;
+        default:
+            assert( false );
+    }
+
+    //camera->PrintDebugInfo();
+
+    auto end = std::chrono::steady_clock::now();
+    auto msec = std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();
+    qDebug() << "Camera initialized in" << msec << "msec";
+
+    return cameraInfo;
+}
+
+void MainFrame::closeCamera()
+{
+    guideStop();
+    camera->Close();
+    camera = 0;
+}
+
 void MainFrame::startCapture()
 {
-    int selectedIndex = ui->cameraSelectionCombo->currentData().toInt();
-
     auto exposure = exposureFromValueAndSuffix( ui->exposureSpinBox->value(), ui->exposureSpinBox->suffix() );
     auto gain = ui->gainSpinBox->value();
     auto offset = ui->offsetSpinBox->value();
@@ -235,45 +300,6 @@ void MainFrame::startCapture()
     auto targetTemperature = ui->temperatureSpinBox->value();
 
     if( camerasInfo.size() > 0 ) {
-        auto start = std::chrono::steady_clock::now();
-
-        if( camera == nullptr ) {
-            std::shared_ptr<ASI_CAMERA_INFO> cameraInfo = camerasInfo[selectedIndex];
-            qDebug() << cameraInfo->Name;
-
-            camera = ASICamera::Open( cameraInfo->CameraID );
-
-            setWindowTitle( cameraInfo->Name );
-
-            int width = 0;
-            int height = 0;
-            int bin = 0;
-            ASI_IMG_TYPE imgType = ASI_IMG_END;
-            camera->GetROIFormat( width, height, bin, imgType );
-            imgType = ASI_IMG_RAW16;
-            camera->SetROIFormat( width, height, bin, imgType );
-            camera->GetROIFormat( width, height, bin, imgType );
-            qDebug() << width << "x" << height << " bin" << bin;
-            switch( imgType ) {
-                case ASI_IMG_RAW8: qDebug() << "RAW8"; break;
-                case ASI_IMG_RGB24: qDebug() << "RGB24"; break;
-                case ASI_IMG_RAW16: qDebug() << "RAW16"; break;
-                case ASI_IMG_Y8: qDebug() << "Y8"; break;
-                default:
-                    assert( false );
-            }
-
-            if( camera->HasCooler() ) {
-                setCooler( coolerOn, targetTemperature );
-            }
-
-            //camera->PrintDebugInfo();
-
-            auto end = std::chrono::steady_clock::now();
-            auto msec = std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();
-            qDebug() << "Camera initialized in" << msec << "msec";
-        }
-
         bool isAuto = false;
         long min, max, defaultVal;
 

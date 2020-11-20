@@ -30,7 +30,9 @@ private slots:
 
     void on_toggleFullScreenButton_clicked();
 
-    void on_cameraInfoButton_clicked();
+    void on_cameraSelectionCombo_currentIndexChanged( int );
+
+    void on_cameraOpenCloseButton_clicked();
 
     void on_exposureSpinBox_valueChanged( int value );
 
@@ -56,10 +58,15 @@ private slots:
 
 private:
     Ui::MainFrame *ui;
+    void updateUI();
+
     QSettings settings;
 
     std::vector<std::shared_ptr<ASI_CAMERA_INFO>> camerasInfo;
     std::shared_ptr<ASICamera> camera;
+
+    std::shared_ptr<ASI_CAMERA_INFO> openCamera( int index );
+    void closeCamera();
 
     // Capture
     QFutureWatcher<std::shared_ptr<const Raw16Image>> imageReadyWatcher;
