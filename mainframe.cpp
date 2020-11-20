@@ -9,6 +9,9 @@
 #include <QMessageBox>
 #include <QDebug>
 
+#include "asicamera.h"
+#include "mockcamera.h"
+
 #include <chrono>
 
 MainFrame::MainFrame( QWidget *parent ) :
@@ -52,11 +55,16 @@ MainFrame::MainFrame( QWidget *parent ) :
         camerasInfo.emplace_back( ASICamera::GetInfo( i ) );
     }
 
+    count = MockCamera::GetCount();
+    for( int i = 0; i < count; i++ ) {
+        camerasInfo.emplace_back( MockCamera::GetInfo( i ) );
+    }
+
     // TODO: Fixing a bug with text color on Raspberry Pi (old Qt?). It shows always gray
     // To fix it needs changing the combo to editable and the edit inside the combo to read-only
     ui->cameraSelectionCombo->lineEdit()->setReadOnly( true );
 
-    for( int i = 0; i < count; i++ ) {
+    for( int i = 0; i < camerasInfo.size(); i++ ) {
         ui->cameraSelectionCombo->addItem( camerasInfo[i]->Name, QVariant( i ) );
     }
 
@@ -94,6 +102,7 @@ void MainFrame::updateUI()
     ui->cameraControlsFrame->setVisible( camera != 0 );
     ui->captureFrame->setVisible( camera != 0 );
     ui->temperatureFrame->setVisible( camera != 0 && camera->HasCooler() );
+    ui->cameraOpenCloseButton->setText( camera != 0 ? "X" : ">" );
 }
 
 void MainFrame::on_closeButton_clicked()
@@ -139,13 +148,10 @@ void MainFrame::on_cameraOpenCloseButton_clicked()
     if( camera == 0 ) {
         int selectedIndex = ui->cameraSelectionCombo->currentData().toInt();
         auto cameraInfo = openCamera( selectedIndex );
-        ui->cameraOpenCloseButton->setText( "X" );
         setWindowTitle( cameraInfo->Name );
     } else {
         closeCamera();
-        ui->cameraOpenCloseButton->setText( ">" );
         setWindowTitle( "No camera" );
-
     }
     updateUI();
 }
@@ -254,7 +260,12 @@ std::shared_ptr<ASI_CAMERA_INFO> MainFrame::openCamera( int index )
     auto start = std::chrono::steady_clock::now();
 
     auto cameraInfo = camerasInfo[index];
-    camera = ASICamera::Open( cameraInfo->CameraID );
+    if( cameraInfo->CameraID < 0 ) {
+        // Mock camera
+        camera = MockCamera::Open( cameraInfo->CameraID );
+    } else {
+        camera = ASICamera::Open( cameraInfo->CameraID );
+    }
 
     int width = 0;
     int height = 0;
@@ -296,55 +307,19 @@ void MainFrame::startCapture()
     auto gain = ui->gainSpinBox->value();
     auto offset = ui->offsetSpinBox->value();
     auto useCameraWhiteBalance = ui->useCameraWhiteBalanceCheckBox->isChecked();
-    auto coolerOn = ui->coolerCheckBox->isChecked();
-    auto targetTemperature = ui->temperatureSpinBox->value();
 
-    if( camerasInfo.size() > 0 ) {
-        bool isAuto = false;
-        long min, max, defaultVal;
+    camera->SetExposure( exposure );
+    camera->SetGain( gain );
+    camera->SetWhiteBalanceR( useCameraWhiteBalance ? 52 : 50 );
+    camera->SetWhiteBalanceB( useCameraWhiteBalance ? 95 : 50 );
+    camera->SetOffset( offset );
 
-        camera->SetExposure( exposure );
-        long exposure = camera->GetExposure( isAuto );
-        camera->GetExposureCaps( min, max, defaultVal );
-        qDebug() << "Exposure "<< exposure << ( isAuto ? " (auto)" : "" ) <<
-            "[" << min << max << defaultVal << "]";
+    auto info = camera->GetInfo();
+    ui->ePerADULabel->setText( QString( "e<sup>-</sup>/ADU: <span style='color:#008800;'>%1</span>" ).arg( QString::number( info->ElecPerADU, 'f', 3 ) ) );
 
-        camera->SetGain( gain );
-        long gain = camera->GetGain( isAuto );
-        camera->GetGainCaps( min, max, defaultVal );
-        qDebug() << "Gain " << gain << ( isAuto ? "(auto)" : "" ) <<
-            "[" << min << max << defaultVal << "]";
-
-        camera->SetWhiteBalanceR( useCameraWhiteBalance ? 52 : 50 );
-        camera->GetWhiteBalanceRCaps( min, max, defaultVal );
-        qDebug() << "WB_R" << camera->GetWhiteBalanceR() <<
-            "[" << min << max << defaultVal << "]";
-
-        camera->SetWhiteBalanceB( useCameraWhiteBalance ? 95 : 50 );
-        camera->GetWhiteBalanceBCaps( min, max, defaultVal );
-        qDebug() << "WB_B" << camera->GetWhiteBalanceB() <<
-            "[" << min << max << defaultVal << "]";
-
-        camera->SetOffset( offset );
-        camera->GetOffsetCaps( min, max, defaultVal );
-        qDebug() << "Offset" << camera->GetOffset() <<
-            "[" << min << max << defaultVal << "]";
-
-        auto info = camera->GetInfo();
-        ui->ePerADULabel->setText( QString( "e<sup>-</sup>/ADU: <span style='color:#008800;'>%1</span>" ).arg( QString::number( info->ElecPerADU, 'f', 3 ) ) );
-
-        imageReadyWatcher.setFuture( QtConcurrent::run( [=]() {
-            return camera->DoExposure();
-        } ) );
-
-    } else {
-        qDebug() << "No camera";
-
-        imageReadyWatcher.setFuture( QtConcurrent::run( [=]() {
-            QThread::usleep( exposure );
-            return Raw16Image::LoadFromFile( "image.cfa" );
-        } ) );
-    }
+    imageReadyWatcher.setFuture( QtConcurrent::run( [=]() {
+        return camera->DoExposure();
+    } ) );
 
     exposureRemainingTime = exposure / 1000000;
     exposureTimer.start( 1000 );

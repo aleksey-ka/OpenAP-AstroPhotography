@@ -5,111 +5,69 @@
 #define CAMERA_H
 
 #include <memory>
-#include <vector>
 
 #include <ASICamera2.h>
 
 #include "image.h"
 
-class ASICamera {
+class Camera {
 public:
-    // Get attached cameras count
-    static int GetCount();
-    // Get attached camera info by index
-    static std::shared_ptr<ASI_CAMERA_INFO> GetInfo( int index );
-
-    // Open and initialize the camera by id (see camera info)
-    static std::shared_ptr<ASICamera> Open( int id );
-    // Close the camera
-    void Close();
+    virtual void Close() = 0;
 
     // Get camera info
-    std::shared_ptr<ASI_CAMERA_INFO> GetInfo() const;
+    virtual std::shared_ptr<ASI_CAMERA_INFO> GetInfo() const = 0;
 
     // Exposure in microsectods
-    long GetExposure( bool& isAuto ) const;
-    void SetExposure( long value, bool isAuto = false );
-    void GetExposureCaps( long& min, long& max, long& defaultVal ) const;
+    virtual long GetExposure( bool& isAuto ) const = 0;
+    virtual void SetExposure( long value, bool isAuto = false ) = 0;
+    virtual void GetExposureCaps( long& min, long& max, long& defaultVal ) const = 0;
 
     // Gain
-    long GetGain( bool& isAuto ) const;
-    void SetGain( long value, bool isAuto = false );
-    void GetGainCaps( long& min, long& max, long& defaultVal ) const;
+    virtual long GetGain( bool& isAuto ) const = 0;
+    virtual void SetGain( long value, bool isAuto = false ) = 0;
+    virtual void GetGainCaps( long& min, long& max, long& defaultVal ) const = 0;
 
     // Offset
-    long GetOffset() const;
-    void SetOffset( long value );
-    void GetOffsetCaps( long& min, long& max, long& defaultVal ) const;
+    virtual long GetOffset() const = 0;
+    virtual void SetOffset( long value ) = 0;
+    virtual void GetOffsetCaps( long& min, long& max, long& defaultVal ) const = 0;
 
     // White balance
-    long GetWhiteBalanceR() const;
-    void SetWhiteBalanceR( long value, bool isAuto = false );
-    void GetWhiteBalanceRCaps( long& min, long& max, long& defaultVal ) const;
-    long GetWhiteBalanceB() const;
-    void SetWhiteBalanceB( long value, bool isAuto = false );
-    void GetWhiteBalanceBCaps( long& min, long& max, long& defaultVal ) const;
+    virtual long GetWhiteBalanceR() const = 0;
+    virtual void SetWhiteBalanceR( long value, bool isAuto = false ) = 0;
+    virtual void GetWhiteBalanceRCaps( long& min, long& max, long& defaultVal ) const = 0;
+    virtual long GetWhiteBalanceB() const = 0;
+    virtual void SetWhiteBalanceB( long value, bool isAuto = false ) = 0;
+    virtual void GetWhiteBalanceBCaps( long& min, long& max, long& defaultVal ) const = 0;
 
     // Image format
-    ASI_IMG_TYPE GetFormat() const { lazyROIFormat(); return imgType; }
-    int GetWidth() const { lazyROIFormat(); return width; }
-    int GetHeight() const { lazyROIFormat(); return height; }
-    int GetBinning() const { lazyROIFormat(); return bin; }
+    virtual ASI_IMG_TYPE GetFormat() const = 0;
+    virtual int GetWidth() const = 0;
+    virtual int GetHeight() const = 0;
+    virtual int GetBinning() const = 0;
     // Image format (all in one)
-    void GetROIFormat( int& width, int& height, int& bin, ASI_IMG_TYPE& imgType ) const;
-    void SetROIFormat( int width, int height, int bin, ASI_IMG_TYPE imgType );
+    virtual void GetROIFormat( int& width, int& height, int& bin, ASI_IMG_TYPE& imgType ) const = 0;
+    virtual void SetROIFormat( int width, int height, int bin, ASI_IMG_TYPE imgType ) = 0;
 
     // Do single exposure
-    std::shared_ptr<const Raw16Image> DoExposure() const;
+    virtual std::shared_ptr<const Raw16Image> DoExposure() const = 0;
 
     // Number of dropped frames
-    int GetDroppedFrames() const;
+    virtual int GetDroppedFrames() const = 0;
     // Temperature
-    double GetCurrentTemperature() const;
+    virtual double GetCurrentTemperature() const = 0;
     // Cooler control
-    bool HasCooler() const;
-    bool IsCoolerOn() const;
-    void SetCoolerOn( bool );
-    double GetTargetTemperature() const;
-    void SetTargetTemperature( double );
+    virtual bool HasCooler() const = 0;
+    virtual bool IsCoolerOn() const = 0;
+    virtual void SetCoolerOn( bool ) = 0;
+    virtual double GetTargetTemperature() const = 0;
+    virtual void SetTargetTemperature( double ) = 0;
 
     // Guiding
-    void GuideOn( ASI_GUIDE_DIRECTION ) const;
-    void GuideOff( ASI_GUIDE_DIRECTION ) const;
+    virtual void GuideOn( ASI_GUIDE_DIRECTION ) const = 0;
+    virtual void GuideOff( ASI_GUIDE_DIRECTION ) const = 0;
 
-    void PrintDebugInfo();
-
-    ASICamera( int id );
-    ~ASICamera();
-
-private:
-    int id;
-    mutable std::shared_ptr<ASI_CAMERA_INFO> cameraInfo;
-
-    mutable std::vector<ASI_CONTROL_CAPS> controlCaps;
-
-    mutable long exposure = -1;
-    mutable ASI_BOOL isAutoExposure = ASI_FALSE;
-    mutable long gain = -1;
-    mutable ASI_BOOL isAutoGain = ASI_FALSE;
-    mutable long offset = -1;
-    mutable ASI_BOOL isAutoOffset = ASI_FALSE;
-    mutable long WB_R = -1;
-    mutable ASI_BOOL isAutoWB_R = ASI_FALSE;
-    mutable long WB_B = -1;
-    mutable ASI_BOOL isAutoWB_B = ASI_FALSE;
-    mutable long coolerOn = -1;
-    mutable long targetTemperature = -1;
-
-    mutable int width = 0;
-    mutable int height = 0;
-    mutable int bin = 0;
-    mutable ASI_IMG_TYPE imgType = ASI_IMG_END;
-
-    void lazyROIFormat() const;
-    void lazyControlCaps() const;
-    bool hasControlCaps( ASI_CONTROL_TYPE ) const;
-    void getControlCaps( ASI_CONTROL_TYPE, long& min, long& max, long& defaultVal ) const;
-    static void checkResult( ASI_ERROR_CODE );
+    virtual void PrintDebugInfo() = 0;
 };
 
 #endif // CAMERA_H

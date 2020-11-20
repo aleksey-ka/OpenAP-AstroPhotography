@@ -63,7 +63,7 @@ private:
     QSettings settings;
 
     std::vector<std::shared_ptr<ASI_CAMERA_INFO>> camerasInfo;
-    std::shared_ptr<ASICamera> camera;
+    std::shared_ptr<Camera> camera;
 
     std::shared_ptr<ASI_CAMERA_INFO> openCamera( int index );
     void closeCamera();

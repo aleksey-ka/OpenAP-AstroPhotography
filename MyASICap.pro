@@ -25,17 +25,20 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
-        camera.cpp \
+        asicamera.cpp \
         focuser.cpp \
         image.cpp \
         main.cpp \
-        mainframe.cpp
+        mainframe.cpp \
+        mockcamera.cpp
 
 HEADERS += \
+        asicamera.h \
         camera.h \
         focuser.h \
         image.h \
-        mainframe.h
+        mainframe.h \
+        mockcamera.h
 
 FORMS += \
         mainframe.ui
