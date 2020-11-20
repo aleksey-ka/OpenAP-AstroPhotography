@@ -5,6 +5,7 @@
 #define ASICAMERA_H
 
 #include <vector>
+#include <atomic>
 
 #include "camera.h"
 
@@ -101,6 +102,9 @@ private:
     mutable int height = 0;
     mutable int bin = 0;
     mutable ASI_IMG_TYPE imgType = ASI_IMG_END;
+
+    mutable std::atomic<bool> isClosing{ false };
+    mutable std::atomic<bool> isExposure{ false };
 
     void lazyROIFormat() const;
     void lazyControlCaps() const;

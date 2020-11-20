@@ -25,6 +25,8 @@ std::shared_ptr<ASICamera> ASICamera::Open( int id )
 void ASICamera::Close()
 {
     if( id != -1 ) {
+        isClosing = true;
+        while( isExposure );
         checkResult( ASICloseCamera( id ) );
         id = -1;
     }
@@ -169,6 +171,12 @@ void ASICamera::SetROIFormat( int width, int height, int bin, ASI_IMG_TYPE imgTy
 
 std::shared_ptr<const Raw16Image> ASICamera::DoExposure() const
 {
+    isExposure = true;
+    if( isClosing ) {
+        isExposure = false;
+        return 0;
+    }
+
     lazyROIFormat();
 
     ImageInfo imageInfo;
@@ -191,21 +199,30 @@ std::shared_ptr<const Raw16Image> ASICamera::DoExposure() const
 
     auto result = std::make_shared<Raw16Image>( imageInfo );
 
-    bool capture = true;
+    ASI_EXPOSURE_STATUS status;
     do {
-        ASI_EXPOSURE_STATUS status;
         checkResult( ASIGetExpStatus( id, &status ) );
         switch( status ) {
-            case ASI_EXP_SUCCESS: qDebug() << "OK"; capture = false; break;
-            case ASI_EXP_FAILED: qDebug() << "Failed"; capture = false; break;
-            case ASI_EXP_WORKING: continue;
+            case ASI_EXP_WORKING:
+                if( isClosing ) {
+                    checkResult( ASIStopExposure( id ) );
+                }
+                continue;
+            case ASI_EXP_SUCCESS:
+                if( !isClosing ) {
+                    checkResult( ASIGetDataAfterExp( id, result->Buffer(), result->BufferSize() ) );
+                    isExposure = false;
+                    return result;
+                }
+            case ASI_EXP_FAILED:
+                isExposure = false;
+                return 0;
             default:
                 assert( false );
         }
-    } while( capture );
-    checkResult( ASIGetDataAfterExp( id, result->Buffer(), result->BufferSize() ) );
+    } while( true );
 
-    return result;
+    return 0;
 }
 
 int ASICamera::GetDroppedFrames() const
