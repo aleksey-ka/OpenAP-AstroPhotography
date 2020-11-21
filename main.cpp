@@ -2,7 +2,7 @@
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
 #include <QApplication>
-#include <QDesktopWidget>
+#include <QScreen>
 
 #include "mainframe.h"
 
@@ -16,9 +16,9 @@ int main( int argc, char *argv[] )
     MainFrame w;
 
     // Center main frame on the screen
-    QRect screenGeometry = QApplication::desktop()->screenGeometry();
-    int x = ( screenGeometry.width() - w.width() ) / 2;
-    int y = ( screenGeometry.height() - w.height() ) / 2;
+    QRect screenRect = w.screen()->geometry();
+    int x = ( screenRect.width() - w.width() ) / 2;
+    int y = ( screenRect.height() - w.height() ) / 2;
     w.move( x, y );
 
     w.show();
