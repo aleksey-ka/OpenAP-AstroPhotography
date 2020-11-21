@@ -4,6 +4,7 @@
 #include "asicamera.h"
 
 #include <QDebug>
+#include <QThread>
 
 int ASICamera::GetCount()
 {
@@ -201,6 +202,9 @@ std::shared_ptr<const Raw16Image> ASICamera::DoExposure() const
 
     ASI_EXPOSURE_STATUS status;
     do {
+        // This delay will significantly reduce the load on CPU, and has no effect
+        // on FPS in this mode, as the status is still updated 1000 times/s
+        QThread::usleep( 1000 );
         checkResult( ASIGetExpStatus( id, &status ) );
         switch( status ) {
             case ASI_EXP_WORKING:
@@ -209,11 +213,13 @@ std::shared_ptr<const Raw16Image> ASICamera::DoExposure() const
                 }
                 continue;
             case ASI_EXP_SUCCESS:
-                if( !isClosing ) {
-                    checkResult( ASIGetDataAfterExp( id, result->Buffer(), result->BufferSize() ) );
+                if( isClosing ) {
                     isExposure = false;
-                    return result;
+                    return 0;
                 }
+                checkResult( ASIGetDataAfterExp( id, result->Buffer(), result->BufferSize() ) );
+                isExposure = false;
+                return result;
             case ASI_EXP_FAILED:
                 isExposure = false;
                 return 0;
