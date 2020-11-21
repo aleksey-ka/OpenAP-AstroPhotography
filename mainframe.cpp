@@ -64,7 +64,7 @@ MainFrame::MainFrame( QWidget *parent ) :
     // To fix it needs changing the combo to editable and the edit inside the combo to read-only
     ui->cameraSelectionCombo->lineEdit()->setReadOnly( true );
 
-    for( int i = 0; i < camerasInfo.size(); i++ ) {
+    for( size_t i = 0; i < camerasInfo.size(); i++ ) {
         ui->cameraSelectionCombo->addItem( camerasInfo[i]->Name, QVariant( i ) );
     }
 

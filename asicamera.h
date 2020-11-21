@@ -4,10 +4,10 @@
 #ifndef ASICAMERA_H
 #define ASICAMERA_H
 
-#include <vector>
-#include <atomic>
-
 #include "camera.h"
+
+#include <atomic>
+#include <vector>
 
 class ASICamera : public Camera {
 public:
@@ -19,62 +19,62 @@ public:
     // Open and initialize the camera by id (see camera info)
     static std::shared_ptr<ASICamera> Open( int id );
     // Close the camera
-    void Close();
+    void Close() override;
 
     // Get camera info
-    std::shared_ptr<ASI_CAMERA_INFO> GetInfo() const;
+    std::shared_ptr<ASI_CAMERA_INFO> GetInfo() const override;
 
     // Exposure in microsectods
-    long GetExposure( bool& isAuto ) const;
-    void SetExposure( long value, bool isAuto = false );
-    void GetExposureCaps( long& min, long& max, long& defaultVal ) const;
+    long GetExposure( bool& isAuto ) const override;
+    void SetExposure( long value, bool isAuto = false ) override;
+    void GetExposureCaps( long& min, long& max, long& defaultVal ) const override;
 
     // Gain
-    long GetGain( bool& isAuto ) const;
-    void SetGain( long value, bool isAuto = false );
-    void GetGainCaps( long& min, long& max, long& defaultVal ) const;
+    long GetGain( bool& isAuto ) const override;
+    void SetGain( long value, bool isAuto = false ) override;
+    void GetGainCaps( long& min, long& max, long& defaultVal ) const override;
 
     // Offset
-    long GetOffset() const;
-    void SetOffset( long value );
-    void GetOffsetCaps( long& min, long& max, long& defaultVal ) const;
+    long GetOffset() const override;
+    void SetOffset( long value ) override;
+    void GetOffsetCaps( long& min, long& max, long& defaultVal ) const override;
 
     // White balance
-    long GetWhiteBalanceR() const;
-    void SetWhiteBalanceR( long value, bool isAuto = false );
-    void GetWhiteBalanceRCaps( long& min, long& max, long& defaultVal ) const;
-    long GetWhiteBalanceB() const;
-    void SetWhiteBalanceB( long value, bool isAuto = false );
-    void GetWhiteBalanceBCaps( long& min, long& max, long& defaultVal ) const;
+    long GetWhiteBalanceR() const override;
+    void SetWhiteBalanceR( long value, bool isAuto = false ) override;
+    void GetWhiteBalanceRCaps( long& min, long& max, long& defaultVal ) const override;
+    long GetWhiteBalanceB() const override;
+    void SetWhiteBalanceB( long value, bool isAuto = false ) override;
+    void GetWhiteBalanceBCaps( long& min, long& max, long& defaultVal ) const override;
 
     // Image format
-    ASI_IMG_TYPE GetFormat() const { lazyROIFormat(); return imgType; }
-    int GetWidth() const { lazyROIFormat(); return width; }
-    int GetHeight() const { lazyROIFormat(); return height; }
-    int GetBinning() const { lazyROIFormat(); return bin; }
+    ASI_IMG_TYPE GetFormat() const override { lazyROIFormat(); return imgType; }
+    int GetWidth() const override { lazyROIFormat(); return width; }
+    int GetHeight() const override { lazyROIFormat(); return height; }
+    int GetBinning() const override { lazyROIFormat(); return bin; }
     // Image format (all in one)
-    void GetROIFormat( int& width, int& height, int& bin, ASI_IMG_TYPE& imgType ) const;
-    void SetROIFormat( int width, int height, int bin, ASI_IMG_TYPE imgType );
+    void GetROIFormat( int& width, int& height, int& bin, ASI_IMG_TYPE& imgType ) const override;
+    void SetROIFormat( int width, int height, int bin, ASI_IMG_TYPE imgType ) override;
 
     // Do single exposure
-    std::shared_ptr<const Raw16Image> DoExposure() const;
+    std::shared_ptr<const Raw16Image> DoExposure() const override;
 
     // Number of dropped frames
-    int GetDroppedFrames() const;
+    int GetDroppedFrames() const override;
     // Temperature
-    double GetCurrentTemperature() const;
+    double GetCurrentTemperature() const override;
     // Cooler control
-    bool HasCooler() const;
-    bool IsCoolerOn() const;
-    void SetCoolerOn( bool );
-    double GetTargetTemperature() const;
-    void SetTargetTemperature( double );
+    bool HasCooler() const override;
+    bool IsCoolerOn() const override;
+    void SetCoolerOn( bool ) override;
+    double GetTargetTemperature() const override;
+    void SetTargetTemperature( double ) override;
 
     // Guiding
-    void GuideOn( ASI_GUIDE_DIRECTION ) const;
-    void GuideOff( ASI_GUIDE_DIRECTION ) const;
+    void GuideOn( ASI_GUIDE_DIRECTION ) const override;
+    void GuideOff( ASI_GUIDE_DIRECTION ) const override;
 
-    void PrintDebugInfo();
+    void PrintDebugInfo() override;
 
     ASICamera( int id );
     ~ASICamera();
