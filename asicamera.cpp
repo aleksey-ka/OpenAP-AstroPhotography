@@ -54,7 +54,7 @@ ASICamera::ASICamera( int _id ) : id( _id )
 ASICamera::~ASICamera()
 {
     try {
-        Close();
+        ASICamera::Close();
     } catch( std::exception& e ) {
        qDebug() << "Error: " << e.what();
     }
