@@ -11,15 +11,17 @@ public:
     bool Open();
     void Close();
 
-    void ToggleMotorPower();
-    void StepForward();
-    void StepBackward();
+    void Forward();
+    void Backward();
+
+    void MultiplyByTwo() { if( stepsToGo < 512 ) stepsToGo *= 2; }
+    void DevideByTwo() { if( stepsToGo > 1 ) stepsToGo /= 2; }
 
 private:
     // Focuser (arduino)
     QSerialPort* serial = nullptr;
-    bool isOn = false;
-    void writeToSerial( const char* );
+    int stepsToGo = 128;
+    void writeToSerial( const QString& );
     void readSerial();
 };
 

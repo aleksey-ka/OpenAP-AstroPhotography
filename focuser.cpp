@@ -37,35 +37,26 @@ bool Focuser::Open()
 
 void Focuser::Close()
 {
-    if( isOn ) {
-        ToggleMotorPower();
-    }
     if( serial != nullptr && serial->isOpen() ) {
         serial->close();
         delete serial;
     }
 }
 
-void Focuser::ToggleMotorPower()
+void Focuser::Forward()
 {
-    writeToSerial( isOn ? "OFF\n" : "ON\n" );
-    isOn = !isOn;
+    writeToSerial( QString( "FWD %1\n" ).arg( QString::number( stepsToGo ) ) );
 }
 
-void Focuser::StepForward()
+void Focuser::Backward()
 {
-    writeToSerial( "FWD 100\n" );
+    writeToSerial( QString( "BWD %1\n" ).arg( QString::number( stepsToGo ) ) );
 }
 
-void Focuser::StepBackward()
-{
-    writeToSerial( "BWD 100\n" );
-}
-
-void Focuser::writeToSerial( const char* command )
+void Focuser::writeToSerial( const QString& str )
 {
     assert( serial->isWritable() );
-    serial->write( command );
+    serial->write( str.toLocal8Bit().constData() );
     serial->waitForBytesWritten( 5000) ;
 }
 
