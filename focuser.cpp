@@ -38,6 +38,7 @@ bool Focuser::Open()
 void Focuser::Close()
 {
     if( serial != nullptr && serial->isOpen() ) {
+        cancelMoveTo();
         serial->close();
         delete serial;
     }
@@ -45,12 +46,34 @@ void Focuser::Close()
 
 void Focuser::Forward()
 {
+    if( isInsideMoveTo() ) {
+        cancelMoveTo();
+        return;
+    }
     writeToSerial( QString( "FWD %1\n" ).arg( QString::number( stepsToGo ) ) );
 }
 
 void Focuser::Backward()
 {
+    if( isInsideMoveTo() ) {
+        cancelMoveTo();
+        return;
+    }
     writeToSerial( QString( "BWD %1\n" ).arg( QString::number( stepsToGo ) ) );
+}
+
+void Focuser::MarkZero()
+{
+    cancelMoveTo();
+    writeToSerial( QString( "POS ZERO\n" ) );
+}
+
+void Focuser::GoToPos( int pos )
+{
+    if( !isInsideMoveTo() ) {
+        writeToSerial( QString( "POS GET\n" ) );
+    }
+    targetPos = pos;
 }
 
 void Focuser::writeToSerial( const QString& str )
@@ -63,5 +86,19 @@ void Focuser::writeToSerial( const QString& str )
 void Focuser::readSerial()
 {
     QByteArray data = serial->readAll();
-    qDebug() << QString::fromStdString( data.toStdString() );
+    QString reply = QString::fromStdString( data.toStdString() );
+    qDebug() << reply;
+    if( isInsideMoveTo() && reply.startsWith( "POS " ) ) {
+        int pos = reply.indexOf( ' ' );
+        if( pos != -1 ) {
+            int focuserPos = reply.mid( pos + 1 ).toInt();
+            if( focuserPos < targetPos ) {
+                writeToSerial( QString( "FWD %1\n" ).arg( QString::number( qMin( 128, targetPos - focuserPos ) ) ) );
+            } else if( focuserPos > targetPos ) {
+                writeToSerial( QString( "BWD %1\n" ).arg( QString::number( qMin( 128, focuserPos - targetPos ) ) ) );
+            } else {
+                cancelMoveTo();
+            }
+        }
+    }
 }

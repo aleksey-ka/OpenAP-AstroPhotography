@@ -6,7 +6,7 @@
 #include <QShortcut>
 #include <QtConcurrent/QtConcurrent>
 #include <QPainter>
-#include <QMessageBox>
+#include <QInputDialog>
 #include <QDebug>
 
 #include "asicamera.h"
@@ -81,8 +81,19 @@ MainFrame::MainFrame( QWidget *parent ) :
        // TODO: In Qt 5.15 lambdas can be used in QShortcut constructor
        connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Up ), this ), &QShortcut::activated, [=]() { focuser.Forward(); } );
        connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Down ), this ), &QShortcut::activated, [=]() { focuser.Backward(); } );
-       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Right ), this ), &QShortcut::activated, [=]() { focuser.MultiplyByTwo(); } );
-       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Left ), this ), &QShortcut::activated, [=]() { focuser.DevideByTwo(); } );
+       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Right ), this ), &QShortcut::activated, [=]() { focuser.StepUp(); } );
+       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Left ), this ), &QShortcut::activated, [=]() { focuser.StepDown(); } );
+       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Z ), this ), &QShortcut::activated, [=]() { focuser.MarkZero(); } );
+       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_0 ), this ), &QShortcut::activated, [=]() { focuser.GoToPos( 0 ); } );
+       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_G ), this ),
+            &QShortcut::activated, [=]() {
+                bool ok;
+                int pos = QInputDialog::getInt( this, "Focuser", "MoveTo:", 0, INT_MIN, INT_MAX, 1, &ok );
+                if( ok ) {
+                    focuser.GoToPos( pos );
+                }
+            }
+       );
    }
 
    updateUI();

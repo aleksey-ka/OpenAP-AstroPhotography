@@ -14,13 +14,19 @@ public:
     void Forward();
     void Backward();
 
-    void MultiplyByTwo() { if( stepsToGo < 512 ) stepsToGo *= 2; }
-    void DevideByTwo() { if( stepsToGo > 1 ) stepsToGo /= 2; }
+    void StepUp() { if( stepsToGo < 512 ) stepsToGo *= 2; }
+    void StepDown() { if( stepsToGo > 1 ) stepsToGo /= 2; }
+
+    void MarkZero();
+    void GoToPos( int );
 
 private:
     // Focuser (arduino)
     QSerialPort* serial = nullptr;
     int stepsToGo = 128;
+    int targetPos = INT_MIN;
+    bool isInsideMoveTo() const { return targetPos != INT_MIN; }
+    void cancelMoveTo() { targetPos = INT_MIN; }
     void writeToSerial( const QString& );
     void readSerial();
 };
