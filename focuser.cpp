@@ -11,7 +11,7 @@ bool Focuser::Open()
     QString portName;
     foreach( const QSerialPortInfo &serialPortInfo, QSerialPortInfo::availablePorts() ) {
         QString desc = serialPortInfo.description();
-        if( desc == "USB-SERIAL CH340" || desc == "USB2.0-Serial" ) {
+        if( desc == "USB-SERIAL CH340" || desc == "USB2.0-Serial" || desc == "USB Serial" ) {
             portName = serialPortInfo.portName();
             break;
         }
@@ -24,13 +24,15 @@ bool Focuser::Open()
         serial->setParity( QSerialPort::NoParity );
         serial->setStopBits( QSerialPort::OneStop );
         serial->setFlowControl( QSerialPort::NoFlowControl) ;
-        serial->open( QIODevice::ReadWrite );
-        assert( serial->isOpen() );
+        if( serial->open( QIODevice::ReadWrite ) ) {
+            assert( serial->isOpen() );
 
-        QObject::connect( serial, &QSerialPort::readyRead, this, &Focuser::readSerial ) ;
+            QObject::connect( serial, &QSerialPort::readyRead, this, &Focuser::readSerial ) ;
 
-        qDebug() << "Connected to " << portName;
-        return true;
+            qDebug() << "Connected to " << portName;
+            return true;
+        }
+        qDebug() << "Failed to connect to " << portName;
     }
     return false;
 }
