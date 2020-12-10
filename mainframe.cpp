@@ -87,7 +87,7 @@ MainFrame::MainFrame( QWidget *parent ) :
        connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_0 ), this ), &QShortcut::activated, [=]() { focuser.GoToPos( 0 ); } );
        connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_G ), this ),
             &QShortcut::activated, [=]() {
-                bool ok;
+                bool ok = false;
                 int pos = QInputDialog::getInt( this, "Focuser", "MoveTo:", 0, INT_MIN, INT_MAX, 1, &ok );
                 if( ok ) {
                     focuser.GoToPos( pos );
