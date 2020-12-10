@@ -16,7 +16,7 @@ int main( int argc, char *argv[] )
     MainFrame w;
 
     // Center main frame on the screen
-    QRect screenRect = w.screen()->geometry();
+    QRect screenRect = a.screens().first()->geometry();
     int x = ( screenRect.width() - w.width() ) / 2;
     int y = ( screenRect.height() - w.height() ) / 2;
     w.move( x, y );
