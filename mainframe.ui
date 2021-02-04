@@ -660,7 +660,11 @@ QSlider::handle:horizontal {
               </widget>
              </item>
              <item>
-              <widget class="QComboBox" name="filterComboBox"/>
+              <widget class="QComboBox" name="filterComboBox">
+               <property name="editable">
+                <bool>true</bool>
+               </property>
+              </widget>
              </item>
             </layout>
            </widget>

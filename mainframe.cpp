@@ -97,6 +97,10 @@ MainFrame::MainFrame( QWidget *parent ) :
    }
 
    if( filterWheel.Open() ) {
+       // TODO: Fixing a bug with text color on Raspberry Pi (old Qt?). It shows always gray
+       // To fix it needs changing the combo to editable and the edit inside the combo to read-only
+       ui->filterComboBox->lineEdit()->setReadOnly( true );
+
        for( size_t i = 0; i < filterWheel.GetSlotsCount(); i++ ) {
            ui->filterComboBox->addItem( QString::number( i + 1 ) );
        }
