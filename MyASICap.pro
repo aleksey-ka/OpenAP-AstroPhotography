@@ -26,6 +26,7 @@ CONFIG += c++11
 
 SOURCES += \
         asicamera.cpp \
+        filterwheel.cpp \
         focuser.cpp \
         image.cpp \
         main.cpp \
@@ -35,6 +36,7 @@ SOURCES += \
 HEADERS += \
         asicamera.h \
         camera.h \
+        filterwheel.h \
         focuser.h \
         image.h \
         mainframe.h \
@@ -43,15 +45,17 @@ HEADERS += \
 FORMS += \
         mainframe.ui
 
-LIBS += -lASICamera2
-
-unix:INCLUDEPATH += /usr/include/libasi
-
-win32:contains(QMAKE_HOST.arch, x86_64) {
+win32: {
     INCLUDEPATH += "..\ASI SDK\include"
+    LIBS += -lASICamera2 -lEFW_filter
+} else: unix: {
+    INCLUDEPATH += /usr/include/libasi
+    LIBS += -lASICamera2 -lEFWFilter
+}
+
+win32:contains(QMAKE_HOST.arch, x86_64) {  
     LIBS += -L"..\ASI SDK\lib\x64"
 } else {
-    INCLUDEPATH += "..\ASI SDK\include"
     LIBS += -L"..\ASI SDK\lib\x86"
 }
 

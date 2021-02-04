@@ -96,6 +96,18 @@ MainFrame::MainFrame( QWidget *parent ) :
        );
    }
 
+   if( filterWheel.Open() ) {
+       // TODO: Fixing a bug with text color on Raspberry Pi (old Qt?). It shows always gray
+       // To fix it needs changing the combo to editable and the edit inside the combo to read-only
+       ui->filterComboBox->lineEdit()->setReadOnly( true );
+
+       for( size_t i = 0; i < filterWheel.GetSlotsCount(); i++ ) {
+           ui->filterComboBox->addItem( QString::number( i + 1 ) );
+       }
+       ui->filterComboBox->setCurrentIndex( filterWheel.GetPosition() );
+       connect( ui->filterComboBox, QOverload<int>::of( &QComboBox::currentIndexChanged ), [this]( int index ) { filterWheel.SetPosition( index ); } );
+   }
+
    updateUI();
 }
 
@@ -105,6 +117,7 @@ MainFrame::~MainFrame()
         closeCamera();
     }
     focuser.Close();
+    filterWheel.Close();
     delete ui;
 }
 
@@ -115,6 +128,7 @@ void MainFrame::updateUI()
     ui->captureFrame->setVisible( camera != 0 );
     ui->temperatureFrame->setVisible( camera != 0 && camera->HasCooler() );
     ui->cameraOpenCloseButton->setText( camera != 0 ? "X" : ">" );
+    ui->filterWheelFrame->setVisible( filterWheel.GetSlotsCount() > 0 );
 }
 
 void MainFrame::on_closeButton_clicked()
