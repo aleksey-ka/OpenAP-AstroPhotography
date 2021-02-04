@@ -12,6 +12,7 @@
 
 #include "camera.h"
 #include "focuser.h"
+#include "filterwheel.h"
 
 namespace Ui {
     class MainFrame;
@@ -87,6 +88,7 @@ private:
 
     // Focuser
     Focuser focuser;
+    FilterWheel filterWheel;
 
     // Rendering
     ulong render( const ushort* raw, int width, int height );

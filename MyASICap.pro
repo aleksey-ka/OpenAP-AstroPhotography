@@ -26,6 +26,7 @@ CONFIG += c++11
 
 SOURCES += \
         asicamera.cpp \
+        filterwheel.cpp \
         focuser.cpp \
         image.cpp \
         main.cpp \
@@ -35,6 +36,7 @@ SOURCES += \
 HEADERS += \
         asicamera.h \
         camera.h \
+        filterwheel.h \
         focuser.h \
         image.h \
         mainframe.h \
@@ -43,7 +45,7 @@ HEADERS += \
 FORMS += \
         mainframe.ui
 
-LIBS += -lASICamera2
+LIBS += -lASICamera2 -lEFW_filter
 
 unix:INCLUDEPATH += /usr/include/libasi
 

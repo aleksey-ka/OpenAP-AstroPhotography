@@ -96,6 +96,14 @@ MainFrame::MainFrame( QWidget *parent ) :
        );
    }
 
+   if( filterWheel.Open() ) {
+       for( size_t i = 0; i < filterWheel.GetSlotsCount(); i++ ) {
+           ui->filterComboBox->addItem( QString::number( i + 1 ) );
+       }
+       ui->filterComboBox->setCurrentIndex( filterWheel.GetPosition() );
+       connect( ui->filterComboBox, QOverload<int>::of( &QComboBox::currentIndexChanged ), [this]( int index ) { filterWheel.SetPosition( index ); } );
+   }
+
    updateUI();
 }
 
@@ -105,6 +113,7 @@ MainFrame::~MainFrame()
         closeCamera();
     }
     focuser.Close();
+    filterWheel.Close();
     delete ui;
 }
 
@@ -115,6 +124,7 @@ void MainFrame::updateUI()
     ui->captureFrame->setVisible( camera != 0 );
     ui->temperatureFrame->setVisible( camera != 0 && camera->HasCooler() );
     ui->cameraOpenCloseButton->setText( camera != 0 ? "X" : ">" );
+    ui->filterWheelFrame->setVisible( filterWheel.GetSlotsCount() > 0 );
 }
 
 void MainFrame::on_closeButton_clicked()
