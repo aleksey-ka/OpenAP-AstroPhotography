@@ -16,6 +16,7 @@ struct ImageInfo {
     int64_t Timestamp;
     double Temperature;
     std::string Camera;
+    std::string CFA;
 };
 
 class Raw16Image {

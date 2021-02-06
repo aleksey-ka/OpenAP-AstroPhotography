@@ -181,7 +181,13 @@ std::shared_ptr<const Raw16Image> ASICamera::DoExposure() const
     lazyROIFormat();
 
     ImageInfo imageInfo;
-    imageInfo.Camera = GetInfo()->Name;
+
+    auto cameraInfo = GetInfo();
+    imageInfo.Camera = cameraInfo->Name;
+    if( cameraInfo->IsColorCam ) {
+        assert( cameraInfo->BayerPattern == ASI_BAYER_RG );
+        imageInfo.CFA = "RGGB";
+    }
 
     imageInfo.Width = width;
     imageInfo.Height = height;

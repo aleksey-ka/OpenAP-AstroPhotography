@@ -128,6 +128,7 @@ void MainFrame::updateUI()
     ui->captureFrame->setVisible( camera != 0 );
     ui->temperatureFrame->setVisible( camera != 0 && camera->HasCooler() );
     ui->cameraOpenCloseButton->setText( camera != 0 ? "X" : ">" );
+    ui->useCameraWhiteBalanceCheckBox->setVisible( camera != 0 && camera->GetInfo()->IsColorCam );
     ui->filterWheelFrame->setVisible( filterWheel.GetSlotsCount() > 0 );
 }
 
@@ -380,7 +381,7 @@ void MainFrame::imageReady()
 
             if( saveToPath.length() > 0 ) {
                 QDir().mkpath( saveToPath );
-                auto name = QString::number( capturedFrames ).rightJustified( 5, '0' ) + ".cfa";
+                auto name = QString::number( capturedFrames ).rightJustified( 5, '0' ) + ( info.CFA.empty() ? ".u16.pixels" : ".cfa.u16.pixels" );
                 result->SaveToFile( ( saveToPath + QDir::separator() + name ).toStdString().c_str() );
                 txt.append( namedValue.arg( "Saved As", name, "" ) );
             }

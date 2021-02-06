@@ -12,22 +12,24 @@
 
 static QStringList files;
 
-static std::shared_ptr<ASI_CAMERA_INFO> createCameraInfo( int index )
-{
-    auto cameraInfo = std::make_shared<ASI_CAMERA_INFO>();
-    strcpy( cameraInfo->Name, files[index].toStdString().c_str() );
-    cameraInfo->CameraID = -( index + 1 );
-    return cameraInfo;
-}
-
 static std::shared_ptr<const Raw16Image> loadImage( int index )
 {
     return Raw16Image::LoadFromFile( files[index].toStdString().c_str() );
 }
 
+static std::shared_ptr<ASI_CAMERA_INFO> createCameraInfo( int index )
+{
+    auto cameraInfo = std::make_shared<ASI_CAMERA_INFO>();
+    auto image = loadImage( index );
+    strcpy( cameraInfo->Name, ( image->Info().Camera + " MOCK " + std::to_string( index ) ).c_str() );
+    cameraInfo->IsColorCam = image->Info().CFA.empty() ? ASI_FALSE : ASI_TRUE;
+    cameraInfo->CameraID = -( index + 1 );
+    return cameraInfo;
+}
+
 int MockCamera::GetCount()
 {
-    files = QDir( "", "*.cfa" ).entryList( QDir::Files );
+    files = QDir( "", "*.u16.pixels" ).entryList( QDir::Files );
     return files.size();
 }
 
