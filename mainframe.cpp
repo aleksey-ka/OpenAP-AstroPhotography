@@ -483,6 +483,9 @@ void MainFrame::renderHistogram( const uint* r, const uint* g, const uint* b, in
             max = b[i];
         }
     }
+    if( max == 0 ) {
+        return;
+    }
 
     int h = 128;
     int biteWidth = 3 * size;
