@@ -286,9 +286,7 @@ void MainFrame::on_captureButton_clicked()
         static const QString TIMESTAMP( "{TIME}" );
         auto timestamp = QDateTime::currentDateTime().toString("yyyy-MM-ddThh-mm-ss");
         if( path.contains( TIMESTAMP ) ) {
-            path.replace( TIMESTAMP, timestamp );
-        } else {
-            path = path + QDir::separator() + timestamp;
+            path.replace( TIMESTAMP, "-" + timestamp );
         }
         static const QString FILTER( "{FILTER}" );
         if( path.contains( FILTER ) ) {
@@ -307,6 +305,8 @@ void MainFrame::on_captureButton_clicked()
                 path.replace( NAME, "" );
             }
         }
+        path.replace( "\\-", "\\" );
+        path.replace( "/-", "/" );
         saveToPath = path;
     } else {
         saveToPath.clear();
