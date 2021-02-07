@@ -74,6 +74,8 @@ public:
     void GuideOn( ASI_GUIDE_DIRECTION ) const override;
     void GuideOff( ASI_GUIDE_DIRECTION ) const override;
 
+    void SetFilterDescription( const char* txt ) { filterDescription = txt; }
+
     void PrintDebugInfo() override;
 
     ASICamera( int id );
@@ -105,6 +107,8 @@ private:
 
     mutable std::atomic<bool> isClosing{ false };
     mutable std::atomic<bool> isExposure{ false };
+
+    std::string filterDescription;
 
     void lazyROIFormat() const;
     void lazyControlCaps() const;

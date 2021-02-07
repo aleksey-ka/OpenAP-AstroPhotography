@@ -103,13 +103,28 @@ MainFrame::MainFrame( QWidget *parent ) :
    if( filterWheel.Open() ) {
        // TODO: Fixing a bug with text color on Raspberry Pi (old Qt?). It shows always gray
        // To fix it needs changing the combo to editable and the edit inside the combo to read-only
+       ui->filterWheelComboBox->lineEdit()->setReadOnly( true );
        ui->filterComboBox->lineEdit()->setReadOnly( true );
 
-       for( size_t i = 0; i < filterWheel.GetSlotsCount(); i++ ) {
-           ui->filterComboBox->addItem( QString::number( i + 1 ) );
+       auto filterWheelDefs = QDir( "", "*.FilterWheel" ).entryList( QDir::Files );
+       if( filterWheelDefs.size() > 0 ) {
+           QSignalBlocker lock( ui->filterWheelComboBox );
+           int index = 0;
+            for( size_t i = 0; i < filterWheelDefs.size(); i++ ) {
+                auto name = QFileInfo( filterWheelDefs[i] ).baseName();
+                ui->filterWheelComboBox->addItem( name );
+                if( name == settings.value( "FilterWheel" ) ) {
+                    index = i;
+                }
+            }
+            ui->filterWheelComboBox->setCurrentIndex( index );
+            on_filterWheelComboBox_currentIndexChanged( index );
+       } else {
+            ui->filterWheelComboBox->addItem( "Filter Wheel" );
        }
-       ui->filterComboBox->setCurrentIndex( filterWheel.GetPosition() );
-       connect( ui->filterComboBox, QOverload<int>::of( &QComboBox::currentIndexChanged ), [this]( int index ) { filterWheel.SetPosition( index ); } );
+
+       connect( ui->filterComboBox, QOverload<int>::of( &QComboBox::currentIndexChanged ),
+            [this]( int index ) { filterWheel.SetPosition( index ); } );
    }
 
    updateUI();
@@ -364,6 +379,12 @@ void MainFrame::startCapture()
     camera->SetWhiteBalanceB( useCameraWhiteBalance ? 95 : 50 );
     camera->SetOffset( offset );
 
+    if( filterWheel.GetSlotsCount() > 0 ) {
+        auto name = ui->filterComboBox->currentText();
+        auto fullName = ui->filterComboBox->currentData( Qt::ToolTipRole ).toString();
+        camera->SetFilterDescription( ( fullName.isEmpty() ? name : fullName ).toStdString().c_str() );
+    }
+
     auto info = camera->GetInfo();
     ui->ePerADULabel->setText( QString( "e<sup>-</sup>/ADU: <span style='color:#008800;'>%1</span>" ).arg( QString::number( info->ElecPerADU, 'f', 3 ) ) );
 
@@ -400,7 +421,11 @@ void MainFrame::imageReady()
             txt.append( namedValue.arg( "Exposure", exposureToString( info.Exposure ), "" ) );
             txt.append( namedValue.arg( "Gain", QString::number( info.Gain ), "" ) );
             txt.append( namedValue.arg( "Offset", QString::number( info.Offset ), "" ) );
-            txt.append( namedValue.arg( "Temperature", QString::number( info.Temperature, 'f', 1 ), " <sup>0</sup>C<br>" ) );
+            txt.append( namedValue.arg( "Temperature", QString::number( info.Temperature, 'f', 1 ), " <sup>0</sup>C" ) );
+            if( not info.Filter.empty() ) {
+                txt.append( namedValue.arg( "Filter", QString( info.Filter.c_str() ), "" ) );
+            }
+            txt.append( "<br>" );
 
             if( saveToPath.length() > 0 ) {
                 QDir().mkpath( saveToPath );
@@ -650,4 +675,41 @@ void MainFrame::setCooler( bool coolerOn, int targetTemperature )
         camera->SetTargetTemperature( targetTemperature );
     }
     camera->SetCoolerOn( coolerOn );
+}
+
+void MainFrame::on_filterWheelComboBox_currentIndexChanged( int index )
+{
+    auto name = ui->filterWheelComboBox->itemText( index );
+    auto fileName = name + ".FilterWheel";
+
+    QStringList slotNames;
+    if( QFileInfo::exists( fileName ) ) {
+        QFile inputFile( fileName );
+        if( inputFile.open( QIODevice::ReadOnly ) ) {
+           QTextStream in( &inputFile );
+           while( !in.atEnd() ) {
+              slotNames.append( in.readLine() );
+           }
+           inputFile.close();
+        }
+        settings.setValue( "FilterWheel", name );
+    }
+
+    QSignalBlocker lock( ui->filterComboBox );
+    ui->filterComboBox->clear();
+    for( size_t i = 0; i < filterWheel.GetSlotsCount(); i++ ) {
+        QString name;
+        QString description;
+        if( i < slotNames.size() ) {
+            QString slot = slotNames.at( i );
+            name = slot.section( " ", 0, 0 );
+            description = slot.section( " ", 1 );
+        } else {
+            name = QString::number( i + 1 );
+        }
+        ui->filterComboBox->addItem( name );
+        ui->filterComboBox->setItemData( i, description, Qt::ToolTipRole );
+
+    }
+    ui->filterComboBox->setCurrentIndex( filterWheel.GetPosition() );
 }

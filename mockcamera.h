@@ -72,6 +72,8 @@ public:
     virtual void GuideOn( ASI_GUIDE_DIRECTION ) const override {}
     virtual void GuideOff( ASI_GUIDE_DIRECTION ) const override {}
 
+    void SetFilterDescription( const char* txt ) { info.Filter = txt; }
+
     virtual void PrintDebugInfo() override {}
 
     MockCamera( int id );

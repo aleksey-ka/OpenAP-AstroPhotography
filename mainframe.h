@@ -57,6 +57,8 @@ private slots:
 
     void on_temperatureSpinBox_valueChanged( int );
 
+    void on_filterWheelComboBox_currentIndexChanged( int index );
+
 private:
     Ui::MainFrame *ui;
     void updateUI();

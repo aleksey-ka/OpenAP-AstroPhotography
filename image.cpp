@@ -81,6 +81,7 @@ std::shared_ptr<const Raw16Image> Raw16Image::LoadFromFile( const char* filePath
     imageInfo.Exposure = (int)( 1000000 * exposure );
     swscanf( map[L"TIMESTAMP"].c_str(), L"%I64d", &imageInfo.Timestamp );
     imageInfo.Camera = toString( map[L"CAMERA"] );
+    imageInfo.Filter = toString( map[L"FILTER"] );
 
     auto result = std::make_shared<Raw16Image>( imageInfo );
 
@@ -99,7 +100,7 @@ void Raw16Image::SaveToFile( const char* filePath ) const
     fwprintf( info, L"IMAGE_WIDTH %d\n", imageInfo.Width );
     fwprintf( info, L"IMAGE_HEIGHT %d\n", imageInfo.Height );
     fwprintf( info, L"PIXEL_FORMAT u16\n" );
-    if( !imageInfo.CFA.empty() ) {
+    if( not imageInfo.CFA.empty() ) {
         fwprintf( info, L"PIXEL_CFA %s\n", imageInfo.CFA.c_str() );
     }
     fwprintf( info, L"CAMERA %s\n", imageInfo.Camera.c_str() );
@@ -107,6 +108,9 @@ void Raw16Image::SaveToFile( const char* filePath ) const
     fwprintf( info, L"CAMERA_OFFSET %d\n", imageInfo.Offset );
     fwprintf_no_trailing_zeroes( info, L"CAMERA_EXPOSURE", 0.000001f * imageInfo.Exposure );
     fwprintf_no_trailing_zeroes( info, L"CAMERA_TEMPERATURE", imageInfo.Temperature );
+    if( not imageInfo.Filter.empty() ) {
+        fwprintf( info, L"FILTER %s\n", imageInfo.Filter.c_str() );
+    }
     fwprintf( info, L"TIMESTAMP %I64d\n", imageInfo.Timestamp );
     fclose( info );
 

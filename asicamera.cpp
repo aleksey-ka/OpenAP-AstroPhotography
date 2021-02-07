@@ -188,6 +188,7 @@ std::shared_ptr<const Raw16Image> ASICamera::DoExposure() const
         assert( cameraInfo->BayerPattern == ASI_BAYER_RG );
         imageInfo.CFA = "RGGB";
     }
+    imageInfo.Filter = filterDescription;
 
     imageInfo.Width = width;
     imageInfo.Height = height;
