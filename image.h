@@ -33,6 +33,8 @@ public:
     }
 
     const unsigned short* RawPixels() const { return buf.data(); };
+    unsigned short* RawPixels() { return buf.data(); };
+    int Count() const { return buf.size(); }
 
     int Width() const { return imageInfo.Width; }
     int Height() const { return imageInfo.Height; }

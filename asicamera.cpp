@@ -225,10 +225,20 @@ std::shared_ptr<const Raw16Image> ASICamera::DoExposure() const
                 if( isClosing ) {
                     isExposure = false;
                     return 0;
+                } else {
+                    checkResult( ASIGetDataAfterExp( id, result->Buffer(), result->BufferSize() ) );
+                    auto pixels = result->RawPixels();
+                    int count = result->Count();
+                    switch( cameraInfo->BitDepth ) {
+                        case 16: break;
+                        case 14: for( int i = 0; i < count; i++ ) pixels[i] >>= 2; break;
+                        case 12: for( int i = 0; i < count; i++ ) pixels[i] >>= 4; break;
+                        default:
+                            assert( false );
+                    }
+                    isExposure = false;
+                    return result;
                 }
-                checkResult( ASIGetDataAfterExp( id, result->Buffer(), result->BufferSize() ) );
-                isExposure = false;
-                return result;
             case ASI_EXP_FAILED:
                 isExposure = false;
                 return 0;

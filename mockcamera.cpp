@@ -21,7 +21,7 @@ static std::shared_ptr<ASI_CAMERA_INFO> createCameraInfo( int index )
 {
     auto cameraInfo = std::make_shared<ASI_CAMERA_INFO>();
     auto image = loadImage( index );
-    strcpy( cameraInfo->Name, ( image->Info().Camera + " MOCK " + std::to_string( index ) ).c_str() );
+    strcpy( cameraInfo->Name, image->Info().Camera.c_str() );
     cameraInfo->IsColorCam = image->Info().CFA.empty() ? ASI_FALSE : ASI_TRUE;
     cameraInfo->CameraID = -( index + 1 );
     return cameraInfo;

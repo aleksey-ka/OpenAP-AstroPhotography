@@ -25,9 +25,9 @@ QPixmap Renderer::RenderHalfResWithHistogram()
         uchar* dstLine = rgb + byteWidth * y;
         for( size_t x = 0; x < w; x++ ) {
             const ushort* src = srcLine + 2 * x;
-            uchar r = src[0] / 256;
-            uchar g = src[1] / 256;
-            uchar b = src[width + 1] / 256;
+            uchar r = src[0] / 16;
+            uchar g = src[1] / 16;
+            uchar b = src[width + 1] / 16;
 
             uchar* dst = dstLine + 3 * x;
             dst[0] = r;
