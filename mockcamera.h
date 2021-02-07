@@ -73,7 +73,8 @@ public:
     virtual void GuideOff( ASI_GUIDE_DIRECTION ) const override {}
 
     virtual void SetSeriesId( uint64_t value ) override { info.SeriesId = value; }
-    void SetFilterDescription( const char* txt ) override { info.Filter = txt; }
+    void SetChannel( const char* txt ) override { info.Channel = txt; }
+    void SetFilterDescription( const char* txt ) override { info.FilterDescription = txt; }
 
     virtual void PrintDebugInfo() override {}
 

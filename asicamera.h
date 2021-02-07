@@ -75,6 +75,7 @@ public:
     void GuideOff( ASI_GUIDE_DIRECTION ) const override;
 
     virtual void SetSeriesId( uint64_t value ) override { seriesId = value; }
+    void SetChannel( const char* txt ) override { channel = txt; }
     void SetFilterDescription( const char* txt ) override { filterDescription = txt; }
 
     void PrintDebugInfo() override;
@@ -110,6 +111,7 @@ private:
     mutable std::atomic<bool> isExposure{ false };
 
     uint64_t seriesId;
+    std::string channel;
     std::string filterDescription;
 
     void lazyROIFormat() const;

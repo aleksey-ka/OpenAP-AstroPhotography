@@ -88,7 +88,8 @@ std::shared_ptr<const Raw16Image> MockCamera::DoExposure() const
     QThread::usleep( delta );
     isExposure = false;
     auto image = loadImage( index );
-    const_cast<ImageInfo&>( image->Info() ).Filter = info.Filter;
     const_cast<ImageInfo&>( image->Info() ).SeriesId = info.SeriesId;
+    const_cast<ImageInfo&>( image->Info() ).Channel = info.Channel;
+    const_cast<ImageInfo&>( image->Info() ).FilterDescription = info.FilterDescription;
     return image;
 }

@@ -381,9 +381,10 @@ void MainFrame::startCapture()
     camera->SetOffset( offset );
 
     if( filterWheel.GetSlotsCount() > 0 ) {
-        auto name = ui->filterComboBox->currentText();
-        auto fullName = ui->filterComboBox->currentData( Qt::ToolTipRole ).toString();
-        camera->SetFilterDescription( ( fullName.isEmpty() ? name : fullName ).toStdString().c_str() );
+        auto channel = ui->filterComboBox->currentText();
+        camera->SetChannel( channel.toStdString().c_str() );
+        auto fullFilterDescription = ui->filterComboBox->currentData( Qt::ToolTipRole ).toString();
+        camera->SetFilterDescription( fullFilterDescription.toStdString().c_str() );
     }
     camera->SetSeriesId( seriesId );
 
@@ -424,14 +425,16 @@ void MainFrame::imageReady()
             txt.append( namedValue.arg( "Gain", QString::number( info.Gain ), "" ) );
             txt.append( namedValue.arg( "Offset", QString::number( info.Offset ), "" ) );
             txt.append( namedValue.arg( "Temperature", QString::number( info.Temperature, 'f', 1 ), " <sup>0</sup>C" ) );
-            if( not info.Filter.empty() ) {
-                txt.append( namedValue.arg( "Filter", QString( info.Filter.c_str() ), "" ) );
+            if( not info.FilterDescription.empty() ) {
+                txt.append( namedValue.arg( "Filter", QString( info.FilterDescription.c_str() ), "" ) );
             }
             txt.append( "<br>" );
 
             if( saveToPath.length() > 0 ) {
                 QDir().mkpath( saveToPath );
-                auto name = QString::number( info.SeriesId, 16 ) + "." + QString::number( capturedFrames ).rightJustified( 5, '0' ) + ( info.CFA.empty() ? ".u16.pixels" : ".cfa.u16.pixels" );
+                const static QString nameTemplate( "%1.%2%3%4.u16.pixels" );
+                auto name = nameTemplate.arg( QString::number( info.SeriesId, 16 ), QString::number( capturedFrames ).rightJustified( 5, '0' ),
+                    ( info.CFA.empty() ? "" : ".cfa" ), ( info.Channel.empty() ? "" : "." + info.Channel ).c_str() );
                 result->SaveToFile( ( saveToPath + QDir::separator() + name ).toStdString().c_str() );
                 txt.append( namedValue.arg( "Saved As", name, "" ) );
             }

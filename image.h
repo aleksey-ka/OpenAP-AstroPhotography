@@ -18,7 +18,8 @@ struct ImageInfo {
     double Temperature;
     std::string Camera;
     std::string CFA;
-    std::string Filter;
+    std::string Channel;
+    std::string FilterDescription;
 };
 
 class Raw16Image {
