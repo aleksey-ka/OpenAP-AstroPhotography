@@ -68,7 +68,11 @@ MainFrame::MainFrame( QWidget *parent ) :
         ui->cameraSelectionCombo->addItem( camerasInfo[i]->Name, QVariant( i ) );
     }
 
-    saveToPath = settings.value( "SaveTo" ).toString();
+    ui->objectNameEdit->setText( settings.value( "Name" ).toString() );
+
+    auto defaultPath = QStandardPaths::writableLocation( QStandardPaths::DocumentsLocation ) + QDir::separator() +
+            QApplication::applicationName() + QDir::separator() + "{TIME}{NAME}{FILTER}";
+    saveToPath = settings.value( "SaveTo", defaultPath ).toString();
     ui->saveToEdit->setText( saveToPath );
     ui->saveToEdit->home( false );
 
@@ -259,15 +263,34 @@ void MainFrame::guideStop()
 void MainFrame::on_captureButton_clicked()
 {
     if( ui->saveToCheckBox->isChecked() ) {
+        auto name = ui->objectNameEdit->text();
+        settings.setValue( "Name", name );
         auto path = ui->saveToEdit->text();
         settings.setValue( "SaveTo", path );
 
-        static const QString TIMESTAMP( "{TIMESTAMP}" );
+        static const QString TIMESTAMP( "{TIME}" );
         auto timestamp = QDateTime::currentDateTime().toString("yyyy-MM-ddThh-mm-ss");
         if( path.contains( TIMESTAMP ) ) {
             path.replace( TIMESTAMP, timestamp );
         } else {
             path = path + QDir::separator() + timestamp;
+        }
+        static const QString FILTER( "{FILTER}" );
+        if( path.contains( FILTER ) ) {
+            auto filter = ui->filterComboBox->currentText();
+            if( not filter.isEmpty() ) {
+                path.replace( FILTER, "-" + filter );
+            } else {
+                path.replace( FILTER, "" );
+            }
+        }
+        static const QString NAME( "{NAME}" );
+        if( path.contains( NAME ) ) {
+            if( not name.isEmpty() ) {
+                path.replace( NAME, "-" + name );
+            } else {
+                path.replace( NAME, "" );
+            }
         }
         saveToPath = path;
     } else {
