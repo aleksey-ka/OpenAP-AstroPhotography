@@ -11,6 +11,7 @@
 
 #include "asicamera.h"
 #include "mockcamera.h"
+#include "image.formats.h"
 
 #include <chrono>
 
@@ -69,6 +70,7 @@ MainFrame::MainFrame( QWidget *parent ) :
     }
 
     ui->objectNameEdit->setText( settings.value( "Name" ).toString() );
+    ui->formatComboBox->setCurrentText( settings.value( "FileFormat", ".png" ).toString() );
 
     auto defaultPath = QStandardPaths::writableLocation( QStandardPaths::DocumentsLocation ) + QDir::separator() +
             QApplication::applicationName() + QDir::separator() + "{TIME}{NAME}{FILTER}";
@@ -431,11 +433,22 @@ void MainFrame::imageReady()
             txt.append( "<br>" );
 
             if( saveToPath.length() > 0 ) {
+                auto ext = ui->formatComboBox->currentText();
+                settings.setValue( "FileFormat", ext );
+                const ImageFileFormat* format = 0;
+                if( ext == ".png") {
+                    const static Png16BitGrayscale png16BitGrayscale;
+                    format = &png16BitGrayscale;
+                } else {
+                    assert( ext == ".pixels" );
+                }
+
                 QDir().mkpath( saveToPath );
-                const static QString nameTemplate( "%1.%2%3%4.u16.pixels" );
+                const static QString nameTemplate( "%1.%2%3%4.u16%5" );
                 auto name = nameTemplate.arg( QString::number( info.SeriesId, 16 ), QString::number( capturedFrames ).rightJustified( 5, '0' ),
-                    ( info.CFA.empty() ? "" : ".cfa" ), ( info.Channel.empty() ? "" : "." + info.Channel ).c_str() );
-                result->SaveToFile( ( saveToPath + QDir::separator() + name ).toStdString().c_str() );
+                    ( info.CFA.empty() ? "" : ".cfa" ), ( info.Channel.empty() ? "" : "." + info.Channel ).c_str(), ext );
+
+                result->SaveToFile( ( saveToPath + QDir::separator() + name ).toStdString().c_str(), format );
                 txt.append( namedValue.arg( "Saved As", name, "" ) );
             }
 

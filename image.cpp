@@ -16,6 +16,30 @@
 
 #include "image.h"
 
+class Pixels16BitUncompressed : public ImageFileFormat {
+public:
+    virtual std::shared_ptr<const Raw16Image> Load( const char* filePath, const ImageInfo& ) const override;
+    virtual void Save( const char* filePath, const Raw16Image* ) const override;
+};
+
+std::shared_ptr<const Raw16Image> Pixels16BitUncompressed::Load( const char* filePath, const ImageInfo& imageInfo ) const
+{
+    auto result = std::make_shared<Raw16Image>( imageInfo );
+
+    FILE* file = fopen( filePath, "rb" );
+    fread( result->Buffer(), 1, result->BufferSize(), file );
+    fclose( file );
+
+    return result;
+}
+
+void Pixels16BitUncompressed::Save( const char* filePath, const Raw16Image* image ) const
+{
+    FILE* out = fopen( filePath, "wb" );
+    fwrite( image->Buffer(), 1, image->BufferSize(), out );
+    fclose( out );
+}
+
 static void fwprintf_no_trailing_zeroes( FILE* file, const wchar_t* name, float value )
 {
     char buf[50];
@@ -85,19 +109,15 @@ std::shared_ptr<const Raw16Image> Raw16Image::LoadFromFile( const char* filePath
     imageInfo.Channel = toString( map[L"CHANNEL"] );
     imageInfo.FilterDescription = toString( map[L"FILTER"] );
 
-    auto result = std::make_shared<Raw16Image>( imageInfo );
-
-    FILE* file = fopen( filePath, "rb" );
-    fread( result->Buffer(), 1, result->BufferSize(), file );
-    fclose( file );
-
-    return result;
+    Pixels16BitUncompressed uncompressed;
+    return uncompressed.Load( filePath, imageInfo );
 }
 
-void Raw16Image::SaveToFile( const char* filePath ) const
+void Raw16Image::SaveToFile( const char* filePath, const ImageFileFormat* fileFormat ) const
 {
     std::string infoFilePath( filePath );
-    replace( infoFilePath, ".pixels", ".info" );
+    auto pos = infoFilePath.rfind( '.' );
+    infoFilePath.replace( pos, infoFilePath.length() - pos, ".info" );
     FILE* info = fopen( infoFilePath.c_str(), "wt" );
     fwprintf( info, L"IMAGE_WIDTH %d\n", imageInfo.Width );
     fwprintf( info, L"IMAGE_HEIGHT %d\n", imageInfo.Height );
@@ -120,7 +140,20 @@ void Raw16Image::SaveToFile( const char* filePath ) const
     fwprintf( info, L"TIMESTAMP %I64d\n", imageInfo.Timestamp );
     fclose( info );
 
-    FILE* out = fopen( filePath, "wb" );
-    fwrite( Buffer(), 1, BufferSize(), out );
-    fclose( out );
+    if( fileFormat == 0 ) {
+        static const Pixels16BitUncompressed uncompressed;
+        fileFormat = &uncompressed;
+    }
+
+    fileFormat->Save( filePath, this );
+
+    // Check saved file
+    /*auto saved = fileFormat->Load( filePath, imageInfo );
+    auto size = saved->BufferSize();
+    auto src = Buffer();
+    auto dst = saved->Buffer();
+    assert( BufferSize() == size );
+    for( int i = 0; i < size; i++ ) {
+        assert( dst[i] == src[i] );
+    }*/
 }

@@ -22,6 +22,8 @@ struct ImageInfo {
     std::string FilterDescription;
 };
 
+class ImageFileFormat;
+
 class Raw16Image {
 public:
     Raw16Image( const ImageInfo& _imageInfo ) :
@@ -40,13 +42,19 @@ public:
     int BufferSize() const { return buf.size() * sizeof( unsigned short ); }
 
     static std::shared_ptr<const Raw16Image> LoadFromFile( const char* filePath );
-    void SaveToFile( const char* filePath ) const;
+    void SaveToFile( const char* filePath, const ImageFileFormat* = 0 ) const;
 
     const ImageInfo& Info() const { return imageInfo; }
 
 private:
     ImageInfo imageInfo;
     mutable std::vector<unsigned short> buf;
+};
+
+class ImageFileFormat {
+public:
+    virtual std::shared_ptr<const Raw16Image> Load( const char* filePath, const ImageInfo& ) const = 0;
+    virtual void Save( const char* filePath, const Raw16Image* ) const = 0;
 };
 
 #endif // IMAGE_H

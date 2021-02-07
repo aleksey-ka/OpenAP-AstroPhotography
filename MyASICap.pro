@@ -29,6 +29,7 @@ SOURCES += \
         filterwheel.cpp \
         focuser.cpp \
         image.cpp \
+        image.formats.cpp \
         main.cpp \
         mainframe.cpp \
         mockcamera.cpp
@@ -38,6 +39,7 @@ HEADERS += \
         camera.h \
         filterwheel.h \
         focuser.h \
+        image.formats.h \
         image.h \
         mainframe.h \
         mockcamera.h

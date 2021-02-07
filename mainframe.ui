@@ -831,6 +831,26 @@ QSlider::handle:horizontal {
                </property>
               </widget>
              </item>
+             <item>
+              <widget class="QComboBox" name="formatComboBox">
+               <property name="styleSheet">
+                <string notr="true">font-size:10px;</string>
+               </property>
+               <property name="editable">
+                <bool>true</bool>
+               </property>
+               <item>
+                <property name="text">
+                 <string>.png</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>.pixels</string>
+                </property>
+               </item>
+              </widget>
+             </item>
             </layout>
            </widget>
           </item>
