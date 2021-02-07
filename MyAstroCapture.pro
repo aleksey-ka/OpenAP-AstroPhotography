@@ -8,7 +8,7 @@ QT += core gui serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = MyASICap
+TARGET = MyAstroCapture
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use

@@ -1,5 +1,5 @@
-# MyASICap
-Astronomy capture tool for ASI cameras
+# MyAstroCapture
+Astronomy capture tool (for now only ZWO cameras and filter wheels are supported and a DIY focuser)
 
 ![Sample](sample.jpg)
 

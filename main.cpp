@@ -11,7 +11,7 @@ int main( int argc, char *argv[] )
     QApplication a( argc, argv );
 
     QCoreApplication::setOrganizationName( "aleksey-ka" );
-    QCoreApplication::setApplicationName( "MyASICap" );
+    QCoreApplication::setApplicationName( "MyAstroCapture" );
 
     MainFrame w;
 
