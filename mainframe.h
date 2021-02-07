@@ -95,7 +95,6 @@ private:
 
     // Rendering
     ulong render( const ushort* raw, int width, int height );
-    void renderHistogram( const uint* r, const uint* g, const uint* b, int size );
     bool drawTargetingCircle = false;
 
     // Exposure controls and scaling

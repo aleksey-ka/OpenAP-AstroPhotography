@@ -32,7 +32,8 @@ SOURCES += \
         image.formats.cpp \
         main.cpp \
         mainframe.cpp \
-        mockcamera.cpp
+        mockcamera.cpp \
+        renderer.cpp
 
 HEADERS += \
         asicamera.h \
@@ -42,7 +43,8 @@ HEADERS += \
         image.formats.h \
         image.h \
         mainframe.h \
-        mockcamera.h
+        mockcamera.h \
+        renderer.h
 
 FORMS += \
         mainframe.ui
