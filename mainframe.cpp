@@ -485,7 +485,6 @@ ulong MainFrame::render( const ushort* raw, int width, int height )
     auto start = std::chrono::steady_clock::now();
 
     Renderer renderer( raw, width, height );
-
     QPixmap pixmap = renderer.RenderHalfResWithHistogram();
     if( drawTargetingCircle ) {
        QPainter painter( &pixmap );

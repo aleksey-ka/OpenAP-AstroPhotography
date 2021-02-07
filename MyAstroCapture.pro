@@ -30,6 +30,7 @@ SOURCES += \
         focuser.cpp \
         image.cpp \
         image.formats.cpp \
+        imageview.cpp \
         main.cpp \
         mainframe.cpp \
         mockcamera.cpp \
@@ -42,6 +43,7 @@ HEADERS += \
         focuser.h \
         image.formats.h \
         image.h \
+        imageview.h \
         mainframe.h \
         mockcamera.h \
         renderer.h
