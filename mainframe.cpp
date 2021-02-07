@@ -129,6 +129,8 @@ MainFrame::MainFrame( QWidget *parent ) :
             [this]( int index ) { filterWheel.SetPosition( index ); } );
    }
 
+   ui->imageView->setCursor( QCursor( QPixmap( ":CrossHair.png" ), 23, 23 ) );
+
    updateUI();
 }
 
