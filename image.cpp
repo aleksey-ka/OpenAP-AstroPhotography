@@ -80,6 +80,7 @@ std::shared_ptr<const Raw16Image> Raw16Image::LoadFromFile( const char* filePath
     swscanf( map[L"CAMERA_TEMPERATURE"].c_str(), L"%lf", &imageInfo.Temperature );
     imageInfo.Exposure = (int)( 1000000 * exposure );
     swscanf( map[L"TIMESTAMP"].c_str(), L"%I64d", &imageInfo.Timestamp );
+    swscanf( map[L"SERIES_ID"].c_str(), L"%I64d", &imageInfo.SeriesId );
     imageInfo.Camera = toString( map[L"CAMERA"] );
     imageInfo.Filter = toString( map[L"FILTER"] );
 
@@ -111,6 +112,7 @@ void Raw16Image::SaveToFile( const char* filePath ) const
     if( not imageInfo.Filter.empty() ) {
         fwprintf( info, L"FILTER %s\n", imageInfo.Filter.c_str() );
     }
+    fwprintf( info, L"SERIES_ID %I64d\n", imageInfo.SeriesId );
     fwprintf( info, L"TIMESTAMP %I64d\n", imageInfo.Timestamp );
     fclose( info );
 

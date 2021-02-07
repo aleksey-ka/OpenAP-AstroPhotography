@@ -67,6 +67,7 @@ public:
     virtual void GuideOn( ASI_GUIDE_DIRECTION ) const = 0;
     virtual void GuideOff( ASI_GUIDE_DIRECTION ) const = 0;
 
+    virtual void SetSeriesId( uint64_t ) = 0;
     virtual void SetFilterDescription( const char* ) = 0;
 
     virtual void PrintDebugInfo() = 0;

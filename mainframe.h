@@ -75,6 +75,7 @@ private:
     QFutureWatcher<std::shared_ptr<const Raw16Image>> imageReadyWatcher;
     QFutureWatcher<QString> imageSavedWatcher;
     int exposureRemainingTime;
+    uint64_t seriesId = 0;
     int capturedFrames = 0;
     QTimer exposureTimer;
     void startCapture();

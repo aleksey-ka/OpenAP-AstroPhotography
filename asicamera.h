@@ -74,7 +74,8 @@ public:
     void GuideOn( ASI_GUIDE_DIRECTION ) const override;
     void GuideOff( ASI_GUIDE_DIRECTION ) const override;
 
-    void SetFilterDescription( const char* txt ) { filterDescription = txt; }
+    virtual void SetSeriesId( uint64_t value ) override { seriesId = value; }
+    void SetFilterDescription( const char* txt ) override { filterDescription = txt; }
 
     void PrintDebugInfo() override;
 
@@ -108,6 +109,7 @@ private:
     mutable std::atomic<bool> isClosing{ false };
     mutable std::atomic<bool> isExposure{ false };
 
+    uint64_t seriesId;
     std::string filterDescription;
 
     void lazyROIFormat() const;

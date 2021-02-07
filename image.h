@@ -14,6 +14,7 @@ struct ImageInfo {
     int Gain;
     int Exposure;
     int64_t Timestamp;
+    int64_t SeriesId;
     double Temperature;
     std::string Camera;
     std::string CFA;

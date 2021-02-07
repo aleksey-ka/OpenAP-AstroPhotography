@@ -311,6 +311,7 @@ void MainFrame::on_captureButton_clicked()
     } else {
         saveToPath.clear();
     }
+    seriesId = std::chrono::system_clock::to_time_t( std::chrono::system_clock::now() );
 
     settings.setValue( "Exposure", ui->exposureSpinBox->value() * exposureSuffixToScale( ui->exposureSpinBox->suffix() ) );
     settings.setValue( "Gain", ui->gainSpinBox->value() );
@@ -384,6 +385,7 @@ void MainFrame::startCapture()
         auto fullName = ui->filterComboBox->currentData( Qt::ToolTipRole ).toString();
         camera->SetFilterDescription( ( fullName.isEmpty() ? name : fullName ).toStdString().c_str() );
     }
+    camera->SetSeriesId( seriesId );
 
     auto info = camera->GetInfo();
     ui->ePerADULabel->setText( QString( "e<sup>-</sup>/ADU: <span style='color:#008800;'>%1</span>" ).arg( QString::number( info->ElecPerADU, 'f', 3 ) ) );
@@ -429,7 +431,7 @@ void MainFrame::imageReady()
 
             if( saveToPath.length() > 0 ) {
                 QDir().mkpath( saveToPath );
-                auto name = QString::number( capturedFrames ).rightJustified( 5, '0' ) + ( info.CFA.empty() ? ".u16.pixels" : ".cfa.u16.pixels" );
+                auto name = QString::number( info.SeriesId, 16 ) + "." + QString::number( capturedFrames ).rightJustified( 5, '0' ) + ( info.CFA.empty() ? ".u16.pixels" : ".cfa.u16.pixels" );
                 result->SaveToFile( ( saveToPath + QDir::separator() + name ).toStdString().c_str() );
                 txt.append( namedValue.arg( "Saved As", name, "" ) );
             }
