@@ -76,7 +76,9 @@ private:
     QFutureWatcher<QString> imageSavedWatcher;
     int exposureRemainingTime;
     uint64_t seriesId = 0;
-    int capturedFrames = 0;
+    QAtomicInt capturedFrames = 0;
+    ulong startTimestamp = 0;
+    ulong previousTimestamp = 0;
     QTimer exposureTimer;
     void startCapture();
     void showCaptureStatus();

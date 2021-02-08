@@ -20,6 +20,10 @@ MainFrame::MainFrame( QWidget *parent ) :
     QMainWindow( parent ),
     ui( new Ui::MainFrame )
 {
+    // Multithreading noticibly improves throughput especially when writing to compressed image formats
+    int numberOfCores = QThread::idealThreadCount();
+    QThreadPool::globalInstance()->setMaxThreadCount( std::min( numberOfCores, 4 ) );
+
     setWindowIcon( QIcon( ":mainframe.ico" ) );
 
     ui->setupUi( this ) ;
@@ -282,6 +286,9 @@ void MainFrame::guideStop()
 
 void MainFrame::on_captureButton_clicked()
 {
+    ui->captureButton->setEnabled( false );
+    ui->saveToCheckBox->setEnabled( false );
+
     if( ui->saveToCheckBox->isChecked() ) {
         auto name = ui->objectNameEdit->text();
         settings.setValue( "Name", name );
@@ -397,14 +404,28 @@ void MainFrame::startCapture()
     ui->ePerADULabel->setText( QString( "e<sup>-</sup>/ADU: <span style='color:#008800;'>%1</span>" ).arg( QString::number( info->ElecPerADU, 'f', 3 ) ) );
 
     imageReadyWatcher.setFuture( QtConcurrent::run( [=]() {
-        return camera->DoExposure();
+        auto start = std::chrono::steady_clock::now();
+
+        auto timestamp = std::chrono::duration_cast<std::chrono::milliseconds>( start.time_since_epoch() ).count();
+        if( capturedFrames > 0 ) {
+            qDebug() << "Since previous exposure " << timestamp - previousTimestamp << "msec";
+            qDebug() << "FPS " << ( 1000.0 * capturedFrames ) / ( timestamp - startTimestamp );
+        } else {
+            startTimestamp = timestamp;
+        }
+        previousTimestamp = timestamp;
+
+        auto result = camera->DoExposure();
+
+        auto msec = std::chrono::duration_cast<std::chrono::milliseconds>( std::chrono::steady_clock::now() - start ).count();
+        qDebug() << "Captured in " << msec << "msec";
+
+        return result;
     } ) );
 
     exposureRemainingTime = exposure / 1000000;
     exposureTimer.start( 1000 );
     showCaptureStatus();
-
-    ui->captureButton->setEnabled( false );
 }
 
 void MainFrame::showCaptureStatus()
@@ -418,6 +439,8 @@ void MainFrame::imageReady()
     exposureTimer.stop();
 
     auto result = imageReadyWatcher.result();
+
+    int currentIndex = capturedFrames.fetchAndAddOrdered( 1 );
 
     if( result != 0 ) {
         imageSavedWatcher.setFuture( QtConcurrent::run( [=]() {
@@ -448,7 +471,7 @@ void MainFrame::imageReady()
 
                 QDir().mkpath( saveToPath );
                 const static QString nameTemplate( "%1.%2%3%4.u16%5" );
-                auto name = nameTemplate.arg( QString::number( info.SeriesId, 16 ), QString::number( capturedFrames ).rightJustified( 5, '0' ),
+                auto name = nameTemplate.arg( QString::number( info.SeriesId, 16 ), QString::number( currentIndex ).rightJustified( 5, '0' ),
                     ( info.CFA.empty() ? "" : ".cfa" ), ( info.Channel.empty() ? "" : "." + info.Channel ).c_str(), ext );
 
                 result->SaveToFile( ( saveToPath + QDir::separator() + name ).toStdString().c_str(), format );
@@ -464,7 +487,6 @@ void MainFrame::imageReady()
     }
 
     if( ui->continuousCaptureCheckBox->isChecked() ) {
-        capturedFrames++;
         ui->continuousCaptureCheckBox->setText( "Continuous capture (uncheck to stop)" );
         startCapture();
     } else {
@@ -472,6 +494,7 @@ void MainFrame::imageReady()
         ui->continuousCaptureCheckBox->setText( "Continuous capture" );
         ui->captureButton->setText( "Capture" );
         ui->captureButton->setEnabled( true );
+        ui->saveToCheckBox->setEnabled( true );
     }
 }
 
