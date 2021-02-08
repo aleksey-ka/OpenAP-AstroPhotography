@@ -24,6 +24,31 @@ private:
     std::vector<uint> histR;
     std::vector<uint> histG;
     std::vector<uint> histB;
+
+    // Fast statistics (calculated for each pixel on each frame)
+    ushort maxValue = 0;
+    uint maxCount = 0;
+    ushort minValue = USHRT_MAX;
+    uint minCount = 0;
+    inline ushort addToStatistics( ushort value )
+    {
+        if( value >= maxValue ) {
+            if( value == maxValue ) {
+                maxCount++;
+            } else {
+                maxValue = value;
+                maxCount = 1;
+            }
+        } else if( value <= minValue ) {
+            if( value == minValue ) {
+                minCount++;
+            } else {
+                minValue = value;
+                minCount = 1;
+            }
+        }
+        return value;
+    }
 };
 
 #endif // RENDERER_H
