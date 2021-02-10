@@ -7,20 +7,26 @@
 #include <QImage>
 #include <QPixmap>
 
+enum TRenderingMethod {
+    RM_HalfResolution,
+    RM_FullResolution
+};
+
 class Renderer {
 public:
     Renderer( const ushort* raw, int width, int height );
 
-    QPixmap RenderHalfResWithHistogram();
+    QPixmap Render( TRenderingMethod );
     QPixmap RenderHistogram();
 
     QPixmap RenderRectHalfRes( int cx, int cy, int W, int H );
-
+    QPixmap RenderGrayScale();
 private:
     const ushort* raw;
     int width;
     int height;
 
+    // Histogram data
     std::vector<uint> histR;
     std::vector<uint> histG;
     std::vector<uint> histB;
@@ -49,6 +55,9 @@ private:
         }
         return value;
     }
+
+    void renderHalfResolutionWithHistogram( uchar* rgb, int byteWidth );
+    void renderHighQualityLinearWithHistogram( uchar* rgb, int byteWidth );
 };
 
 #endif // RENDERER_H

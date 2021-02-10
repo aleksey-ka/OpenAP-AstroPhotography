@@ -34,7 +34,8 @@ SOURCES += \
         main.cpp \
         mainframe.cpp \
         mockcamera.cpp \
-        renderer.cpp
+        renderer.cpp \
+        renderer.hqlinear.cpp
 
 HEADERS += \
         asicamera.h \
