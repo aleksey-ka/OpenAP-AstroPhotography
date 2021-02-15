@@ -11,42 +11,65 @@ Renderer::Renderer( const ushort* _raw, int _width, int _height ) :
 
 }
 
-QPixmap Renderer::RenderHalfResWithHistogram()
+QPixmap Renderer::Render( TRenderingMethod method )
 {
+    // Initialize histogram
     const int hSize = 256;
     histR.resize( hSize );
     histG.resize( hSize );
     histB.resize( hSize );
 
-    size_t w = width / 2;
-    size_t h = height / 2;
-    size_t byteWidth = 3 * w;
-    std::vector<uchar> pixels( byteWidth * h );
-    uchar* rgb = pixels.data();
-    for( size_t y = 0; y < h; y++ ) {
+    if( method == RM_HalfResolution ) {
+        size_t w = width / 2;
+        size_t h = height / 2;
+        size_t byteWidth = 3 * w;
+        std::vector<uchar> pixels( byteWidth * h );
+
+        renderHalfResolutionWithHistogram( pixels.data(), byteWidth );
+
+        QImage image( pixels.data(), w, h, QImage::Format_RGB888 );
+        return QPixmap::fromImage( image );
+    } else {
+        assert( method = RM_FullResolution );
+
+        size_t byteWidth = 3 * width;
+        std::vector<uchar> pixels( byteWidth * height );
+        uchar* rgb = pixels.data();
+
+        renderHighQualityLinearWithHistogram( rgb, byteWidth );
+
+        QImage image( rgb, width, height, QImage::Format_RGB888 );
+        return QPixmap::fromImage( image );
+    }
+}
+
+void Renderer::renderHalfResolutionWithHistogram( uchar* rgb, int byteWidth )
+{
+    uint* hr = histR.data();
+    uint* hg = histG.data();
+    uint* hb = histB.data();
+
+    for( size_t y = 0; y < height / 2; y++ ) {
         const ushort* srcLine = raw + 2 * width * y;
         uchar* dstLine = rgb + byteWidth * y;
-        for( size_t x = 0; x < w; x++ ) {
-            // NB. Statistics and histogram approximately doubles rendering time
+        for( size_t x = 0; x < width / 2; x++ ) {
             const ushort* src = srcLine + 2 * x;
             uchar r = addToStatistics( src[0] ) >> 4;
-            uchar g = addToStatistics( src[1] ) >> 4;
-            addToStatistics( src[width] ); // G1
-            uchar b = addToStatistics( src[width+1] ) >> 4;
+            uchar g1 = addToStatistics( src[1] ) >> 4;
+            uchar g2 = addToStatistics( src[width] ) >> 4;
+            uchar b = addToStatistics( src[width + 1] ) >> 4;
 
             uchar* dst = dstLine + 3 * x;
             dst[0] = r;
-            dst[1] = g;
+            dst[1] = g1;
             dst[2] = b;
 
-            histR[r]++;
-            histG[g]++;
-            histB[b]++;
+            hr[r]++;
+            hg[g1]++;
+            hg[g2]++;
+            hb[b]++;
         }
     }
-
-    QImage image( rgb, w, h, QImage::Format_RGB888 );
-    return QPixmap::fromImage( image );
 }
 
 static QString collapseNumber( uint n )
@@ -82,8 +105,8 @@ QPixmap Renderer::RenderHistogram()
         if( r[i] > max ) {
             max = r[i];
         }
-        if( g[i] > max ) {
-            max = g[i];
+        if( g[i] / 2 > max ) {
+            max = g[i] / 2;
         }
         if( b[i] > max ) {
             max = b[i];
@@ -101,7 +124,7 @@ QPixmap Renderer::RenderHistogram()
     if( max > 0 ) {
         for( int i = 0; i < size; i++ ) {
             int R = 127 - ( 127 * r[i] ) / max;
-            int G = 127 - ( 127 * g[i] ) / max;
+            int G = 127 - ( 127 * g[i] / 2 ) / max;
             int B = 127 - ( 127 * b[i] ) / max;
             for( int j = 0; j < h; j++ ) {
                 uchar* p0 = p + j * biteWidth + 3 * i;
@@ -189,5 +212,28 @@ QPixmap Renderer::RenderRectHalfRes( int cx, int cy, int W, int H )
     }
 
     QImage image( rgb, w, h, QImage::Format_RGB888 );
+    return QPixmap::fromImage( image );
+}
+
+QPixmap Renderer::RenderGrayScale()
+{
+    size_t byteWidth = 3 * width;
+    std::vector<uchar> pixels( byteWidth * height );
+    uchar* rgb = pixels.data();
+    for( size_t y = 0; y < height; y++ ) {
+        const ushort* srcLine = raw +  width * y;
+        uchar* dstLine = rgb + byteWidth * y;
+        for( size_t x = 0; x < width; x++ ) {
+            const ushort* src = srcLine +  x;
+            uchar v = src[0] >> 4;
+
+            uchar* dst = dstLine + 3 * x;
+            dst[0] = v;
+            dst[1] = v;
+            dst[2] = v;
+        }
+    }
+
+    QImage image( rgb, width, height, QImage::Format_RGB888 );
     return QPixmap::fromImage( image );
 }

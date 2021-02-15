@@ -508,7 +508,7 @@ ulong MainFrame::render( const ushort* raw, int width, int height )
     auto start = std::chrono::steady_clock::now();
 
     Renderer renderer( raw, width, height );
-    QPixmap pixmap = renderer.RenderHalfResWithHistogram();
+    QPixmap pixmap = renderer.Render( ui->showFullResolution->isChecked() ? RM_FullResolution : RM_HalfResolution );
     if( drawTargetingCircle ) {
        QPainter painter( &pixmap );
        QPen pen( QColor::fromRgb( 0xFF, 0, 0 ) );
