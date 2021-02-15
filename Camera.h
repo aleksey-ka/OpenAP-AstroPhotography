@@ -8,7 +8,7 @@
 
 #include <ASICamera2.h>
 
-#include "image.h"
+#include "Image.h"
 
 class Camera {
 public:

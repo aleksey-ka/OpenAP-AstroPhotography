@@ -4,7 +4,7 @@
 #ifndef IMAGE_FORMATS_H
 #define IMAGE_FORMATS_H
 
-#include "image.h"
+#include "Image.h"
 
 class Png16BitGrayscale : public ImageFileFormat {
 public:

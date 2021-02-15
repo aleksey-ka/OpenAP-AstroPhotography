@@ -25,32 +25,32 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
-        asicamera.cpp \
-        filterwheel.cpp \
-        focuser.cpp \
-        image.cpp \
-        image.formats.cpp \
-        imageview.cpp \
-        main.cpp \
-        mainframe.cpp \
-        mockcamera.cpp \
-        renderer.cpp \
-        renderer.hqlinear.cpp
+        Camera.Mock.cpp \
+        Camera.ZWO.cpp \
+        FilterWheel.cpp \
+        Focuser.cpp \
+        Image.cpp \
+        Image.Formats.cpp \
+        ImageView.cpp \
+        Main.cpp \
+        MainFrame.cpp \
+        Renderer.cpp \
+        Renderer.HQLinear.cpp
 
 HEADERS += \
-        asicamera.h \
-        camera.h \
-        filterwheel.h \
-        focuser.h \
-        image.formats.h \
-        image.h \
-        imageview.h \
-        mainframe.h \
-        mockcamera.h \
-        renderer.h
+        Camera.h \
+        Camera.Mock.h \
+        Camera.ZWO.h \
+        FilterWheel.h \
+        Focuser.h \
+        Image.Formats.h \
+        Image.h \
+        ImageView.h \
+        MainFrame.h \
+        Renderer.h
 
 FORMS += \
-        mainframe.ui
+        MainFrame.ui
 
 win32: {
     INCLUDEPATH += "..\ASI SDK\include"
@@ -66,7 +66,7 @@ win32:contains(QMAKE_HOST.arch, x86_64) {
     LIBS += -L"..\ASI SDK\lib\x86"
 }
 
-RESOURCES += resources.qrc
+RESOURCES += Resources.qrc
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

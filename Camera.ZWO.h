@@ -4,7 +4,7 @@
 #ifndef ASICAMERA_H
 #define ASICAMERA_H
 
-#include "camera.h"
+#include "Camera.h"
 
 #include <atomic>
 #include <vector>

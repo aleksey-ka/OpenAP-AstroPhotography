@@ -14,7 +14,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "image.h"
+#include "Image.h"
 
 class Pixels16BitUncompressed : public ImageFileFormat {
 public:

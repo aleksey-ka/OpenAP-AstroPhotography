@@ -10,9 +10,9 @@
 #include <QTimer>
 #include <QSettings>
 
-#include "camera.h"
-#include "focuser.h"
-#include "filterwheel.h"
+#include "Camera.h"
+#include "Focuser.h"
+#include "FilterWheel.h"
 
 namespace Ui {
     class MainFrame;

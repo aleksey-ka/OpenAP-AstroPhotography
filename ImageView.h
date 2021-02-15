@@ -7,7 +7,8 @@
 #include <QLabel>
 #include <QMouseEvent>
 #include <QStyle>
-#include "image.h"
+
+#include "Image.h"
 
 class ImageView : public QLabel
 {

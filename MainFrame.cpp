@@ -1,7 +1,7 @@
 // Copyright (C) 2020 Aleksey Kalyuzhny. Released under the terms of the
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
-#include "mainframe.h"
+#include "MainFrame.h"
 #include "ui_mainframe.h"
 #include <QShortcut>
 #include <QtConcurrent/QtConcurrent>
@@ -9,10 +9,10 @@
 #include <QInputDialog>
 #include <QDebug>
 
-#include "asicamera.h"
-#include "mockcamera.h"
-#include "image.formats.h"
-#include "renderer.h"
+#include "Camera.ZWO.h"
+#include "Camera.Mock.h"
+#include "Image.Formats.h"
+#include "Renderer.h"
 
 #include <chrono>
 

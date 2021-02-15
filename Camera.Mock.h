@@ -4,7 +4,7 @@
 #ifndef MOCKCAMERA_H
 #define MOCKCAMERA_H
 
-#include "camera.h"
+#include "Camera.h"
 
 #include <atomic>
 

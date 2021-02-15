@@ -4,7 +4,7 @@
 #include <QApplication>
 #include <QScreen>
 
-#include "mainframe.h"
+#include "MainFrame.h"
 
 int main( int argc, char *argv[] )
 {
