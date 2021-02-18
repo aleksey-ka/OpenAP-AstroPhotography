@@ -30,16 +30,6 @@ MainFrame::MainFrame( QWidget *parent ) :
 
     ui->closeButton->hide();
 
-    ui->imageView->setBackgroundRole( QPalette::Base );
-    ui->imageView->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
-    ui->imageView->setScaledContents( false );
-    ui->imageView->setAlignment( Qt::AlignCenter );
-
-    ui->histogramView->setBackgroundRole( QPalette::Base );
-    ui->histogramView->setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
-    ui->histogramView->setScaledContents( false );
-    ui->histogramView->setAlignment( Qt::AlignCenter );
-
     new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_F ), this, SLOT( on_toggleFullScreenButton_clicked() ) );
     new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_Q ), this, SLOT( on_closeButton_clicked() ) );
 

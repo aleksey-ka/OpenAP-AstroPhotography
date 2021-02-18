@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>My Capture Tool for ASI cameras</string>
+   <string>My Astro Capture</string>
   </property>
   <property name="styleSheet">
    <string notr="true">QWidget {
@@ -105,7 +105,7 @@ QSlider::handle:horizontal {
        <item>
         <widget class="ImageView" name="imageView">
          <property name="styleSheet">
-          <string notr="true">border:none;</string>
+          <string notr="true">QLabel#imageView{ border:none; }</string>
          </property>
          <property name="text">
           <string>No image</string>

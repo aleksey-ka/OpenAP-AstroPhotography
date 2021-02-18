@@ -5,15 +5,19 @@
 
 ImageView::ImageView( QWidget *parent ) : QLabel( parent )
 {
+    setBackgroundRole( QPalette::Base );
+    setSizePolicy( QSizePolicy::Ignored, QSizePolicy::Ignored );
+    setScaledContents( false );
+    setAlignment( Qt::AlignCenter );
 }
 
 void ImageView::mousePressEvent( QMouseEvent* event )
 {
-    if( pixmap() != 0 ) {
+    if( not pixmap( Qt::ReturnByValue ).isNull() ) {
         auto cr = contentsRect();
         auto m = margin();
         cr.adjust( m,  m, -m, -m );
-        auto rect = style()->itemPixmapRect( cr, alignment(), *pixmap() );
+        auto rect = style()->itemPixmapRect( cr, alignment(), pixmap( Qt::ReturnByValue ) );
         int x = event->x() - rect.x();
         int y = event->y() - rect.y();
         if( x >= 0 && y >= 0 && x < rect.width() && y < rect.height() ) {
