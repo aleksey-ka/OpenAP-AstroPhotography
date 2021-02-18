@@ -3,22 +3,41 @@
 
 #include "Renderer.h"
 
-void Renderer::renderHighQualityLinearWithHistogram( uchar* rgb, int byteWidth )
+void Renderer::renderHighQualityLinearWithHistogram( uchar* rgb, int byteWidth, int x0, int y0, int w, int h )
 {
     uint* hr = histR.data();
     uint* hg = histG.data();
     uint* hb = histB.data();
 
-    for( size_t y = 2; y < height - 2; y++ ) {
-        const ushort* srcLine = raw +  width * y;
+    for( size_t y = 0; y < h; y++ ) {
+        int Y = y + y0;
+        if( Y < 0 || Y >= height ) {
+            continue;
+        }
+        const ushort* srcLine = raw +  width * Y;
         uchar* dstLine = rgb + byteWidth * y;
-        for( size_t x = 2; x < width - 2; x++ ) {
-            const ushort* src = srcLine +  x;
+        for( size_t x = 0; x < w; x++ ) {
+            int X = x + x0;
+            if( X < 0 || X >= width ) {
+                continue;
+            }
+
+            const ushort* src = srcLine + X ;
             int R = 0;
             int G = 0;
             int B = 0;
-            switch( y % 2 << 1 | x % 2 ) {
-                case 0: // R
+
+            int channel = Y % 2 << 1 | X % 2;
+            if( Y < 2 || Y >= height - 2 || X < 2 || X >= width - 2 ) {
+                switch( channel ) {
+                    case 0: R = addToStatistics( src[0] ); break;
+                    case 1: G = addToStatistics( src[0] ); break;
+                    case 2: G = addToStatistics( src[0] ); break;
+                    case 3: B = addToStatistics( src[0] ); break;
+                }
+            } else {
+                switch( channel ) {
+                    case 0: // R
                     {
                         R = addToStatistics( src[0] );
                         hr[src[0] >> 4]++;
@@ -48,9 +67,9 @@ void Renderer::renderHighQualityLinearWithHistogram( uchar* rgb, int byteWidth )
                         B -= x;
                         if( B < 0 ) B = 0;
                         B >>= 3;
+                        break;
                     }
-                    break;
-                case 1: // G1
+                    case 1: // G1
                     {
                         // (3) Red at G1 location
                         R += src[-width-width] >> 1;
@@ -78,9 +97,9 @@ void Renderer::renderHighQualityLinearWithHistogram( uchar* rgb, int byteWidth )
                         B -= src[width+width];
                         if( B < 0 ) B = 0;
                         B >>= 3;
+                        break;
                     }
-                    break;
-                case 2: // G2
+                    case 2: // G2
                     {
                         // (4) Red at G2 location
                         R -= src[-width-width];
@@ -108,9 +127,9 @@ void Renderer::renderHighQualityLinearWithHistogram( uchar* rgb, int byteWidth )
                         B += src[width+width] >> 1;
                         if( B < 0 ) B = 0;
                         B >>= 3;
+                        break;
                     }
-                    break;
-                case 3: // B
+                    case 3: // B
                     {
                         // (1) Red at blue location
                         int x = 0;
@@ -140,8 +159,9 @@ void Renderer::renderHighQualityLinearWithHistogram( uchar* rgb, int byteWidth )
 
                         B = addToStatistics( src[0] );
                         hb[src[0] >> 4]++;
+                        break;
                     }
-                    break;
+                }
             }
 
             uchar* dst = dstLine + 3 * x;

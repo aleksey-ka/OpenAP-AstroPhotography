@@ -19,7 +19,8 @@ public:
     QPixmap Render( TRenderingMethod );
     QPixmap RenderHistogram();
 
-    QPixmap RenderRectHalfRes( int cx, int cy, int W, int H );
+    QPixmap RenderRectHalfRes( int x, int y, int width, int height );
+    QPixmap RenderRect( int x, int y, int width, int height );
     QPixmap RenderGrayScale();
 private:
     const ushort* raw;
@@ -57,7 +58,7 @@ private:
     }
 
     void renderHalfResolutionWithHistogram( uchar* rgb, int byteWidth );
-    void renderHighQualityLinearWithHistogram( uchar* rgb, int byteWidth );
+    void renderHighQualityLinearWithHistogram( uchar* rgb, int byteWidth, int x, int y, int width, int height );
 };
 
 #endif // RENDERER_H

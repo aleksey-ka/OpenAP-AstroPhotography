@@ -36,7 +36,7 @@ QPixmap Renderer::Render( TRenderingMethod method )
         std::vector<uchar> pixels( byteWidth * height );
         uchar* rgb = pixels.data();
 
-        renderHighQualityLinearWithHistogram( rgb, byteWidth );
+        renderHighQualityLinearWithHistogram( rgb, byteWidth, 0, 0, width, height );
 
         QImage image( rgb, width, height, QImage::Format_RGB888 );
         return QPixmap::fromImage( image );
@@ -70,6 +70,23 @@ void Renderer::renderHalfResolutionWithHistogram( uchar* rgb, int byteWidth )
             hb[b]++;
         }
     }
+}
+
+QPixmap Renderer::RenderRect( int x, int y, int w, int h )
+{
+    // Initialize histogram
+    const int hSize = 256;
+    histR.resize( hSize );
+    histG.resize( hSize );
+    histB.resize( hSize );
+
+    size_t byteWidth = 3 * w;
+    std::vector<uchar> pixels( byteWidth * h );
+
+    renderHighQualityLinearWithHistogram( pixels.data(), byteWidth, x, y, w, h );
+
+    QImage image( pixels.data(), w, h, byteWidth, QImage::Format_RGB888 );
+    return QPixmap::fromImage( image );
 }
 
 static QString collapseNumber( uint n )
@@ -188,21 +205,19 @@ QPixmap Renderer::RenderHistogram()
     return pixmap;
 }
 
-QPixmap Renderer::RenderRectHalfRes( int cx, int cy, int W, int H )
+QPixmap Renderer::RenderRectHalfRes( int X, int Y, int W, int H )
 {
-    size_t w = width / 2;
-    size_t h = height / 2;
-    size_t byteWidth = 3 * w;
-    std::vector<uchar> pixels( byteWidth * h );
+    size_t byteWidth = 3 * W;
+    std::vector<uchar> pixels( byteWidth * H );
     uchar* rgb = pixels.data();
-    for( size_t y = cy - H / 2; y <= cy + H / 2; y++ ) {
-        const ushort* srcLine = raw + 2 * width * y;
+    for( size_t y = 0; y < H; y++ ) {
+        const ushort* srcLine = raw + 2 * width * ( Y / 2 + y );
         uchar* dstLine = rgb + byteWidth * y;
-        for( size_t x = cx - W / 2; x <= cx + W / 2; x++ ) {
-            const ushort* src = srcLine + 2 * x;
-            uchar r = src[0] / 256;
-            uchar g = src[1] / 256;
-            uchar b = src[width + 1] / 256;
+        for( size_t x = 0; x < W; x++ ) {
+            const ushort* src = srcLine + 2 * ( X / 2 + x );
+            uchar r = src[0] >> 4;
+            uchar g = src[1] >> 4;
+            uchar b = src[width + 1] >> 4;
 
             uchar* dst = dstLine + 3 * x;
             dst[0] = r;
@@ -211,7 +226,7 @@ QPixmap Renderer::RenderRectHalfRes( int cx, int cy, int W, int H )
         }
     }
 
-    QImage image( rgb, w, h, QImage::Format_RGB888 );
+    QImage image( rgb, W, H, QImage::Format_RGB888 );
     return QPixmap::fromImage( image );
 }
 
