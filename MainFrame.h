@@ -10,6 +10,8 @@
 #include <QTimer>
 #include <QSettings>
 
+#include "ImageView.h"
+
 #include "Camera.h"
 #include "Focuser.h"
 #include "FilterWheel.h"
@@ -59,9 +61,17 @@ private slots:
 
     void on_filterWheelComboBox_currentIndexChanged( int index );
 
+    void on_imageView_imagePressed( int x, int y, Qt::MouseButton, Qt::KeyboardModifiers );
+
+protected:
+    void resizeEvent( QResizeEvent* ) override;
+
 private:
     Ui::MainFrame *ui;
+    ImageView* zoomView;
     void updateUI();
+
+    void showZoom( bool update = true );
 
     QSettings settings;
 
@@ -74,6 +84,9 @@ private:
     // Capture
     QFutureWatcher<std::shared_ptr<const Raw16Image>> imageReadyWatcher;
     QFutureWatcher<QString> imageSavedWatcher;
+    std::shared_ptr<const Raw16Image> currentImage;
+    int zoomSize = 0;
+    QPoint zoomCenter;
     int exposureRemainingTime;
     uint64_t seriesId = 0;
     QAtomicInt capturedFrames = 0;

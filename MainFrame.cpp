@@ -84,7 +84,7 @@ MainFrame::MainFrame( QWidget *parent ) :
        connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Down ), this ), &QShortcut::activated, [=]() { focuser.Backward(); } );
        connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Right ), this ), &QShortcut::activated, [=]() { focuser.StepUp(); } );
        connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Left ), this ), &QShortcut::activated, [=]() { focuser.StepDown(); } );
-       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Z ), this ), &QShortcut::activated, [=]() { focuser.MarkZero(); } );
+       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_M ), this ), &QShortcut::activated, [=]() { focuser.MarkZero(); } );
        connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_0 ), this ), &QShortcut::activated, [=]() { focuser.GoToPos( 0 ); } );
        connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_G ), this ),
             &QShortcut::activated, [=]() {
@@ -125,6 +125,26 @@ MainFrame::MainFrame( QWidget *parent ) :
    }
 
    ui->imageView->setCursor( QCursor( QPixmap( ":CrossHair.png" ), 23, 23 ) );
+   connect( ui->imageView, SIGNAL( imagePressed), SLOT( on_imageView_imagePressed ) );
+
+   zoomView = new ImageView( ui->imageView );
+   zoomView->setStyleSheet( "border-bottom:none;border-right:none;" );
+   zoomView->hide();
+   connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_Z ), this ), &QShortcut::activated, [=]() {
+       if( ++zoomSize > 2 ) {
+            zoomSize = 2;
+       } else {
+            showZoom();
+       }
+   } );
+   connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Z ), this ), &QShortcut::activated, [=]() {
+       if( --zoomSize <= 0 ) {
+           zoomSize = 0;
+           zoomView->hide();
+       } else {
+           showZoom();
+       }
+   } );
 
    updateUI();
 }
@@ -136,6 +156,7 @@ MainFrame::~MainFrame()
     }
     focuser.Close();
     filterWheel.Close();
+    delete zoomView;
     delete ui;
 }
 
@@ -148,6 +169,39 @@ void MainFrame::updateUI()
     ui->cameraOpenCloseButton->setText( camera != 0 ? "X" : ">" );
     ui->useCameraWhiteBalanceCheckBox->setVisible( camera != 0 && camera->GetInfo()->IsColorCam );
     ui->filterWheelFrame->setVisible( filterWheel.GetSlotsCount() > 0 );
+}
+
+void MainFrame::resizeEvent( QResizeEvent* event )
+{
+    QMainWindow::resizeEvent( event );
+    if( zoomView->isVisible() ) {
+        showZoom( false );
+    }
+}
+
+void MainFrame::showZoom( bool update )
+{  
+    if( zoomSize == 0 ) {
+        zoomSize = 1;
+    }
+
+    if( update ) {
+        int imageSize = 300 * zoomSize + 1;
+        zoomView->resize( imageSize + 1, imageSize + 1 );
+        if( currentImage != 0 ) {
+            Renderer renderer( currentImage->RawPixels(), currentImage->Width(), currentImage->Height() );
+            if( zoomCenter.isNull() ) {
+                zoomView->setPixmap( renderer.RenderRect( currentImage->Width() / 2 - imageSize / 2, currentImage->Height() / 2 - imageSize / 2, imageSize, imageSize ) );
+            } else {
+                zoomView->setPixmap( renderer.RenderRect( zoomCenter.x() - imageSize / 2, zoomCenter.y() - imageSize / 2, imageSize, imageSize ) );
+            }
+        }
+    }
+
+    auto parentRect = ui->imageView->frameGeometry();
+    auto geometry = zoomView->geometry();
+    zoomView->move( parentRect.right() - geometry.width(), parentRect.bottom() - geometry.height() );
+    zoomView->show();
 }
 
 void MainFrame::on_closeButton_clicked()
@@ -184,6 +238,7 @@ void MainFrame::on_cameraSelectionCombo_currentIndexChanged( int index )
 
     ui->infoLabel->setText( txt );
 
+    currentImage.reset();
     ui->imageView->clear();
     ui->imageView->setText( "No image" );
 }
@@ -474,6 +529,8 @@ void MainFrame::imageReady()
 
         auto msec = render( result->RawPixels(), result->Width(), result->Height() );
         qDebug() << "Rendered in " << msec << "msec";
+
+        currentImage = result;
     }
 
     if( ui->continuousCaptureCheckBox->isChecked() ) {
@@ -508,6 +565,9 @@ ulong MainFrame::render( const ushort* raw, int width, int height )
     }
     ui->imageView->setPixmap( pixmap );
     ui->histogramView->setPixmap( renderer.RenderHistogram() );
+    if( zoomSize > 0 ) {
+        showZoom();
+    }
 
     auto end = std::chrono::steady_clock::now();
     return std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();
@@ -642,4 +702,19 @@ void MainFrame::on_filterWheelComboBox_currentIndexChanged( int index )
 
     }
     ui->filterComboBox->setCurrentIndex( filterWheel.GetPosition() );
+}
+
+void MainFrame::on_imageView_imagePressed( int cx, int cy, Qt::MouseButton button, Qt::KeyboardModifiers modifiers )
+{
+    int scale = ui->showFullResolution->isChecked() ? 1 : 2;
+    zoomCenter.setX( cx * scale );
+    zoomCenter.setY( cy * scale );
+
+    showZoom();
+
+    if( modifiers.testFlag( Qt::ShiftModifier ) ) {
+        // Move cursor to the center of zoom view
+        auto center = zoomView->contentsRect().center();
+        QCursor::setPos( zoomView->mapToGlobal( center ) );
+    }
 }
