@@ -55,6 +55,7 @@ FORMS += \
 win32: {
     INCLUDEPATH += "..\ASI SDK\include"
     LIBS += -lASICamera2 -lEFW_filter
+    RC_ICONS += MainFrame.ico
 } else: unix: {
     INCLUDEPATH += /usr/include/libasi
     LIBS += -lASICamera2 -lEFWFilter

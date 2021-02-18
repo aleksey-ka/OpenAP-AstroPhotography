@@ -2,7 +2,7 @@
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
 #include "MainFrame.h"
-#include "ui_mainframe.h"
+#include "ui_MainFrame.h"
 #include <QShortcut>
 #include <QtConcurrent/QtConcurrent>
 #include <QPainter>
@@ -24,7 +24,7 @@ MainFrame::MainFrame( QWidget *parent ) :
     int numberOfCores = QThread::idealThreadCount();
     QThreadPool::globalInstance()->setMaxThreadCount( std::min( numberOfCores, 4 ) );
 
-    setWindowIcon( QIcon( ":mainframe.ico" ) );
+    setWindowIcon( QIcon( ":MainFrame.ico" ) );
 
     ui->setupUi( this ) ;
 
