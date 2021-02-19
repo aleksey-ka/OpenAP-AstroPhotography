@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>My Astro Capture</string>
+   <string>OpenAP Capture</string>
   </property>
   <property name="styleSheet">
    <string notr="true">QWidget {

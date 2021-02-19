@@ -8,7 +8,7 @@ QT += core gui serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = MyAstroCapture
+TARGET = OpenAP-Capture
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -55,7 +55,7 @@ FORMS += \
         MainFrame.ui
 
 win32: {
-    INCLUDEPATH += "..\ASI SDK\include"
+    INCLUDEPATH += "..\..\ASI SDK\include"
     LIBS += -lASICamera2 -lEFW_filter
     RC_ICONS += MainFrame.ico
 } else: unix: {
@@ -64,9 +64,9 @@ win32: {
 }
 
 win32:contains(QMAKE_HOST.arch, x86_64) {  
-    LIBS += -L"..\ASI SDK\lib\x64"
+    LIBS += -L"..\..\ASI SDK\lib\x64"
 } else {
-    LIBS += -L"..\ASI SDK\lib\x86"
+    LIBS += -L"..\..\ASI SDK\lib\x86"
 }
 
 RESOURCES += Resources.qrc
