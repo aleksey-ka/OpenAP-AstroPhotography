@@ -146,6 +146,13 @@ MainFrame::MainFrame( QWidget *parent ) :
        }
    } );
 
+   connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_R ), this ), &QShortcut::activated, [=]() {
+       if( camera == 0 ) {
+            on_cameraOpenCloseButton_clicked();
+       }
+       on_captureButton_clicked();
+   } );
+
    updateUI();
 }
 
