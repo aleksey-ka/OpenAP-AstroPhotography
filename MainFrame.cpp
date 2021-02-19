@@ -13,6 +13,7 @@
 #include "Camera.Mock.h"
 #include "Image.Formats.h"
 #include "Renderer.h"
+#include "Math.Image.h"
 
 #include <chrono>
 
@@ -96,6 +97,7 @@ MainFrame::MainFrame( QWidget *parent ) :
             }
        );
    }
+   connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_F ), this ), &QShortcut::activated, [=]() { focusingHelperOn = !focusingHelperOn; showZoom(); } );
 
    if( filterWheel.Open() ) {
        // TODO: Fixing a bug with text color on Raspberry Pi (old Qt?). It shows always gray
@@ -196,11 +198,12 @@ void MainFrame::showZoom( bool update )
         int imageSize = 300 * zoomSize + 1;
         zoomView->resize( imageSize + 1, imageSize + 1 );
         if( currentImage != 0 ) {
-            Renderer renderer( currentImage->RawPixels(), currentImage->Width(), currentImage->Height() );
-            if( zoomCenter.isNull() ) {
-                zoomView->setPixmap( renderer.RenderRect( currentImage->Width() / 2 - imageSize / 2, currentImage->Height() / 2 - imageSize / 2, imageSize, imageSize ) );
+            QPoint c = zoomCenter.isNull() ? QPoint( currentImage->Width() / 2, currentImage->Height() / 2 ) : zoomCenter;
+            if( focusingHelperOn ) {
+                zoomView->setPixmap( FocusingHelper( currentImage.get(), c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize ) );
             } else {
-                zoomView->setPixmap( renderer.RenderRect( zoomCenter.x() - imageSize / 2, zoomCenter.y() - imageSize / 2, imageSize, imageSize ) );
+                Renderer renderer( currentImage->RawPixels(), currentImage->Width(), currentImage->Height() );
+                zoomView->setPixmap( renderer.RenderRect( c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize ) );
             }
         }
     }

@@ -87,6 +87,7 @@ private:
     std::shared_ptr<const Raw16Image> currentImage;
     int zoomSize = 0;
     QPoint zoomCenter;
+    bool focusingHelperOn = false;
     int exposureRemainingTime;
     uint64_t seriesId = 0;
     QAtomicInt capturedFrames = 0;

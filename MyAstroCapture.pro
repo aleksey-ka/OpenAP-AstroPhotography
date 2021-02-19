@@ -34,6 +34,7 @@ SOURCES += \
         ImageView.cpp \
         Main.cpp \
         MainFrame.cpp \
+        Math.Image.cpp \
         Renderer.cpp \
         Renderer.HQLinear.cpp
 
@@ -47,6 +48,7 @@ HEADERS += \
         Image.h \
         ImageView.h \
         MainFrame.h \
+        Math.Image.h \
         Renderer.h
 
 FORMS += \
