@@ -3,6 +3,8 @@
 
 #include "Renderer.h"
 
+#include <Image.Debayer.HQLinear.h>
+
 #include <QPainter>
 
 Renderer::Renderer( const ushort* _raw, int _width, int _height ) :
@@ -36,7 +38,12 @@ QPixmap Renderer::Render( TRenderingMethod method )
         std::vector<uchar> pixels( byteWidth * height );
         uchar* rgb = pixels.data();
 
-        renderHighQualityLinearWithHistogram( rgb, byteWidth, 0, 0, width, height );
+        CDebayer_RawU16_HQLiner debayer( raw, width, height );
+        debayer.ToRgbU8( rgb, byteWidth, 0, 0, width, height, histR.data(), histG.data(), histB.data() );
+        maxValue = debayer.MaxValue;
+        maxCount = debayer.MaxCount;
+        minValue = debayer.MinValue;
+        minCount = debayer.MinCount;
 
         QImage image( rgb, width, height, QImage::Format_RGB888 );
         return QPixmap::fromImage( image );
@@ -83,7 +90,12 @@ QPixmap Renderer::RenderRect( int x, int y, int w, int h )
     size_t byteWidth = 3 * w;
     std::vector<uchar> pixels( byteWidth * h );
 
-    renderHighQualityLinearWithHistogram( pixels.data(), byteWidth, x, y, w, h );
+    CDebayer_RawU16_HQLiner debayer( raw, width, height );
+    debayer.ToRgbU8( pixels.data(), byteWidth, x, y, w, h, histR.data(), histG.data(), histB.data() );
+    maxValue = debayer.MaxValue;
+    maxCount = debayer.MaxCount;
+    minValue = debayer.MinValue;
+    minCount = debayer.MinCount;
 
     QImage image( pixels.data(), w, h, byteWidth, QImage::Format_RGB888 );
     return QPixmap::fromImage( image );

@@ -58,7 +58,6 @@ private:
     }
 
     void renderHalfResolutionWithHistogram( uchar* rgb, int byteWidth );
-    void renderHighQualityLinearWithHistogram( uchar* rgb, int byteWidth, int x, int y, int width, int height );
 };
 
 #endif // RENDERER_H

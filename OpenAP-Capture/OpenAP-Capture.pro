@@ -30,13 +30,13 @@ SOURCES += \
         FilterWheel.cpp \
         Focuser.cpp \
         Image.cpp \
+        Image.Debayer.HQLinear.cpp \
         Image.Formats.cpp \
         Image.Math.cpp \
         ImageView.cpp \
         Main.cpp \
         MainFrame.cpp \
         Renderer.cpp \
-        Renderer.HQLinear.cpp
 
 HEADERS += \
         Camera.h \
@@ -44,9 +44,11 @@ HEADERS += \
         Camera.ZWO.h \
         FilterWheel.h \
         Focuser.h \
+        Image.h \
+        Image.Debayer.h \
+        Image.Debayer.HQLinear.h \
         Image.Formats.h \
         Image.Math.h \
-        Image.h \
         ImageView.h \
         MainFrame.h \
         Renderer.h
