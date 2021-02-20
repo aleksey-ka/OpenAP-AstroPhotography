@@ -64,14 +64,6 @@ size_t CPixelStatistics::maxP( int channel, int start, int end ) const
     return maxPos;
 }
 
-QPixmap FocusingHelper( const Raw16Image* image, int x0, int y0, int w, int h )
-{
-    CRawU16PixelMath pixelMath( image->RawPixels(), image->Width(), image->Height() );
-    auto result = pixelMath.Stretch( x0, y0, w, h );
-    QImage im( result->RgbPixels(), w, h, result->ByteWidth(), QImage::Format_RGB888 );
-    return QPixmap::fromImage( im );
-}
-
 CRawU16PixelMath::CRawU16PixelMath( const ushort* _raw, int _width, int _height ) :
     raw( _raw ), width( _width ), height( _height )
 {
@@ -82,7 +74,7 @@ std::shared_ptr<CRgbU16Image> CRawU16PixelMath::DebayerRect( int x, int y, int w
 {
     auto result = std::make_shared<CRgbU16Image>( w, h );
     CDebayer_RawU16_HQLiner debayer( raw, width, height );
-    debayer.ToRgbU16( result->RgbPixels(), result->ByteWidth(), x, y, w, h );
+    debayer.ToRgbU16( result->RgbPixels(), result->Stride(), x, y, w, h );
     return result;
 }
 
@@ -148,8 +140,8 @@ std::shared_ptr<CRgbImage> CRawU16PixelMath::Stretch( int x0, int y0, int W, int
 
     auto result = std::make_shared<CRgbImage>( W, H );
     for( size_t y = 0; y < H; y++ ) {
-        const ushort* srcLine = rgb16->RgbPixels() + rgb16->ByteWidth() * y;
-        uchar* dstLine = result->RgbPixels() + result->ByteWidth() * y;
+        const ushort* srcLine = rgb16->ScanLine( y );
+        uchar* dstLine = result->ScanLine( y );
         for( size_t x = 0; x < W; x++ ) {
             const ushort* src = srcLine + 3 * x;
             uchar* dst = dstLine + 3 * x;
@@ -163,7 +155,7 @@ std::shared_ptr<CRgbImage> CRawU16PixelMath::Stretch( int x0, int y0, int W, int
                 dst[1] = 0x00;
                 dst[2] = 0x80;
             } else {
-                const int k = 16;
+                const int k = 12;
                 dst[0] = r <= ( sR.Median + k * sR.Sigma ) ? ( r < sR.Median ? 0 : ( 255 * ( r - sR.Median ) / k / sR.Sigma ) ) : 255;
                 dst[1] = g <= ( sG.Median + k * sG.Sigma ) ? ( g < sG.Median ? 0 : ( 255 * ( g - sG.Median ) / k / sG.Sigma ) ) : 255;
                 dst[2] = b <= ( sB.Median + k * sB.Sigma ) ? ( b < sB.Median ? 0 : ( 255 * ( b - sB.Median ) / k / sB.Sigma ) ) : 255;

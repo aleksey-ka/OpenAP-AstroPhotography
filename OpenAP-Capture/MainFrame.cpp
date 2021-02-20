@@ -42,7 +42,7 @@ MainFrame::MainFrame( QWidget *parent ) :
     // TODO: In Qt 5.15 lambdas can be used in QShortcut constructor
     connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_T ), this ), &QShortcut::activated, [=]() { drawTargetingCircle = !drawTargetingCircle; } );
 
-    connect( &imageReadyWatcher, &QFutureWatcher<std::shared_ptr<Raw16Image>>::finished, this, &MainFrame::imageReady );
+    connect( &imageReadyWatcher, &QFutureWatcher<std::shared_ptr<CRawU16Image>>::finished, this, &MainFrame::imageReady );
     connect( &imageSavedWatcher, &QFutureWatcher<QString>::finished, this, &MainFrame::imageSaved );
 
     connect( &exposureTimer, &QTimer::timeout, [=]() { if( exposureRemainingTime > 0 ) exposureRemainingTime--; showCaptureStatus(); } );
@@ -198,6 +198,14 @@ void MainFrame::resizeEvent( QResizeEvent* event )
     }
 }
 
+static QPixmap focusingHelper( const CRawU16Image* image, int x0, int y0, int w, int h )
+{
+    CRawU16PixelMath pixelMath( image->RawPixels(), image->Width(), image->Height() );
+    auto result = pixelMath.Stretch( x0, y0, w, h );
+    QImage im( result->RgbPixels(), w, h, result->ByteWidth(), QImage::Format_RGB888 );
+    return QPixmap::fromImage( im );
+}
+
 void MainFrame::showZoom( bool update )
 {  
     if( zoomSize == 0 ) {
@@ -210,7 +218,7 @@ void MainFrame::showZoom( bool update )
         if( currentImage != 0 ) {
             QPoint c = zoomCenter.isNull() ? QPoint( currentImage->Width() / 2, currentImage->Height() / 2 ) : zoomCenter;
             if( focusingHelperOn ) {
-                zoomView->setPixmap( FocusingHelper( currentImage.get(), c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize ) );
+                zoomView->setPixmap( focusingHelper( currentImage.get(), c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize ) );
             } else {
                 Renderer renderer( currentImage->RawPixels(), currentImage->Width(), currentImage->Height() );
                 zoomView->setPixmap( renderer.RenderRect( c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize ) );

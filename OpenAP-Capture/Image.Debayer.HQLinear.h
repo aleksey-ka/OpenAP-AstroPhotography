@@ -10,8 +10,8 @@ class CDebayer_RawU16_HQLiner : public CDebayer_RawU16 {
 public:
     CDebayer_RawU16_HQLiner( const unsigned short* raw, int width, int height ) : CDebayer_RawU16( raw, width, height ) {}
 
-    void ToRgbU16( unsigned short* rgb, int byteWidth, int x0, int y0, int w, int h );
-    void ToRgbU8( unsigned char* rgb, int byteWidth, int x0, int y0, int w, int h, unsigned int* hr, unsigned int* hg, unsigned int* hb );
+    void ToRgbU16( unsigned short* rgb, int stride, int x0, int y0, int w, int h );
+    void ToRgbU8( unsigned char* rgb, int stride, int x0, int y0, int w, int h, unsigned int* hr, unsigned int* hg, unsigned int* hb );
 };
 
 #endif // IMAGE_DEBAYER_HQLINEAR_H

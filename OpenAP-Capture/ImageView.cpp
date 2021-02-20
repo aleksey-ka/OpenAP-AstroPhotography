@@ -3,6 +3,8 @@
 
 #include "ImageView.h"
 
+#include <QStyle>
+
 ImageView::ImageView( QWidget *parent ) : QLabel( parent )
 {
     setBackgroundRole( QPalette::Base );

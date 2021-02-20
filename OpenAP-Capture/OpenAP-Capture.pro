@@ -29,10 +29,11 @@ SOURCES += \
         Camera.ZWO.cpp \
         FilterWheel.cpp \
         Focuser.cpp \
-        Image.cpp \
         Image.Debayer.HQLinear.cpp \
         Image.Formats.cpp \
         Image.Math.cpp \
+        Image.RawU16Image.cpp \
+        Image.RgbImage.cpp \
         ImageView.cpp \
         Main.cpp \
         MainFrame.cpp \
@@ -44,11 +45,12 @@ HEADERS += \
         Camera.ZWO.h \
         FilterWheel.h \
         Focuser.h \
-        Image.h \
         Image.Debayer.h \
         Image.Debayer.HQLinear.h \
         Image.Formats.h \
         Image.Math.h \
+        Image.RawU16Image.h \
+        Image.RgbImage.h \
         ImageView.h \
         MainFrame.h \
         Renderer.h

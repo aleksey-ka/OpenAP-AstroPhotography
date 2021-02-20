@@ -12,9 +12,9 @@
 
 static QStringList files;
 
-static std::shared_ptr<const Raw16Image> loadImage( int index )
+static std::shared_ptr<const CRawU16Image> loadImage( int index )
 {
-    return Raw16Image::LoadFromFile( files[index].toStdString().c_str() );
+    return CRawU16Image::LoadFromFile( files[index].toStdString().c_str() );
 }
 
 static std::shared_ptr<ASI_CAMERA_INFO> createCameraInfo( int index )
@@ -68,7 +68,7 @@ void MockCamera::GetROIFormat( int& width, int& height, int& bin, ASI_IMG_TYPE& 
     imgType = ASI_IMG_RAW16;
 }
 
-std::shared_ptr<const Raw16Image> MockCamera::DoExposure() const
+std::shared_ptr<const CRawU16Image> MockCamera::DoExposure() const
 {
     isExposure = true;
     if( isClosing ) {

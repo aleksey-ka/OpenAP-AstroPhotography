@@ -14,17 +14,17 @@
 #include <string.h>
 #include <assert.h>
 
-#include "Image.h"
+#include "Image.RawU16Image.h"
 
 class Pixels16BitUncompressed : public ImageFileFormat {
 public:
-    virtual std::shared_ptr<const Raw16Image> Load( const char* filePath, const ImageInfo& ) const override;
-    virtual void Save( const char* filePath, const Raw16Image* ) const override;
+    virtual std::shared_ptr<const CRawU16Image> Load( const char* filePath, const ImageInfo& ) const override;
+    virtual void Save( const char* filePath, const CRawU16Image* ) const override;
 };
 
-std::shared_ptr<const Raw16Image> Pixels16BitUncompressed::Load( const char* filePath, const ImageInfo& imageInfo ) const
+std::shared_ptr<const CRawU16Image> Pixels16BitUncompressed::Load( const char* filePath, const ImageInfo& imageInfo ) const
 {
-    auto result = std::make_shared<Raw16Image>( imageInfo );
+    auto result = std::make_shared<CRawU16Image>( imageInfo );
 
     FILE* file = fopen( filePath, "rb" );
     fread( result->Buffer(), 1, result->BufferSize(), file );
@@ -33,7 +33,7 @@ std::shared_ptr<const Raw16Image> Pixels16BitUncompressed::Load( const char* fil
     return result;
 }
 
-void Pixels16BitUncompressed::Save( const char* filePath, const Raw16Image* image ) const
+void Pixels16BitUncompressed::Save( const char* filePath, const CRawU16Image* image ) const
 {
     FILE* out = fopen( filePath, "wb" );
     fwrite( image->Buffer(), 1, image->BufferSize(), out );
@@ -72,7 +72,7 @@ static std::string toString( std::wstring s )
     return converter.to_bytes( s );
 }
 
-std::shared_ptr<const Raw16Image> Raw16Image::LoadFromFile( const char* filePath )
+std::shared_ptr<const CRawU16Image> CRawU16Image::LoadFromFile( const char* filePath )
 {
     std::string infoFilePath( filePath );
     replace( infoFilePath, ".pixels", ".info" );
@@ -113,7 +113,7 @@ std::shared_ptr<const Raw16Image> Raw16Image::LoadFromFile( const char* filePath
     return uncompressed.Load( filePath, imageInfo );
 }
 
-void Raw16Image::SaveToFile( const char* filePath, const ImageFileFormat* fileFormat ) const
+void CRawU16Image::SaveToFile( const char* filePath, const ImageFileFormat* fileFormat ) const
 {
     std::string infoFilePath( filePath );
     auto pos = infoFilePath.rfind( '.' );

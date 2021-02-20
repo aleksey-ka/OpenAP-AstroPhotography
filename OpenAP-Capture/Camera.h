@@ -8,7 +8,7 @@
 
 #include <ASICamera2.h>
 
-#include "Image.h"
+#include "Image.RawU16Image.h"
 
 class Camera {
 public:
@@ -50,7 +50,7 @@ public:
     virtual void SetROIFormat( int width, int height, int bin, ASI_IMG_TYPE imgType ) = 0;
 
     // Do single exposure
-    virtual std::shared_ptr<const Raw16Image> DoExposure() const = 0;
+    virtual std::shared_ptr<const CRawU16Image> DoExposure() const = 0;
 
     // Number of dropped frames
     virtual int GetDroppedFrames() const = 0;

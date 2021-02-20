@@ -6,9 +6,6 @@
 
 #include <QLabel>
 #include <QMouseEvent>
-#include <QStyle>
-
-#include "Image.h"
 
 class ImageView : public QLabel
 {

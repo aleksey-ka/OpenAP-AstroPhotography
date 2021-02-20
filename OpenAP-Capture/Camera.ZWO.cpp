@@ -170,7 +170,7 @@ void ASICamera::SetROIFormat( int width, int height, int bin, ASI_IMG_TYPE imgTy
     this->imgType = ASI_IMG_END; cameraInfo = 0;
 }
 
-std::shared_ptr<const Raw16Image> ASICamera::DoExposure() const
+std::shared_ptr<const CRawU16Image> ASICamera::DoExposure() const
 {
     isExposure = true;
     if( isClosing ) {
@@ -204,7 +204,7 @@ std::shared_ptr<const Raw16Image> ASICamera::DoExposure() const
 
     checkResult( ASIStartExposure( id, ASI_FALSE ) );
 
-    auto result = std::make_shared<Raw16Image>( imageInfo );
+    auto result = std::make_shared<CRawU16Image>( imageInfo );
 
     ASI_EXPOSURE_STATUS status;
     do {

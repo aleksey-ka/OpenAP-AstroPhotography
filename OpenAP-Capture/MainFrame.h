@@ -82,9 +82,9 @@ private:
     void closeCamera();
 
     // Capture
-    QFutureWatcher<std::shared_ptr<const Raw16Image>> imageReadyWatcher;
+    QFutureWatcher<std::shared_ptr<const CRawU16Image>> imageReadyWatcher;
     QFutureWatcher<QString> imageSavedWatcher;
-    std::shared_ptr<const Raw16Image> currentImage;
+    std::shared_ptr<const CRawU16Image> currentImage;
     int zoomSize = 0;
     QPoint zoomCenter;
     bool focusingHelperOn = false;

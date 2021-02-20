@@ -5,9 +5,9 @@
 
 #include <QImage>
 
-std::shared_ptr<const Raw16Image> Png16BitGrayscale::Load( const char* filePath, const ImageInfo& imageInfo ) const
+std::shared_ptr<const CRawU16Image> Png16BitGrayscale::Load( const char* filePath, const ImageInfo& imageInfo ) const
 {
-    auto result = std::make_shared<Raw16Image>( imageInfo );
+    auto result = std::make_shared<CRawU16Image>( imageInfo );
 
     // Reading png is relatively slow: ~ 0.8 sec for compressed and ~0.4 for uncompressed data
     QImage greyScaleImage;
@@ -24,7 +24,7 @@ std::shared_ptr<const Raw16Image> Png16BitGrayscale::Load( const char* filePath,
     return result;
 }
 
-void Png16BitGrayscale::Save( const char* filePath, const Raw16Image* image ) const
+void Png16BitGrayscale::Save( const char* filePath, const CRawU16Image* image ) const
 {
     auto imageInfo = image->Info();
     QImage greyScaleImage( image->Buffer(), imageInfo.Width, imageInfo.Height, QImage::Format_Grayscale16 );

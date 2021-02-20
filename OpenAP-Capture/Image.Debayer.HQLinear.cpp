@@ -3,7 +3,7 @@
 
 #include "Image.Debayer.HQLinear.h"
 
-void CDebayer_RawU16_HQLiner::ToRgbU16( unsigned short* rgb, int byteWidth, int x0, int y0, int w, int h )
+void CDebayer_RawU16_HQLiner::ToRgbU16( unsigned short* rgb, int stride, int x0, int y0, int w, int h )
 {
     for( int y = 0; y < h; y++ ) {
         int Y = y + y0;
@@ -11,7 +11,7 @@ void CDebayer_RawU16_HQLiner::ToRgbU16( unsigned short* rgb, int byteWidth, int 
             continue;
         }
         const unsigned short* srcLine = raw +  width * Y;
-        unsigned short* dstLine = rgb + byteWidth * y;
+        unsigned short* dstLine = rgb + stride * y;
         for( int x = 0; x < w; x++ ) {
             int X = x + x0;
             if( X < 0 || X >= width ) {
@@ -164,7 +164,7 @@ void CDebayer_RawU16_HQLiner::ToRgbU16( unsigned short* rgb, int byteWidth, int 
     }
 }
 
-void CDebayer_RawU16_HQLiner::ToRgbU8( unsigned char* rgb, int byteWidth, int x0, int y0, int w, int h, unsigned int* hr, unsigned int* hg, unsigned int* hb )
+void CDebayer_RawU16_HQLiner::ToRgbU8( unsigned char* rgb, int stride, int x0, int y0, int w, int h, unsigned int* hr, unsigned int* hg, unsigned int* hb )
 {
     for( int y = 0; y < h; y++ ) {
         int Y = y + y0;
@@ -172,7 +172,7 @@ void CDebayer_RawU16_HQLiner::ToRgbU8( unsigned char* rgb, int byteWidth, int x0
             continue;
         }
         const auto* srcLine = raw +  width * Y;
-        auto* dstLine = rgb + byteWidth * y;
+        auto* dstLine = rgb + stride * y;
         for( int x = 0; x < w; x++ ) {
             int X = x + x0;
             if( X < 0 || X >= width ) {

@@ -57,7 +57,7 @@ public:
     void SetROIFormat( int width, int height, int bin, ASI_IMG_TYPE imgType ) override;
 
     // Do single exposure
-    std::shared_ptr<const Raw16Image> DoExposure() const override;
+    std::shared_ptr<const CRawU16Image> DoExposure() const override;
 
     // Number of dropped frames
     int GetDroppedFrames() const override;
