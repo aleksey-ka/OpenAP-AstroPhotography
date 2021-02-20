@@ -6,6 +6,7 @@
 #include <Image.Qt.h>
 #include <Image.Debayer.HalfRes.h>
 #include <Image.Debayer.HQLinear.h>
+#include <Image.Debayer.CFA.h>
 
 #include <QPainter>
 
@@ -40,8 +41,8 @@ QPixmap Renderer::Render( TRenderingMethod method, int x, int y, int W, int H )
         minCount = debayer.MinCount;
 
         return Qt::CreatePixmap( rgb, w, h, byteWidth );
-    } else {
-        assert( method = RM_FullResolution );
+    } else if( method == RM_FullResolution ) {
+        assert( method == RM_FullResolution );
 
         size_t w = W > 0 ? W : width;
         size_t h = H > 0 ? H : height;
@@ -50,7 +51,24 @@ QPixmap Renderer::Render( TRenderingMethod method, int x, int y, int W, int H )
         uchar* rgb = pixels.data();
 
         CDebayer_RawU16_HQLinear debayer( raw, width, height );
-        debayer.ToRgbU8( rgb, byteWidth, x, y, W, H, histR.data(), histG.data(), histB.data() );
+        debayer.ToRgbU8( rgb, byteWidth, x, y, w, h, histR.data(), histG.data(), histB.data() );
+        maxValue = debayer.MaxValue;
+        maxCount = debayer.MaxCount;
+        minValue = debayer.MinValue;
+        minCount = debayer.MinCount;
+
+        return Qt::CreatePixmap( rgb, w, h, byteWidth );
+    } else {
+        assert( method == RM_CFA );
+
+        size_t w = W > 0 ? W : width;
+        size_t h = H > 0 ? H : height;
+        size_t byteWidth = 3 * w;
+        std::vector<uchar> pixels( byteWidth * h );
+        uchar* rgb = pixels.data();
+
+        CDebayer_RawU16_CFA debayer( raw, width, height );
+        debayer.ToRgbU8( rgb, byteWidth, x, y, w, h, histR.data(), histG.data(), histB.data() );
         maxValue = debayer.MaxValue;
         maxCount = debayer.MaxCount;
         minValue = debayer.MinValue;

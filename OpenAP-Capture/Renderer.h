@@ -9,7 +9,8 @@
 
 enum TRenderingMethod {
     RM_HalfResolution,
-    RM_FullResolution
+    RM_FullResolution,
+    RM_CFA
 };
 
 class Renderer {
