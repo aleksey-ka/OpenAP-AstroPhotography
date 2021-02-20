@@ -41,7 +41,7 @@ std::shared_ptr<ASI_CAMERA_INFO> MockCamera::GetInfo( int index )
 MockCamera::MockCamera( int id )
 {
     index = -id - 1;
-    info = loadImage( index )->Info();
+    currentSettings = loadImage( index )->Info();
 }
 
 std::shared_ptr<MockCamera> MockCamera::Open( int id )
@@ -62,8 +62,8 @@ std::shared_ptr<ASI_CAMERA_INFO> MockCamera::GetInfo() const
 
 void MockCamera::GetROIFormat( int& width, int& height, int& bin, ASI_IMG_TYPE& imgType ) const
 {
-    width = info.Width;
-    height = info.Height;
+    width = currentSettings.Width;
+    height = currentSettings.Height;
     bin = 1;
     imgType = ASI_IMG_RAW16;
 }
@@ -76,8 +76,8 @@ std::shared_ptr<const Raw16Image> MockCamera::DoExposure() const
         return 0;
     }
 
-    int chunks = info.Exposure / 100000;
-    int delta = info.Exposure % 100000;
+    int chunks = currentSettings.Exposure / 100000;
+    int delta = currentSettings.Exposure % 100000;
     for( int i = 0; i < chunks; i++ ) {
         QThread::usleep( 100000 );
         if( isClosing ) {
@@ -88,8 +88,11 @@ std::shared_ptr<const Raw16Image> MockCamera::DoExposure() const
     QThread::usleep( delta );
     isExposure = false;
     auto image = loadImage( index );
-    const_cast<ImageInfo&>( image->Info() ).SeriesId = info.SeriesId;
-    const_cast<ImageInfo&>( image->Info() ).Channel = info.Channel;
-    const_cast<ImageInfo&>( image->Info() ).FilterDescription = info.FilterDescription;
+
+    auto& imageInfo = const_cast<ImageInfo&>( image->Info() );
+    imageInfo = currentSettings;
+	imageInfo.SeriesId = templateImageInfo.SeriesId;
+    imageInfo.Channel = templateImageInfo.Channel;
+    imageInfo.FilterDescription = templateImageInfo.FilterDescription;
     return image;
 }

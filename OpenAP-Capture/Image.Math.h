@@ -1,8 +1,8 @@
 // Copyright (C) 2020 Aleksey Kalyuzhny. Released under the terms of the
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
-#ifndef MATH_IMAGE_H
-#define MATH_IMAGE_H
+#ifndef IMAGE_MATH_H
+#define IMAGE_MATH_H
 
 #include <QImage>
 #include <QPixmap>
@@ -32,4 +32,4 @@ private:
 
 QPixmap FocusingHelper( const Raw16Image* image, int x0, int y0, int W, int H );
 
-#endif // MATH_IMAGE_H
+#endif // IMAGE_MATH_H
