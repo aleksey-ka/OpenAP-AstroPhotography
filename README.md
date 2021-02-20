@@ -1,5 +1,5 @@
-# MyAstroCapture
-Astronomy capture tool (for now only ZWO cameras and filter wheels are supported and a DIY focuser)
+# OpenAstroPhotography
+Astrophotography capture tool (for now only ZWO cameras and filter wheels are supported and a DIY focuser)
 
 ![Sample](sample.jpg)
 
