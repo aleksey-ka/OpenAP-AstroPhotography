@@ -32,8 +32,8 @@ SOURCES += \
         Image.Debayer.HQLinear.cpp \
         Image.Formats.cpp \
         Image.Math.cpp \
-        Image.RawU16Image.cpp \
-        Image.RgbImage.cpp \
+        Image.RawImage.cpp \
+        Image.Image.cpp \
         ImageView.cpp \
         Main.cpp \
         MainFrame.cpp \
@@ -49,8 +49,8 @@ HEADERS += \
         Image.Debayer.HQLinear.h \
         Image.Formats.h \
         Image.Math.h \
-        Image.RawU16Image.h \
-        Image.RgbImage.h \
+        Image.RawImage.h \
+        Image.Image.h \
         Image.Qt.h \
         ImageView.h \
         MainFrame.h \

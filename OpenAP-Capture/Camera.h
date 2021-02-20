@@ -8,7 +8,7 @@
 
 #include <ASICamera2.h>
 
-#include "Image.RawU16Image.h"
+#include "Image.RawImage.h"
 
 class Camera {
 public:

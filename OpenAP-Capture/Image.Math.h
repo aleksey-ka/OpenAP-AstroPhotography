@@ -4,8 +4,8 @@
 #ifndef IMAGE_MATH_H
 #define IMAGE_MATH_H
 
-#include <Image.RawU16Image.h>
-#include <Image.RgbImage.h>
+#include <Image.Image.h>
+#include <Image.RawImage.h>
 
 struct CChannelStat {
     int Median;

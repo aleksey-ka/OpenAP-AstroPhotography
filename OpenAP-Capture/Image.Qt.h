@@ -10,8 +10,6 @@
 #include "Image.Formats.h"
 #include "Image.Math.h"
 
-#include <Image.RgbImage.h>
-
 inline QImage qImage( const CRgbImage* image )
 {
     return QImage( image->RgbPixels(), image->Width(), image->Height(), image->ByteWidth(), QImage::Format_RGB888 );

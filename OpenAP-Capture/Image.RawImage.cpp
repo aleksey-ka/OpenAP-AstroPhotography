@@ -14,7 +14,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "Image.RawU16Image.h"
+#include "Image.RawImage.h"
 
 class Pixels16BitUncompressed : public ImageFileFormat {
 public:
