@@ -136,7 +136,7 @@ MainFrame::MainFrame( QWidget *parent ) :
             [this]( int index ) { filterWheel.SetPosition( index ); } );
    }
 
-   ui->imageView->setCursor( QCursor( QPixmap( ":CrossHair.png" ), 23, 23 ) );
+   ui->imageView->setCursor( QCursor( QPixmap( ":Res.CrossHair.png" ), 23, 23 ) );
    connect( ui->imageView, SIGNAL( imagePressed( int, int, Qt::MouseButton, Qt::KeyboardModifiers ) ),
         SLOT( on_imageView_imagePressed( int, int, Qt::MouseButton, Qt::KeyboardModifiers ) ) );
 
