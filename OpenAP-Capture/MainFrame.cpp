@@ -97,7 +97,16 @@ MainFrame::MainFrame( QWidget *parent ) :
             }
        );
    }
-   connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_F ), this ), &QShortcut::activated, [=]() { focusingHelperOn = !focusingHelperOn; showZoom(); } );
+   connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_F ), this ), &QShortcut::activated, [=]() {
+       if( zoomView->isHidden() ) {
+           // If zoom is not showing, then we want to show it with focusing helper on
+           focusingHelperOn = true;
+       } else {
+           // Otherwise toggling focusing helper on and off
+           focusingHelperOn = !focusingHelperOn;
+       }
+       showZoom();
+   } );
 
    if( filterWheel.Open() ) {
        // TODO: Fixing a bug with text color on Raspberry Pi (old Qt?). It shows always gray
