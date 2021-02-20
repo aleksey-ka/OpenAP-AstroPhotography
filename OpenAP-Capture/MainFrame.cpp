@@ -457,13 +457,15 @@ void MainFrame::startCapture()
     camera->SetWhiteBalanceB( useCameraWhiteBalance ? 95 : 50 );
     camera->SetOffset( offset );
 
+    ImageInfo imageInfo;
     if( filterWheel.GetSlotsCount() > 0 ) {
         auto channel = ui->filterComboBox->currentText();
-        camera->SetChannel( channel.toStdString().c_str() );
+        imageInfo.Channel = channel.toStdString().c_str();
         auto fullFilterDescription = ui->filterComboBox->currentData( Qt::ToolTipRole ).toString();
-        camera->SetFilterDescription( fullFilterDescription.toStdString().c_str() );
+        imageInfo.FilterDescription = fullFilterDescription.toStdString().c_str();
     }
-    camera->SetSeriesId( seriesId );
+    imageInfo.SeriesId = seriesId;
+    camera->SetImageInfoTemplate( imageInfo );
 
     auto info = camera->GetInfo();
     ui->ePerADULabel->setText( QString( "e<sup>-</sup>/ADU: <span style='color:#008800;'>%1</span>" ).arg( QString::number( info->ElecPerADU, 'f', 3 ) ) );

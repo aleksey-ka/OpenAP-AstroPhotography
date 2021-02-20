@@ -180,7 +180,7 @@ std::shared_ptr<const Raw16Image> ASICamera::DoExposure() const
 
     lazyROIFormat();
 
-    ImageInfo imageInfo;
+    ImageInfo imageInfo( imageInfoTemplate );
 
     auto cameraInfo = GetInfo();
     imageInfo.Camera = cameraInfo->Name;
@@ -188,8 +188,6 @@ std::shared_ptr<const Raw16Image> ASICamera::DoExposure() const
         assert( cameraInfo->BayerPattern == ASI_BAYER_RG );
         imageInfo.CFA = "RGGB";
     }
-    imageInfo.Channel = channel;
-    imageInfo.FilterDescription = filterDescription;
 
     imageInfo.Width = width;
     imageInfo.Height = height;
@@ -203,7 +201,6 @@ std::shared_ptr<const Raw16Image> ASICamera::DoExposure() const
     auto now = std::chrono::system_clock::now();
     auto timestamp = std::chrono::system_clock::to_time_t( now );
     imageInfo.Timestamp = timestamp;
-    imageInfo.SeriesId = seriesId;
 
     checkResult( ASIStartExposure( id, ASI_FALSE ) );
 

@@ -63,13 +63,12 @@ public:
     virtual double GetTargetTemperature() const = 0;
     virtual void SetTargetTemperature( double ) = 0;
 
-    // Guiding
+    // Guiding through ST4 port
     virtual void GuideOn( ASI_GUIDE_DIRECTION ) const = 0;
     virtual void GuideOff( ASI_GUIDE_DIRECTION ) const = 0;
 
-    virtual void SetSeriesId( uint64_t ) = 0;
-    virtual void SetChannel( const char* ) = 0;
-    virtual void SetFilterDescription( const char* ) = 0;
+    // Set image info to be used as a template for capture images
+    virtual void SetImageInfoTemplate( const ImageInfo& ) = 0;
 
     virtual void PrintDebugInfo() = 0;
 };

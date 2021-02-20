@@ -23,8 +23,8 @@ public:
     virtual std::shared_ptr<ASI_CAMERA_INFO> GetInfo() const override;
 
     // Exposure in microsectods
-    virtual long GetExposure( bool& isAuto ) const override { isAuto = false; return info.Exposure; }
-    virtual void SetExposure( long value, bool /*isAuto = false*/ ) override { info.Exposure = value; }
+    virtual long GetExposure( bool& isAuto ) const override { isAuto = false; return currentSettings.Exposure; }
+    virtual void SetExposure( long value, bool /*isAuto = false*/ ) override { currentSettings.Exposure = value; }
     virtual void GetExposureCaps( long& /*min*/, long& /*max*/, long& /*defaultVal*/ ) const override {}
 
     // Gain
@@ -47,8 +47,8 @@ public:
 
     // Image format
     virtual ASI_IMG_TYPE GetFormat() const override { return ASI_IMG_RAW16; }
-    virtual int GetWidth() const override { return info.Width; }
-    virtual int GetHeight() const override { return info.Height; }
+    virtual int GetWidth() const override { return currentSettings.Width; }
+    virtual int GetHeight() const override { return currentSettings.Height; }
     virtual int GetBinning() const override { return 1; }
     // Image format (all in one)
     virtual void GetROIFormat( int& width, int& height, int& bin, ASI_IMG_TYPE& imgType ) const override;
@@ -72,9 +72,7 @@ public:
     virtual void GuideOn( ASI_GUIDE_DIRECTION ) const override {}
     virtual void GuideOff( ASI_GUIDE_DIRECTION ) const override {}
 
-    virtual void SetSeriesId( uint64_t value ) override { info.SeriesId = value; }
-    void SetChannel( const char* txt ) override { info.Channel = txt; }
-    void SetFilterDescription( const char* txt ) override { info.FilterDescription = txt; }
+    virtual void SetImageInfoTemplate( const ImageInfo& imageInfo ) override { templateImageInfo = imageInfo; };
 
     virtual void PrintDebugInfo() override {}
 
@@ -82,7 +80,8 @@ public:
 
 private:
     int index;
-    ImageInfo info;
+    ImageInfo templateImageInfo;
+    ImageInfo currentSettings;
     mutable std::atomic<bool> isClosing{ false };
     mutable std::atomic<bool> isExposure{ false };
 };
