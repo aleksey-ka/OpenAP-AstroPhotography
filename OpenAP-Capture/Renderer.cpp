@@ -39,8 +39,7 @@ QPixmap Renderer::Render( TRenderingMethod method, int x, int y, int W, int H )
         minValue = debayer.MinValue;
         minCount = debayer.MinCount;
 
-        QImage image( rgb, w, h, byteWidth, QImage::Format_RGB888 );
-        return QPixmap::fromImage( image );
+        return Qt::CreatePixmap( rgb, w, h, byteWidth );
     } else {
         assert( method = RM_FullResolution );
 
@@ -57,8 +56,7 @@ QPixmap Renderer::Render( TRenderingMethod method, int x, int y, int W, int H )
         minValue = debayer.MinValue;
         minCount = debayer.MinCount;
 
-        QImage image( rgb, W, H, byteWidth, QImage::Format_RGB888 );
-        return QPixmap::fromImage( image );
+        return Qt::CreatePixmap( rgb, w, h, byteWidth );
     }
 }
 
@@ -151,8 +149,7 @@ QPixmap Renderer::RenderHistogram()
         }
     }
 
-    QImage image( p, size, h, QImage::Format_RGB888 );
-    auto pixmap = QPixmap::fromImage( image );
+    auto pixmap = Qt::CreatePixmap( p, size, h, size );
 
     // Add basic statistics (min/max etc)
     QPainter painter( &pixmap );
@@ -176,27 +173,4 @@ QPixmap Renderer::RenderHistogram()
     painter.end();
 
     return pixmap;
-}
-
-QPixmap Renderer::RenderGrayScale()
-{
-    size_t byteWidth = 3 * width;
-    std::vector<uchar> pixels( byteWidth * height );
-    uchar* rgb = pixels.data();
-    for( size_t y = 0; y < height; y++ ) {
-        const ushort* srcLine = raw +  width * y;
-        uchar* dstLine = rgb + byteWidth * y;
-        for( size_t x = 0; x < width; x++ ) {
-            const ushort* src = srcLine +  x;
-            uchar v = src[0] >> 4;
-
-            uchar* dst = dstLine + 3 * x;
-            dst[0] = v;
-            dst[1] = v;
-            dst[2] = v;
-        }
-    }
-
-    QImage image( rgb, width, height, QImage::Format_RGB888 );
-    return QPixmap::fromImage( image );
 }

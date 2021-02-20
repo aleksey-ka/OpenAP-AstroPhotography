@@ -12,9 +12,19 @@
 
 namespace Qt {
 
+inline QImage CreateImage( const uchar* rgb, int width, int height, int byteWidth )
+{
+    return QImage( rgb, width, height, byteWidth, QImage::Format_RGB888 );
+}
+
 inline QImage CreateImage( const CRgbImage* image )
 {
-    return QImage( image->RgbPixels(), image->Width(), image->Height(), image->ByteWidth(), QImage::Format_RGB888 );
+    return CreateImage( image->RgbPixels(), image->Width(), image->Height(), image->ByteWidth() );
+}
+
+inline QPixmap CreatePixmap( const uchar* rgb, int width, int height, int byteWidth )
+{
+    return QPixmap::fromImage( CreateImage( rgb, width, height, byteWidth ) );
 }
 
 inline QPixmap CreatePixmap( const CRgbImage* image )
