@@ -52,4 +52,24 @@ public:
     int ByteWidth() const { return stride; }
 };
 
+class CGrayU16Image : public CPixelBuffer<unsigned short, 1> {
+public:
+    using CPixelBuffer::CPixelBuffer;
+
+    const unsigned short* Pixels() const { return buffer.data(); };
+    unsigned short* Pixels() { return buffer.data(); };
+
+    int Stride() const { return stride; }
+};
+
+class CGrayImage : public CPixelBuffer<unsigned char, 1> {
+public:
+    using CPixelBuffer::CPixelBuffer;
+
+    const unsigned char* Pixels() const { return buffer.data(); };
+    unsigned char* Pixels() { return buffer.data(); };
+
+    int ByteWidth() const { return stride; }
+};
+
 #endif // IMAGE_RGBIMAGE_H

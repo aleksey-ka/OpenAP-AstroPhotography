@@ -19,10 +19,25 @@ inline QImage qImage( const CRgbImage* image )
 
 inline QPixmap qPixmap( const CRgbImage* image )
 {
-    return QPixmap::fromImage( QImage( image->RgbPixels(), image->Width(), image->Height(), image->ByteWidth(), QImage::Format_RGB888 ) );
+    return QPixmap::fromImage( qImage( image ) );
 }
 
 inline QPixmap qPixmap( std::shared_ptr<const CRgbImage> image )
+{
+    return qPixmap( image.get() );
+}
+
+inline QImage qImage( const CGrayImage* image )
+{
+    return QImage( image->Pixels(), image->Width(), image->Height(), image->ByteWidth(), QImage::Format_Grayscale8 );
+}
+
+inline QPixmap qPixmap( const CGrayImage* image )
+{
+    return QPixmap::fromImage( qImage( image ) );
+}
+
+inline QPixmap qPixmap( std::shared_ptr<const CGrayImage> image )
 {
     return qPixmap( image.get() );
 }

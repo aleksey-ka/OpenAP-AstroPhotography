@@ -223,3 +223,41 @@ std::shared_ptr<CRgbImage> CRawU16::StretchHalfRes( int x0, int y0, int W, int H
 
     return result;
 }
+
+std::shared_ptr<CGrayU16Image> CRawU16::ToGrayU16( const CRgbU16Image* rgb16 )
+{
+    int width = rgb16->Width();
+    int height = rgb16->Height();
+    auto result = std::make_shared<CGrayU16Image>( width, height );
+    for( int y = 0; y < height; y++ ) {
+        const ushort* srcLine = rgb16->ScanLine( y );
+        ushort* dstLine = result->ScanLine( y );
+        for( int x = 0; x < width; x++ ) {
+            const ushort* src = srcLine + 3 * x;
+            uint r = src[0];
+            uint g = src[1];
+            uint b = src[2];
+
+            dstLine[x] = r + g + b;
+        }
+    }
+
+    return result;
+}
+
+std::shared_ptr<CGrayImage> CRawU16::ToGray( const CGrayU16Image* rgb16 )
+{
+    int width = rgb16->Width();
+    int height = rgb16->Height();
+    auto result = std::make_shared<CGrayImage>( width, height );
+    for( int y = 0; y < height; y++ ) {
+        const ushort* srcLine = rgb16->ScanLine( y );
+        uchar* dstLine = result->ScanLine( y );
+        for( int x = 0; x < width; x++ ) {
+            const ushort v = srcLine[x] >> 3;
+            dstLine[x] = v < 255 ? v : 255;
+        }
+    }
+
+    return result;
+}

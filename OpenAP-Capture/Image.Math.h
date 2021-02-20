@@ -44,6 +44,9 @@ public:
     std::shared_ptr<CRgbImage> Stretch( int x, int y, int w, int h );
     std::shared_ptr<CRgbImage> StretchHalfRes( int x, int y, int w, int h );
 
+    static std::shared_ptr<CGrayU16Image> ToGrayU16( const CRgbU16Image* );
+    static std::shared_ptr<CGrayImage> ToGray( const CGrayU16Image* );
+
 private:
     const unsigned short* raw;
     int width;
