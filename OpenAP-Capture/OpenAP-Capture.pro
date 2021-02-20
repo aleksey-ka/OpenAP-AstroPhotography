@@ -31,10 +31,10 @@ SOURCES += \
         Focuser.cpp \
         Image.cpp \
         Image.Formats.cpp \
+        Image.Math.cpp \
         ImageView.cpp \
         Main.cpp \
         MainFrame.cpp \
-        Math.Image.cpp \
         Renderer.cpp \
         Renderer.HQLinear.cpp
 
@@ -45,10 +45,10 @@ HEADERS += \
         FilterWheel.h \
         Focuser.h \
         Image.Formats.h \
+        Image.Math.h \
         Image.h \
         ImageView.h \
         MainFrame.h \
-        Math.Image.h \
         Renderer.h
 
 FORMS += \

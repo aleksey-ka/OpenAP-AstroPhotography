@@ -13,7 +13,7 @@
 #include "Camera.Mock.h"
 #include "Image.Formats.h"
 #include "Renderer.h"
-#include "Math.Image.h"
+#include "Image.Math.h"
 
 #include <chrono>
 
