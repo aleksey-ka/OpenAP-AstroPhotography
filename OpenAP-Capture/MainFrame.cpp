@@ -219,7 +219,7 @@ void MainFrame::showZoom( bool update )
                 zoomView->setPixmap( focusingHelper( currentImage.get(), c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize ) );
             } else {
                 Renderer renderer( currentImage->RawPixels(), currentImage->Width(), currentImage->Height() );
-                zoomView->setPixmap( renderer.RenderRect( c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize ) );
+                zoomView->setPixmap( renderer.Render( RM_FullResolution, c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize ) );
             }
         }
     }

@@ -3,6 +3,8 @@
 
 #include "Renderer.h"
 
+#include <Image.Qt.h>
+#include <Image.Debayer.HalfRes.h>
 #include <Image.Debayer.HQLinear.h>
 
 #include <QPainter>
@@ -13,7 +15,7 @@ Renderer::Renderer( const ushort* _raw, int _width, int _height ) :
 
 }
 
-QPixmap Renderer::Render( TRenderingMethod method )
+QPixmap Renderer::Render( TRenderingMethod method, int x, int y, int W, int H )
 {
     // Initialize histogram
     const int hSize = 256;
@@ -22,83 +24,42 @@ QPixmap Renderer::Render( TRenderingMethod method )
     histB.resize( hSize );
 
     if( method == RM_HalfResolution ) {
-        size_t w = width / 2;
-        size_t h = height / 2;
+        x -= W / 2;
+        y -= H / 2;
+        size_t w = W > 0 ? W : width / 2;
+        size_t h = H > 0 ? H : height / 2;
         size_t byteWidth = 3 * w;
-        std::vector<uchar> pixels( byteWidth * h );
-
-        renderHalfResolutionWithHistogram( pixels.data(), byteWidth );
-
-        QImage image( pixels.data(), w, h, QImage::Format_RGB888 );
-        return QPixmap::fromImage( image );
-    } else {
-        assert( method = RM_FullResolution );
-
-        size_t byteWidth = 3 * width;
-        std::vector<uchar> pixels( byteWidth * height );
+        std::vector<uchar> pixels( byteWidth * h );   
         uchar* rgb = pixels.data();
 
-        CDebayer_RawU16_HQLiner debayer( raw, width, height );
-        debayer.ToRgbU8( rgb, byteWidth, 0, 0, width, height, histR.data(), histG.data(), histB.data() );
+        CDebayer_RawU16_HalfRes debayer( raw, width, height );
+        debayer.ToRgbU8( rgb, byteWidth, x, y, w, h, histR.data(), histG.data(), histB.data() );
         maxValue = debayer.MaxValue;
         maxCount = debayer.MaxCount;
         minValue = debayer.MinValue;
         minCount = debayer.MinCount;
 
-        QImage image( rgb, width, height, QImage::Format_RGB888 );
+        QImage image( rgb, w, h, byteWidth, QImage::Format_RGB888 );
+        return QPixmap::fromImage( image );
+    } else {
+        assert( method = RM_FullResolution );
+
+        size_t w = W > 0 ? W : width;
+        size_t h = H > 0 ? H : height;
+        size_t byteWidth = 3 * w;
+        std::vector<uchar> pixels( byteWidth * h );
+        uchar* rgb = pixels.data();
+
+        CDebayer_RawU16_HQLinear debayer( raw, width, height );
+        debayer.ToRgbU8( rgb, byteWidth, x, y, W, H, histR.data(), histG.data(), histB.data() );
+        maxValue = debayer.MaxValue;
+        maxCount = debayer.MaxCount;
+        minValue = debayer.MinValue;
+        minCount = debayer.MinCount;
+
+        QImage image( rgb, W, H, byteWidth, QImage::Format_RGB888 );
         return QPixmap::fromImage( image );
     }
-}
-
-void Renderer::renderHalfResolutionWithHistogram( uchar* rgb, int byteWidth )
-{
-    uint* hr = histR.data();
-    uint* hg = histG.data();
-    uint* hb = histB.data();
-
-    for( size_t y = 0; y < height / 2; y++ ) {
-        const ushort* srcLine = raw + 2 * width * y;
-        uchar* dstLine = rgb + byteWidth * y;
-        for( size_t x = 0; x < width / 2; x++ ) {
-            const ushort* src = srcLine + 2 * x;
-            uchar r = addToStatistics( src[0] ) >> 4;
-            uchar g1 = addToStatistics( src[1] ) >> 4;
-            uchar g2 = addToStatistics( src[width] ) >> 4;
-            uchar b = addToStatistics( src[width + 1] ) >> 4;
-
-            uchar* dst = dstLine + 3 * x;
-            dst[0] = r;
-            dst[1] = g1;
-            dst[2] = b;
-
-            hr[r]++;
-            hg[g1]++;
-            hg[g2]++;
-            hb[b]++;
-        }
-    }
-}
-
-QPixmap Renderer::RenderRect( int x, int y, int w, int h )
-{
-    // Initialize histogram
-    const int hSize = 256;
-    histR.resize( hSize );
-    histG.resize( hSize );
-    histB.resize( hSize );
-
-    size_t byteWidth = 3 * w;
-    std::vector<uchar> pixels( byteWidth * h );
-
-    CDebayer_RawU16_HQLiner debayer( raw, width, height );
-    debayer.ToRgbU8( pixels.data(), byteWidth, x, y, w, h, histR.data(), histG.data(), histB.data() );
-    maxValue = debayer.MaxValue;
-    maxCount = debayer.MaxCount;
-    minValue = debayer.MinValue;
-    minCount = debayer.MinCount;
-
-    QImage image( pixels.data(), w, h, byteWidth, QImage::Format_RGB888 );
-    return QPixmap::fromImage( image );
 }
 
 static QString collapseNumber( uint n )
@@ -215,31 +176,6 @@ QPixmap Renderer::RenderHistogram()
     painter.end();
 
     return pixmap;
-}
-
-QPixmap Renderer::RenderRectHalfRes( int X, int Y, int W, int H )
-{
-    size_t byteWidth = 3 * W;
-    std::vector<uchar> pixels( byteWidth * H );
-    uchar* rgb = pixels.data();
-    for( size_t y = 0; y < H; y++ ) {
-        const ushort* srcLine = raw + 2 * width * ( Y / 2 + y );
-        uchar* dstLine = rgb + byteWidth * y;
-        for( size_t x = 0; x < W; x++ ) {
-            const ushort* src = srcLine + 2 * ( X / 2 + x );
-            uchar r = src[0] >> 4;
-            uchar g = src[1] >> 4;
-            uchar b = src[width + 1] >> 4;
-
-            uchar* dst = dstLine + 3 * x;
-            dst[0] = r;
-            dst[1] = g;
-            dst[2] = b;
-        }
-    }
-
-    QImage image( rgb, W, H, QImage::Format_RGB888 );
-    return QPixmap::fromImage( image );
 }
 
 QPixmap Renderer::RenderGrayScale()

@@ -3,7 +3,7 @@
 
 #include "Image.Debayer.HQLinear.h"
 
-void CDebayer_RawU16_HQLiner::ToRgbU16( unsigned short* rgb, int stride, int x0, int y0, int w, int h )
+void CDebayer_RawU16_HQLinear::ToRgbU16( unsigned short* rgb, int stride, int x0, int y0, int w, int h )
 {
     for( int y = 0; y < h; y++ ) {
         int Y = y + y0;
@@ -164,7 +164,7 @@ void CDebayer_RawU16_HQLiner::ToRgbU16( unsigned short* rgb, int stride, int x0,
     }
 }
 
-void CDebayer_RawU16_HQLiner::ToRgbU8( unsigned char* rgb, int stride, int x0, int y0, int w, int h, unsigned int* hr, unsigned int* hg, unsigned int* hb )
+void CDebayer_RawU16_HQLinear::ToRgbU8( unsigned char* rgb, int stride, int x0, int y0, int w, int h, unsigned int* hr, unsigned int* hg, unsigned int* hb )
 {
     for( int y = 0; y < h; y++ ) {
         int Y = y + y0;

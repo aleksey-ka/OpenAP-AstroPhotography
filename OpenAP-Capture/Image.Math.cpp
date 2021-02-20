@@ -78,7 +78,7 @@ CRawU16::CRawU16( const ushort* _raw, int _width, int _height ) :
 std::shared_ptr<CRgbU16Image> CRawU16::DebayerRect( int x, int y, int w, int h )
 {
     auto result = std::make_shared<CRgbU16Image>( w, h );
-    CDebayer_RawU16_HQLiner debayer( raw, width, height );
+    CDebayer_RawU16_HQLinear debayer( raw, width, height );
     debayer.ToRgbU16( result->RgbPixels(), result->Stride(), x, y, w, h );
     return result;
 }

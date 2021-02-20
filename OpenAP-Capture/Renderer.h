@@ -16,11 +16,9 @@ class Renderer {
 public:
     Renderer( const ushort* raw, int width, int height );
 
-    QPixmap Render( TRenderingMethod );
+    QPixmap Render( TRenderingMethod, int x = 0, int y = 0, int w = 0, int h = 0 );
     QPixmap RenderHistogram();
 
-    QPixmap RenderRectHalfRes( int x, int y, int width, int height );
-    QPixmap RenderRect( int x, int y, int width, int height );
     QPixmap RenderGrayScale();
 private:
     const ushort* raw;
@@ -32,32 +30,10 @@ private:
     std::vector<uint> histG;
     std::vector<uint> histB;
 
-    // Fast statistics (calculated for each pixel on each frame)
     ushort maxValue = 0;
     uint maxCount = 0;
     ushort minValue = USHRT_MAX;
     uint minCount = 0;
-    inline ushort addToStatistics( ushort value )
-    {
-        if( value >= maxValue ) {
-            if( value == maxValue ) {
-                maxCount++;
-            } else {
-                maxValue = value;
-                maxCount = 1;
-            }
-        } else if( value <= minValue ) {
-            if( value == minValue ) {
-                minCount++;
-            } else {
-                minValue = value;
-                minCount = 1;
-            }
-        }
-        return value;
-    }
-
-    void renderHalfResolutionWithHistogram( uchar* rgb, int byteWidth );
 };
 
 #endif // RENDERER_H

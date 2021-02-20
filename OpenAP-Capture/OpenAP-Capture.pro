@@ -29,6 +29,7 @@ SOURCES += \
         Camera.ZWO.cpp \
         FilterWheel.cpp \
         Focuser.cpp \
+        Image.Debayer.HalfRes.cpp \
         Image.Debayer.HQLinear.cpp \
         Image.Formats.cpp \
         Image.Math.cpp \
@@ -46,6 +47,7 @@ HEADERS += \
         FilterWheel.h \
         Focuser.h \
         Image.Debayer.h \
+        Image.Debayer.HalfRes.h \
         Image.Debayer.HQLinear.h \
         Image.Formats.h \
         Image.Math.h \
