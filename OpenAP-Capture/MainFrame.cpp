@@ -127,7 +127,8 @@ MainFrame::MainFrame( QWidget *parent ) :
    }
 
    ui->imageView->setCursor( QCursor( QPixmap( ":CrossHair.png" ), 23, 23 ) );
-   connect( ui->imageView, SIGNAL( imagePressed), SLOT( on_imageView_imagePressed ) );
+   connect( ui->imageView, SIGNAL( imagePressed( int, int, Qt::MouseButton, Qt::KeyboardModifiers ) ),
+        SLOT( on_imageView_imagePressed( int, int, Qt::MouseButton, Qt::KeyboardModifiers ) ) );
 
    zoomView = new ImageView( ui->imageView );
    zoomView->setStyleSheet( "border-bottom:none;border-right:none;" );
