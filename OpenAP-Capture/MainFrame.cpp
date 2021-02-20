@@ -11,9 +11,10 @@
 
 #include "Camera.ZWO.h"
 #include "Camera.Mock.h"
-#include "Image.Formats.h"
+
 #include "Renderer.h"
-#include "Image.Math.h"
+
+#include "Image.Qt.h"
 
 #include <chrono>
 
@@ -200,10 +201,7 @@ void MainFrame::resizeEvent( QResizeEvent* event )
 
 static QPixmap focusingHelper( const CRawU16Image* image, int x0, int y0, int w, int h )
 {
-    CRawU16PixelMath pixelMath( image->RawPixels(), image->Width(), image->Height() );
-    auto result = pixelMath.Stretch( x0, y0, w, h );
-    QImage im( result->RgbPixels(), w, h, result->ByteWidth(), QImage::Format_RGB888 );
-    return QPixmap::fromImage( im );
+    return qPixmap( CRawU16( image ).Stretch( x0, y0, w, h ) );
 }
 
 void MainFrame::showZoom( bool update )

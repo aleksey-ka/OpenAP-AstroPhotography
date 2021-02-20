@@ -39,7 +39,7 @@ public:
     const unsigned short* RgbPixels() const { return buffer.data(); };
     unsigned short* RgbPixels() { return buffer.data(); };
 
-    int Stride() { return stride; }
+    int Stride() const { return stride; }
 };
 
 class CRgbImage : public CPixelBuffer<unsigned char, 3> {
@@ -49,7 +49,7 @@ public:
     const unsigned char* RgbPixels() const { return buffer.data(); };
     unsigned char* RgbPixels() { return buffer.data(); };
 
-    int ByteWidth() { return stride; }
+    int ByteWidth() const { return stride; }
 };
 
 #endif // IMAGE_RGBIMAGE_H

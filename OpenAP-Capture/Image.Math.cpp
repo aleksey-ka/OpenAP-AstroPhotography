@@ -64,13 +64,18 @@ size_t CPixelStatistics::maxP( int channel, int start, int end ) const
     return maxPos;
 }
 
-CRawU16PixelMath::CRawU16PixelMath( const ushort* _raw, int _width, int _height ) :
+CRawU16::CRawU16( const CRawU16Image* image ) :
+    CRawU16( image->RawPixels(), image->Width(), image->Height() )
+{
+}
+
+CRawU16::CRawU16( const ushort* _raw, int _width, int _height ) :
     raw( _raw ), width( _width ), height( _height )
 {
 
 }
 
-std::shared_ptr<CRgbU16Image> CRawU16PixelMath::DebayerRect( int x, int y, int w, int h )
+std::shared_ptr<CRgbU16Image> CRawU16::DebayerRect( int x, int y, int w, int h )
 {
     auto result = std::make_shared<CRgbU16Image>( w, h );
     CDebayer_RawU16_HQLiner debayer( raw, width, height );
@@ -78,7 +83,7 @@ std::shared_ptr<CRgbU16Image> CRawU16PixelMath::DebayerRect( int x, int y, int w
     return result;
 }
 
-CPixelStatistics CRawU16PixelMath::CalculateStatistics( int x0, int y0, int W, int H )
+CPixelStatistics CRawU16::CalculateStatistics( int x0, int y0, int W, int H )
 {
     CPixelStatistics stats( 3, 12 );
 
@@ -128,7 +133,7 @@ CPixelStatistics CRawU16PixelMath::CalculateStatistics( int x0, int y0, int W, i
     return stats;
 }
 
-std::shared_ptr<CRgbImage> CRawU16PixelMath::Stretch( int x0, int y0, int W, int H )
+std::shared_ptr<CRgbImage> CRawU16::Stretch( int x0, int y0, int W, int H )
 {
     CPixelStatistics stats = CalculateStatistics( x0, y0, W, H );
 
@@ -166,7 +171,7 @@ std::shared_ptr<CRgbImage> CRawU16PixelMath::Stretch( int x0, int y0, int W, int
     return result;
 }
 
-std::shared_ptr<CRgbImage> CRawU16PixelMath::StretchHalfRes( int x0, int y0, int W, int H )
+std::shared_ptr<CRgbImage> CRawU16::StretchHalfRes( int x0, int y0, int W, int H )
 {
     CPixelStatistics stats = CalculateStatistics( x0, y0, W, H );
 

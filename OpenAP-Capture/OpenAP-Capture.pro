@@ -51,6 +51,7 @@ HEADERS += \
         Image.Math.h \
         Image.RawU16Image.h \
         Image.RgbImage.h \
+        Image.Qt.h \
         ImageView.h \
         MainFrame.h \
         Renderer.h

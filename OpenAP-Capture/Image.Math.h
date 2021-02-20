@@ -32,9 +32,10 @@ private:
     int count = 0;
 };
 
-class CRawU16PixelMath {
+class CRawU16 {
 public:
-    CRawU16PixelMath( const unsigned short* raw, int width, int height );
+    CRawU16( const CRawU16Image* );
+    CRawU16( const unsigned short* raw, int width, int height );
 
     std::shared_ptr<CRgbU16Image> DebayerRect( int x, int y, int width, int height );
 
