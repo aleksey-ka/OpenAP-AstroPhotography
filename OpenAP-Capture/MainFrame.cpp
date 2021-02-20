@@ -201,7 +201,7 @@ void MainFrame::resizeEvent( QResizeEvent* event )
 
 static QPixmap focusingHelper( const CRawU16Image* image, int x0, int y0, int w, int h )
 {
-    return qPixmap( CRawU16( image ).Stretch( x0, y0, w, h ) );
+    return Qt::CreatePixmap( CRawU16( image ).Stretch( x0, y0, w, h ) );
 }
 
 void MainFrame::showZoom( bool update )

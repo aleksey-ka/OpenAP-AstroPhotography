@@ -2,8 +2,7 @@
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
 #include "Image.Formats.h"
-
-#include <QImage>
+#include "Image.Qt.h"
 
 std::shared_ptr<const CRawU16Image> Png16BitGrayscale::Load( const char* filePath, const ImageInfo& imageInfo ) const
 {
@@ -26,9 +25,6 @@ std::shared_ptr<const CRawU16Image> Png16BitGrayscale::Load( const char* filePat
 
 void Png16BitGrayscale::Save( const char* filePath, const CRawU16Image* image ) const
 {
-    auto imageInfo = image->Info();
-    QImage greyScaleImage( image->Buffer(), imageInfo.Width, imageInfo.Height, QImage::Format_Grayscale16 );
-
     // Saving PNG files is extremely slow especially with high zlib compression rates. High compression rates are not
     // practical as the effect is very slight on astronomical images and the speed differs greatly
     // - (default) ~ 6 sec
@@ -36,5 +32,5 @@ void Png16BitGrayscale::Save( const char* filePath, const CRawU16Image* image ) 
     // - (80..89 - fastest) ~ 0.7 sec
     // - (90..100 - no compression) ~ 0.4 sec
     // NB: writing raw pixels takes only 0.02 sec
-    greyScaleImage.save( filePath, 0, 80 );
+    Qt::CreateImage( image ).save( filePath, 0, 80 );
 }

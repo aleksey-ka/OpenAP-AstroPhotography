@@ -10,34 +10,43 @@
 #include "Image.Formats.h"
 #include "Image.Math.h"
 
-inline QImage qImage( const CRgbImage* image )
+namespace Qt {
+
+inline QImage CreateImage( const CRgbImage* image )
 {
     return QImage( image->RgbPixels(), image->Width(), image->Height(), image->ByteWidth(), QImage::Format_RGB888 );
 }
 
-inline QPixmap qPixmap( const CRgbImage* image )
+inline QPixmap CreatePixmap( const CRgbImage* image )
 {
-    return QPixmap::fromImage( qImage( image ) );
+    return QPixmap::fromImage( CreateImage( image ) );
 }
 
-inline QPixmap qPixmap( std::shared_ptr<const CRgbImage> image )
+inline QPixmap CreatePixmap( std::shared_ptr<const CRgbImage> image )
 {
-    return qPixmap( image.get() );
+    return CreatePixmap( image.get() );
 }
 
-inline QImage qImage( const CGrayImage* image )
+inline QImage CreateImage( const CGrayImage* image )
 {
     return QImage( image->Pixels(), image->Width(), image->Height(), image->ByteWidth(), QImage::Format_Grayscale8 );
 }
 
-inline QPixmap qPixmap( const CGrayImage* image )
+inline QPixmap CreatePixmap( const CGrayImage* image )
 {
-    return QPixmap::fromImage( qImage( image ) );
+    return QPixmap::fromImage( CreateImage( image ) );
 }
 
-inline QPixmap qPixmap( std::shared_ptr<const CGrayImage> image )
+inline QPixmap CreatePixmap( std::shared_ptr<const CGrayImage> image )
 {
-    return qPixmap( image.get() );
+    return CreatePixmap( image.get() );
 }
+
+inline QImage CreateImage( const CRawU16Image* image )
+{
+    return QImage( image->Buffer(), image->Width(), image->Height(), sizeof( ushort ) * image->Width(), QImage::Format_Grayscale16 );
+}
+
+} // namespace Qt
 
 #endif // IMAGE_QT_H
