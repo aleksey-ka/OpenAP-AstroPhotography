@@ -1,5 +1,5 @@
 # OpenAP-AstroPhotography
-Open astrophotography capture tool (for now only ZWO cameras and filter wheels are supported and a DIY focuser)
+Open astrophotography capture (for now only ZWO cameras and filter wheels are supported and a DIY focuser)
 
 ![Sample](sample.jpg)
 
