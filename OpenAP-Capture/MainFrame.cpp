@@ -587,8 +587,9 @@ ulong MainFrame::render( const ushort* raw, int width, int height )
     if( drawTargetingCircle ) {
        QPainter painter( &pixmap );
        QPen pen( QColor::fromRgb( 0xFF, 0, 0 ) );
-       pen.setWidth( 3 );
+       pen.setWidth( 1 );
        painter.setPen( pen );
+       painter.setRenderHint( QPainter::Antialiasing );
        painter.drawEllipse( pixmap.width() / 2 - 30, pixmap.height() / 2 - 30, 60, 60 );
     }
     ui->imageView->setPixmap( pixmap );
@@ -738,10 +739,18 @@ void MainFrame::on_imageView_imagePressed( int cx, int cy, Qt::MouseButton butto
     zoomCenter.setX( cx * scale );
     zoomCenter.setY( cy * scale );
 
+    if( modifiers.testFlag( Qt::ControlModifier ) ) {
+        // Switch the focusing helper on
+        focusingHelperOn = true;
+    } else if( zoomView->isHidden() ) {
+        // Normally the zoom view must open in normal mode
+        focusingHelperOn = false;
+    }
+
     showZoom();
 
     if( modifiers.testFlag( Qt::ShiftModifier ) ) {
-        // Move cursor to the center of zoom view
+        // Move mouse pointer to the center of zoom view
         auto center = zoomView->contentsRect().center();
         QCursor::setPos( zoomView->mapToGlobal( center ) );
     }
