@@ -6,10 +6,18 @@
 void CDebayer_RawU16_HalfRes::ToRgbU8( unsigned char* rgb, int stride, int x0, int y0, int w, int h, unsigned int* hr, unsigned int* hg, unsigned int* hb )
 {
     for( int y = 0; y < h; y++ ) {
-        const auto* srcLine = raw + 2 * width * ( y0 / 2 + y );
+        int Y = 2 * y + y0;
+        if( Y < 0 || Y >= height ) {
+            continue;
+        }
+        const auto* srcLine = raw + width * Y;
         auto* dstLine = rgb + stride * y;
         for( int x = 0; x < w; x++ ) {
-            const auto* src = srcLine + 2 * ( x0 / 2 + x );
+            int X = 2 * x + x0;
+            if( X < 0 || X >= width ) {
+                continue;
+            }
+            const auto* src = srcLine + X;
             unsigned char r = addToStatistics( src[0] ) >> 4;
             unsigned char g1 = addToStatistics( src[1] ) >> 4;
             unsigned char g2 = addToStatistics( src[width] ) >> 4;

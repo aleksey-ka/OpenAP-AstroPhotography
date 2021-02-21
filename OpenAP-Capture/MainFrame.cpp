@@ -158,6 +158,13 @@ MainFrame::MainFrame( QWidget *parent ) :
            showZoom();
        }
    } );
+   connect( ui->zoomOffRadioButton, &QRadioButton::toggled, [=](bool checked ) { if( checked ) { zoomSize = 0; zoomView->hide(); } } );
+   connect( ui->zoomHalfRadioButton, &QRadioButton::toggled, [=](bool checked ) { if( checked ) showZoom(); } );
+   connect( ui->zoom1xRadioButton, &QRadioButton::toggled, [=](bool checked ) { if( checked ) showZoom(); } );
+   connect( ui->zoom2xRadioButton, &QRadioButton::toggled, [=](bool checked ) { if( checked ) showZoom(); } );
+   connect( ui->zoom4xRadioButton, &QRadioButton::toggled, [=](bool checked ) { if( checked ) showZoom(); } );
+   connect( ui->zoomCfaRadioButton, &QRadioButton::toggled, [=](bool checked ) { if( checked ) showZoom(); } );
+
 
    connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_R ), this ), &QShortcut::activated, [=]() {
        if( camera == 0 ) {
@@ -199,28 +206,55 @@ void MainFrame::resizeEvent( QResizeEvent* event )
     }
 }
 
-static QPixmap focusingHelper( const CRawU16Image* image, int x0, int y0, int w, int h )
+static QPixmap focusingHelper( TRenderingMethod rendering, const CRawU16Image* image, int x0, int y0, int w, int h )
 {
-    return Qt::CreatePixmap( CRawU16( image ).Stretch( x0, y0, w, h ) );
+    if( rendering == RM_HalfResolution ) {
+        return Qt::CreatePixmap( CRawU16( image ).StretchHalfRes( x0, y0, w, h ) );
+    } else {
+        return Qt::CreatePixmap( CRawU16( image ).Stretch( x0, y0, w, h ) );
+    }
 }
 
 void MainFrame::showZoom( bool update )
 {  
+    if( ui->zoomOffRadioButton->isChecked() ) {
+        QSignalBlocker lock( ui->zoom1xRadioButton );
+        ui->zoom1xRadioButton->setChecked( true );
+    }
+    TRenderingMethod rendering = RM_FullResolution;
+    int scale = -1;
+    if( ui->zoomHalfRadioButton->isChecked() ) {
+        scale = 1;
+        rendering = RM_HalfResolution;
+    } else if( ui->zoom1xRadioButton->isChecked() ) {
+        scale = 1;
+    } else if( ui->zoom2xRadioButton->isChecked() ) {
+        scale = 2;
+    } else if( ui->zoom4xRadioButton->isChecked() ) {
+        scale = 4;
+    } else if( ui->zoomCfaRadioButton->isChecked() ) {
+        scale = 4;
+        rendering = RM_CFA;
+    }
     if( zoomSize == 0 ) {
         zoomSize = 1;
     }
-
     if( update ) {
-        int imageSize = 300 * zoomSize + 1;
+        int imageSize = 300 * zoomSize;
         zoomView->resize( imageSize + 1, imageSize + 1 );
         if( currentImage != 0 ) {
             QPoint c = zoomCenter.isNull() ? QPoint( currentImage->Width() / 2, currentImage->Height() / 2 ) : zoomCenter;
+            QPixmap pixmap;
             if( focusingHelperOn ) {
-                zoomView->setPixmap( focusingHelper( currentImage.get(), c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize ) );
+                pixmap = focusingHelper( rendering, currentImage.get(), c.x() - imageSize / 2 / scale, c.y() - imageSize / 2 / scale, imageSize / scale, imageSize / scale );
             } else {
                 Renderer renderer( currentImage->RawPixels(), currentImage->Width(), currentImage->Height() );
-                zoomView->setPixmap( renderer.Render( RM_FullResolution, c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize ) );
+                pixmap = renderer.Render( rendering, c.x() - imageSize / 2 / scale, c.y() - imageSize / 2 / scale, imageSize / scale, imageSize / scale );
             }
+            if( scale > 1 ) {
+                pixmap = pixmap.scaled( imageSize, imageSize, Qt::IgnoreAspectRatio );
+            }
+            zoomView->setPixmap( pixmap );
         }
     }
 

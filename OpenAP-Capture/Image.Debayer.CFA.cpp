@@ -7,10 +7,16 @@ void CDebayer_RawU16_CFA::ToRgbU8( unsigned char* rgb, int stride, int x0, int y
 {
     for( int y = 0; y < h; y++ ) {
         int Y = y0 + y;
+        if( Y < 0 || Y >= height ) {
+            continue;
+        }
         const auto* srcLine = raw + width * Y;
         auto* dstLine = rgb + stride * y;
         for( int x = 0; x < w; x++ ) {
             int X = x0 + x;
+            if( X < 0 || X >= width ) {
+                continue;
+            }
             const auto* src = srcLine + X;
             unsigned char v = addToStatistics( src[0] ) >> 4;
             unsigned char* dst = dstLine + 3 * x;
