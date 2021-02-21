@@ -167,7 +167,7 @@ QPixmap Renderer::RenderHistogram()
         }
     }
 
-    auto pixmap = Qt::CreatePixmap( p, size, h, size );
+    auto pixmap = Qt::CreatePixmap( p, size, h );
 
     // Add basic statistics (min/max etc)
     QPainter painter( &pixmap );
