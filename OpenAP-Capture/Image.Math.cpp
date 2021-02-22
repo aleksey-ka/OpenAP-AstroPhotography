@@ -261,3 +261,44 @@ std::shared_ptr<CGrayImage> CRawU16::ToGray( const CGrayU16Image* rgb16 )
 
     return result;
 }
+
+void CRawU16::GradientAscentToLocalMaximum( const CGrayU16Image* image, int& x, int& y )
+{
+    int stride = image->Stride();
+    while( true ) {
+        const ushort* p = image->ScanLine( y ) + x;
+        int maxv = 0;
+        int maxPos = 0;
+        int pos = 0;
+        // For each pixel in 3x3 pixels around curremt
+        for( int i = -1; i <= 1; i++ ) {
+            for( int j = -1; j <= 1; j++ ) {
+                const ushort* s = p + i * stride + j;
+                int v = 0;
+                // Sum values of pixels in 3x3 area around that pixel
+                for( int n = -1; n <= 1; n++ ) {
+                    for( int m = -1; m <= 1; m++ ) {
+                        v += s[n * stride + m];
+                    }
+                }
+                if( v > maxv ) {
+                    maxv = v;
+                    maxPos = pos;
+                }
+                pos++;
+            }
+        }
+        // Move to the found maximum
+        switch( maxPos ) {
+            case 0: x--; y--; break;
+            case 1: y--; break;
+            case 2: x++; y--; break;
+            case 3: x--; break;
+            case 4: return;
+            case 5: x++; break;
+            case 6: x--; y++; break;
+            case 7: y++; break;
+            case 8: x++; y++; break;
+        }
+    }
+}

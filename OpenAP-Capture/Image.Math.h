@@ -47,6 +47,8 @@ public:
     static std::shared_ptr<CGrayU16Image> ToGrayU16( const CRgbU16Image* );
     static std::shared_ptr<CGrayImage> ToGray( const CGrayU16Image* );
 
+    static void GradientAscentToLocalMaximum( const CGrayU16Image*, int& x, int& y );
+
 private:
     const unsigned short* raw;
     int width;

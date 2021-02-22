@@ -244,6 +244,15 @@ void MainFrame::showZoom( bool update )
         zoomView->resize( imageSize + 1, imageSize + 1 );
         if( currentImage != 0 ) {
             QPoint c = zoomCenter.isNull() ? QPoint( currentImage->Width() / 2, currentImage->Height() / 2 ) : zoomCenter;
+            if( focusingHelperOn ) {
+                // Lock on the star (center on local maximum)
+                auto rgb = CRawU16( currentImage.get() ).DebayerRect( c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );
+                auto gray = CRawU16::ToGrayU16( rgb.get() );
+                int x = imageSize / 2;
+                int y = imageSize / 2;
+                CRawU16::GradientAscentToLocalMaximum( gray.get(), x, y );
+                c += QPoint( x - imageSize / 2, y - imageSize / 2 );
+            }
             QPixmap pixmap;
             if( focusingHelperOn ) {
                 pixmap = focusingHelper( rendering, currentImage.get(), c.x() - imageSize / 2 / scale, c.y() - imageSize / 2 / scale, imageSize / scale, imageSize / scale );
