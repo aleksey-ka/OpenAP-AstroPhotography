@@ -166,7 +166,7 @@ QFrame {
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true"/>
+             <string notr="true">border:none;</string>
             </property>
             <property name="title">
              <string/>
