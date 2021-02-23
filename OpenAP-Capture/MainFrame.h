@@ -85,7 +85,7 @@ private:
     QFutureWatcher<std::shared_ptr<const CRawU16Image>> imageReadyWatcher;
     QFutureWatcher<QString> imageSavedWatcher;
     std::shared_ptr<const CRawU16Image> currentImage;
-    int zoomSize = 0;
+    int zoom = 0;
     QPoint zoomCenter;
     bool focusingHelperOn = false;
     int exposureRemainingTime;

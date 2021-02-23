@@ -144,21 +144,21 @@ MainFrame::MainFrame( QWidget *parent ) :
    zoomView->setStyleSheet( "border-bottom:none;border-right:none;" );
    zoomView->hide();
    connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_Z ), this ), &QShortcut::activated, [=]() {
-       if( ++zoomSize > 2 ) {
-            zoomSize = 2;
+       if( ++zoom > 2 ) {
+            zoom = 2;
        } else {
             showZoom();
        }
    } );
    connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Z ), this ), &QShortcut::activated, [=]() {
-       if( --zoomSize <= 0 ) {
-           zoomSize = 0;
+       if( --zoom <= 0 ) {
+           zoom = 0;
            zoomView->hide();
        } else {
            showZoom();
        }
    } );
-   connect( ui->zoomOffRadioButton, &QRadioButton::toggled, [=](bool checked ) { if( checked ) { zoomSize = 0; zoomView->hide(); } } );
+   connect( ui->zoomOffRadioButton, &QRadioButton::toggled, [=](bool checked ) { if( checked ) { zoom = 0; zoomView->hide(); } } );
    connect( ui->zoomHalfRadioButton, &QRadioButton::toggled, [=](bool checked ) { if( checked ) showZoom(); } );
    connect( ui->zoom1xRadioButton, &QRadioButton::toggled, [=](bool checked ) { if( checked ) showZoom(); } );
    connect( ui->zoom2xRadioButton, &QRadioButton::toggled, [=](bool checked ) { if( checked ) showZoom(); } );
@@ -236,12 +236,13 @@ void MainFrame::showZoom( bool update )
         scale = 4;
         rendering = RM_CFA;
     }
-    if( zoomSize == 0 ) {
-        zoomSize = 1;
+    if( zoom == 0 ) {
+        zoom = 1;
     }
     if( update ) {
-        int imageSize = 300 * zoomSize;
-        zoomView->resize( imageSize + 1, imageSize + 1 );
+        int size = 320;
+        int imageSize = ( size * zoom ) / scale + 1;
+        zoomView->resize( imageSize * scale + 1, imageSize * scale + 1 );
         if( currentImage != 0 ) {
             QPoint c = zoomCenter.isNull() ? QPoint( currentImage->Width() / 2, currentImage->Height() / 2 ) : zoomCenter;
             if( focusingHelperOn ) {
@@ -252,16 +253,17 @@ void MainFrame::showZoom( bool update )
                 int y = imageSize / 2;
                 CRawU16::GradientAscentToLocalMaximum( gray.get(), x, y );
                 c += QPoint( x - imageSize / 2, y - imageSize / 2 );
+                zoomCenter = c;
             }
             QPixmap pixmap;
             if( focusingHelperOn ) {
-                pixmap = focusingHelper( rendering, currentImage.get(), c.x() - imageSize / 2 / scale, c.y() - imageSize / 2 / scale, imageSize / scale, imageSize / scale );
+                pixmap = focusingHelper( rendering, currentImage.get(), c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );
             } else {
                 Renderer renderer( currentImage->RawPixels(), currentImage->Width(), currentImage->Height() );
-                pixmap = renderer.Render( rendering, c.x() - imageSize / 2 / scale, c.y() - imageSize / 2 / scale, imageSize / scale, imageSize / scale );
+                pixmap = renderer.Render( rendering, c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );
             }
             if( scale > 1 ) {
-                pixmap = pixmap.scaled( imageSize, imageSize, Qt::IgnoreAspectRatio );
+                pixmap = pixmap.scaled( imageSize * scale, imageSize * scale, Qt::IgnoreAspectRatio );
             }
             zoomView->setPixmap( pixmap );
         }
@@ -637,7 +639,7 @@ ulong MainFrame::render( const ushort* raw, int width, int height )
     }
     ui->imageView->setPixmap( pixmap );
     ui->histogramView->setPixmap( renderer.RenderHistogram() );
-    if( zoomSize > 0 ) {
+    if( zoom > 0 ) {
         showZoom();
     }
 
