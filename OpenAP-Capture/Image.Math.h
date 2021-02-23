@@ -37,7 +37,8 @@ public:
     CRawU16( const CRawU16Image* );
     CRawU16( const unsigned short* raw, int width, int height );
 
-    std::shared_ptr<CRgbU16Image> DebayerRect( int x, int y, int width, int height );
+    std::shared_ptr<CRgbU16Image> DebayerRect( int x, int y, int width, int height ) const;
+    std::shared_ptr<CGrayU16Image> GrayU16( int x, int y, int width, int height ) const;
 
     CPixelStatistics CalculateStatistics( int x, int y, int width, int height );
 
@@ -47,6 +48,7 @@ public:
     static std::shared_ptr<CGrayU16Image> ToGrayU16( const CRgbU16Image* );
     static std::shared_ptr<CGrayImage> ToGray( const CGrayU16Image* );
 
+    void GradientAscentToLocalMaximum( int& x, int& y, int size );
     static void GradientAscentToLocalMaximum( const CGrayU16Image*, int& x, int& y );
 
 private:

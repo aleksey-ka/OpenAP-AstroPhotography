@@ -75,12 +75,17 @@ CRawU16::CRawU16( const ushort* _raw, int _width, int _height ) :
 
 }
 
-std::shared_ptr<CRgbU16Image> CRawU16::DebayerRect( int x, int y, int w, int h )
+std::shared_ptr<CRgbU16Image> CRawU16::DebayerRect( int x, int y, int w, int h ) const
 {
     auto result = std::make_shared<CRgbU16Image>( w, h );
     CDebayer_RawU16_HQLinear debayer( raw, width, height );
     debayer.ToRgbU16( result->RgbPixels(), result->Stride(), x, y, w, h );
     return result;
+}
+
+std::shared_ptr<CGrayU16Image> CRawU16::GrayU16( int x, int y, int width, int height ) const
+{
+    return ToGrayU16( DebayerRect( x, y, width, height ).get() );
 }
 
 CPixelStatistics CRawU16::CalculateStatistics( int x0, int y0, int W, int H )
@@ -90,8 +95,6 @@ CPixelStatistics CRawU16::CalculateStatistics( int x0, int y0, int W, int H )
     auto& histR = stats[0];
     auto& histG = stats[1];
     auto& histB = stats[2];
-
-    const auto& size = histR.size();
 
     int count = 0;
 
@@ -260,6 +263,16 @@ std::shared_ptr<CGrayImage> CRawU16::ToGray( const CGrayU16Image* rgb16 )
     }
 
     return result;
+}
+
+void CRawU16::GradientAscentToLocalMaximum( int& x, int& y, int size )
+{
+    auto gray = GrayU16( x - size / 2, y - size / 2, size, size );
+    int _x = size / 2;
+    int _y = size / 2;
+    CRawU16::GradientAscentToLocalMaximum( gray.get(), _x, _y );
+    x += _x - size / 2;
+    y += _y - size / 2;
 }
 
 void CRawU16::GradientAscentToLocalMaximum( const CGrayU16Image* image, int& x, int& y )
