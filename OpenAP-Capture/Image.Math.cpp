@@ -7,6 +7,9 @@
 
 #include <QDebug>
 
+#include <math.h>
+#include <stack>
+
 CPixelStatistics::CPixelStatistics( int numberOfChannels, int bitsPerChannel ) :
     channelSize( 2 << bitsPerChannel )
 {
@@ -24,8 +27,6 @@ CChannelStat CPixelStatistics::stat( int channel, int n ) const
     stat.Sigma = stat.Median - p( channel, count / 2 - count / 3 );
     int dR2 = p( channel, count / 2 + count / 3 ) - stat.Median;
     int mR = maxP( channel, stat.Median - stat.Sigma, stat.Median + dR2 );
-    qDebug() << "Hist" << channel << stat.Median  << stat.Sigma << "/" << dR2 << mR;
-
     return stat;
 }
 
@@ -88,7 +89,7 @@ std::shared_ptr<CGrayU16Image> CRawU16::GrayU16( int x, int y, int width, int he
     return ToGrayU16( DebayerRect( x, y, width, height ).get() );
 }
 
-CPixelStatistics CRawU16::CalculateStatistics( int x0, int y0, int W, int H )
+CPixelStatistics CRawU16::CalculateStatistics( int x0, int y0, int W, int H ) const
 {
     CPixelStatistics stats( 3, 12 );
 
@@ -136,7 +137,7 @@ CPixelStatistics CRawU16::CalculateStatistics( int x0, int y0, int W, int H )
     return stats;
 }
 
-std::shared_ptr<CRgbImage> CRawU16::Stretch( int x0, int y0, int W, int H )
+std::shared_ptr<CRgbImage> CRawU16::Stretch( int x0, int y0, int W, int H ) const
 {
     CPixelStatistics stats = CalculateStatistics( x0, y0, W, H );
 
@@ -174,7 +175,7 @@ std::shared_ptr<CRgbImage> CRawU16::Stretch( int x0, int y0, int W, int H )
     return result;
 }
 
-std::shared_ptr<CRgbImage> CRawU16::StretchHalfRes( int x0, int y0, int W, int H )
+std::shared_ptr<CRgbImage> CRawU16::StretchHalfRes( int x0, int y0, int W, int H ) const
 {
     CPixelStatistics stats = CalculateStatistics( x0, y0, W, H );
 
@@ -283,12 +284,12 @@ void CRawU16::GradientAscentToLocalMaximum( const CGrayU16Image* image, int& x, 
         int maxv = 0;
         int maxPos = 0;
         int pos = 0;
-        // For each pixel in 3x3 pixels around curremt
+        // For each pixel around the current pixel
         for( int i = -1; i <= 1; i++ ) {
             for( int j = -1; j <= 1; j++ ) {
                 const ushort* s = p + i * stride + j;
                 int v = 0;
-                // Sum values of pixels in 3x3 area around that pixel
+                // Sum values of pixels in 3x3 area
                 for( int n = -1; n <= 1; n++ ) {
                     for( int m = -1; m <= 1; m++ ) {
                         v += s[n * stride + m];
@@ -314,4 +315,214 @@ void CRawU16::GradientAscentToLocalMaximum( const CGrayU16Image* image, int& x, 
             case 8: x++; y++; break;
         }
     }
+}
+
+CPixelStatistics CRawU16::CalculateStatistics( const CGrayU16Image* image )
+{
+    CPixelStatistics stats( 1, 14 );
+    auto& hist = stats[0];
+
+    int width = image->Width();
+    int height = image->Height();
+
+    int count = 0;
+    for( int y = 0; y < height; y++ ) {
+        const ushort* srcLine = image->ScanLine( y );
+        for( int x = 0; x < width; x++ ) {
+            const ushort* src = srcLine + x;
+            ushort v = src[0];
+            hist[v]++;
+            count++;
+        }
+    }
+    stats.setCount( count );
+
+    return stats;
+}
+
+static std::shared_ptr<CGrayImage> starMask( const CGrayU16Image* image, int x, int y, int t, int width, int height, std::shared_ptr<CGrayImage> result, int value )
+{
+    std::stack<std::tuple<int, int>> s;
+    s.emplace( x, y );
+    while( not s.empty() ) {
+        int x, y;
+        std::tie( x, y ) = s.top();
+        s.pop();
+        if( x >= 0 && x < width && y > 0 && y < height ) {
+            auto dst = result->At( x, y );
+            if( dst[0] < value && image->At( x, y )[0] >= t ) {
+                dst[0] = value;
+                s.emplace( x - 1, y );
+                s.emplace( x + 1, y );
+                s.emplace( x - 1, y - 1 );
+                s.emplace( x, y - 1);
+                s.emplace( x + 1, y - 1);
+                s.emplace( x - 1, y + 1 );
+                s.emplace( x, y + 1);
+                s.emplace( x + 1, y + 1);
+            }
+        }
+    }
+    return result;
+}
+
+static std::shared_ptr<CGrayImage> starMask( const CGrayU16Image* image, int x, int y, int t, int value = 128 )
+{
+    int width = image->Width();
+    int height = image->Height();
+    std::shared_ptr<CGrayImage> result = std::make_shared<CGrayImage>( width, height );
+    return starMask( image, x, y, t, width, height, result, value );
+}
+
+static std::shared_ptr<CGrayImage> starMask( const CGrayU16Image* image, int x, int y, int t, int value, std::shared_ptr<CGrayImage>& result )
+{
+    int width = image->Width();
+    int height = image->Height();
+    return starMask( image, x, y, t, width, height, result, value );
+}
+
+CFocusingHelper::CFocusingHelper( const CRawU16Image* currentImage, int _cx, int _cy, int imageSize ) : cx( _cx ), cy( _cy )
+{
+    // Lock on the star (center on local maximum)
+    CRawU16 rawU16( currentImage );
+    rawU16.GradientAscentToLocalMaximum( cx, cy, imageSize );
+    auto image = rawU16.GrayU16( cx - imageSize / 2, cy - imageSize / 2, imageSize, imageSize );
+
+    int height = image->Height();
+    int width = image->Width();
+
+    const auto s = CRawU16::CalculateStatistics( image.get() ).stat( 0 );
+    qDebug() << "Median:" << s.Median << "Sigma:" << s.Sigma;
+
+    int cVal = image->At( imageSize / 2, imageSize / 2 )[0];
+
+    int maxVal = 0;
+    int halfMax = s.Median + ( cVal - s.Median ) / 2;
+    int count = 0;
+    for( int y = imageSize / 2 - 10; y <= imageSize / 2 + 10; y++ ) {
+        const ushort* srcLine = image->ScanLine( y );
+        for( int x = imageSize / 2 - 10; x < imageSize / 2 + 10; x++ ) {
+            const ushort* src = srcLine + x;
+            ushort v = src[0];
+            if( v >= halfMax ) {
+                count++;
+            }
+            if( v > maxVal ) {
+                maxVal = v;
+            }
+        }
+    }
+
+    qDebug() << "Value at center:" << cVal;
+    qDebug() << "Max val:" << maxVal;
+    qDebug() << "Count at half max:" << count;
+    qDebug() << "FWHM:" << 2 * sqrt ( count / M_PI );
+
+
+    auto mask = starMask( image.get(), imageSize / 2, imageSize / 2, s.Median + s.Sigma, 16 );
+    starMask( image.get(), imageSize / 2, imageSize / 2, s.Median + ( cVal - s.Median ) / 10, 32, mask );
+    starMask( image.get(), imageSize / 2, imageSize / 2, s.Median + ( cVal - s.Median ) / 2, 128, mask );
+    starMask( image.get(), imageSize / 2, imageSize / 2, s.Median + ( 9 * ( cVal - s.Median ) ) / 10, 192, mask );
+    starMask( image.get(), imageSize / 2, imageSize / 2, s.Median + ( 19 * ( cVal - s.Median ) ) / 20, 255, mask );
+
+    double sumVX = 0;
+    double sumVY = 0;
+    double sumV = 0;
+    for( int y = 0; y < height; y++ ) {
+        const ushort* src = image->ScanLine( y );
+        const uchar* msk = mask->ScanLine( y );
+        for( int x = 0; x < width; x++ ) {
+            if( msk[x] > 0 ) {
+                double value = src[x] - halfMax;
+                if( value > 0 ) {
+                    sumVX += value * ( x - imageSize / 2 );
+                    sumVY += value * ( y - imageSize / 2 );
+                    sumV += value;
+                }
+            }
+        }
+    }
+    double dX = sumVX / sumV;
+    double dY = sumVY / sumV;
+    qDebug() << "dX:" << QString::number( dX, 'f', 2 ) << "dY:" << QString::number( dY, 'f', 2 );
+
+    R = 0;
+    double meanSky = INT_MAX;
+    int bestR = 0;
+    int samples = 0;
+    while( true ) {
+        double sumV = 0;
+        int count = 0;
+        for( int y = 0; y < height; y++ ) {
+            const ushort* src = image->ScanLine( y );
+            for( int x = 0; x < width; x++ ) {
+                int dx = x - imageSize / 2;
+                int dy = y - imageSize / 2;
+                int rr = dx * dx + dy * dy;
+                if( rr >= R * R && rr < ( R + 10 ) * ( R + 10 ) ) {
+                    sumV += src[x];
+                    count++;
+                }
+            }
+        }
+        double current = sumV / count;
+        //qDebug() << "R:" << R << "Mean Sky:" << current;
+        bool foundBoundary = false;
+        if( current < meanSky || R == 0 ) {
+            meanSky = current;
+            bestR = R;
+        } else {
+            foundBoundary = true;
+            //qDebug() << "----------";
+        }
+        if( foundBoundary || samples > 0 ) {
+            if( ++samples == 15 ) {
+                break;
+            }
+        }
+        R += 3;
+    }
+    R = bestR;
+    qDebug() << "R:" << R << "Mean Sky:" << meanSky;
+
+    sumV = 0;
+    double sumVR = 0;
+    for( int y = 0; y < height; y++ ) {
+        const ushort* src = image->ScanLine( y );
+        const uchar* msk = mask->ScanLine( y );
+        for( int x = 0; x < width; x++ ) {
+            if( msk[x] >= 32 ) {
+                double value = src[x] - meanSky; // (?) ( s.Median + ( cVal - s.Median ) / 10 );
+                for( int n = 0; n < 3; n++ ) {
+                    for( int m = 0; m < 3; m++ ) {
+                        double dx = x - ( imageSize / 2 + dX ) + n / 5.0;
+                        double dy = y - ( imageSize / 2 + dY ) + m / 5.0;
+                        double r = sqrt( dx * dx + dy * dy );
+                        if( r < R ) {
+                            sumVR += value * r;
+                            sumV += value;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    HFD = 2 * sumVR / sumV;
+    qDebug() << "HFD:" << QString::number( HFD, 'f', 2 );
+
+    double halfMax2 = meanSky + ( maxVal - meanSky ) / 2;
+    count = 0;
+    for( int y = imageSize / 2 - 10; y <= imageSize / 2 + 10; y++ ) {
+        const ushort* src = image->ScanLine( y );
+        for( int x = imageSize / 2 - 10; x < imageSize / 2 + 10; x++ ) {
+            if( src[x] - 0.5 >= halfMax2 ) {
+                count++;
+            }
+        }
+    }
+
+    qDebug() << "(2) Count at half max:" << count;
+    qDebug() << "(2) FWHM:" << 2 * sqrt ( count / M_PI );
+
+    Mask = mask;
 }

@@ -40,10 +40,10 @@ public:
     std::shared_ptr<CRgbU16Image> DebayerRect( int x, int y, int width, int height ) const;
     std::shared_ptr<CGrayU16Image> GrayU16( int x, int y, int width, int height ) const;
 
-    CPixelStatistics CalculateStatistics( int x, int y, int width, int height );
+    CPixelStatistics CalculateStatistics( int x, int y, int width, int height ) const;
 
-    std::shared_ptr<CRgbImage> Stretch( int x, int y, int w, int h );
-    std::shared_ptr<CRgbImage> StretchHalfRes( int x, int y, int w, int h );
+    std::shared_ptr<CRgbImage> Stretch( int x, int y, int w, int h ) const;
+    std::shared_ptr<CRgbImage> StretchHalfRes( int x, int y, int w, int h ) const;
 
     static std::shared_ptr<CGrayU16Image> ToGrayU16( const CRgbU16Image* );
     static std::shared_ptr<CGrayImage> ToGray( const CGrayU16Image* );
@@ -51,10 +51,23 @@ public:
     void GradientAscentToLocalMaximum( int& x, int& y, int size );
     static void GradientAscentToLocalMaximum( const CGrayU16Image*, int& x, int& y );
 
+    static CPixelStatistics CalculateStatistics( const CGrayU16Image* );
+
 private:
     const unsigned short* raw;
     int width;
     int height;
+};
+
+class CFocusingHelper {
+public:
+    CFocusingHelper( const CRawU16Image*, int cx, int cy, int imageSize );
+
+    int R;
+    int cx;
+    int cy;
+    double HFD;
+    std::shared_ptr<const CGrayImage> Mask;
 };
 
 #endif // IMAGE_MATH_H

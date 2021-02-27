@@ -138,7 +138,7 @@ MainFrame::MainFrame( QWidget *parent ) :
 
    ui->imageView->setCursor( QCursor( QPixmap( ":Res.CrossHair.png" ), 23, 23 ) );
    connect( ui->imageView, SIGNAL( imagePressed( int, int, Qt::MouseButton, Qt::KeyboardModifiers ) ),
-        SLOT( on_imageView_imagePressed( int, int, Qt::MouseButton, Qt::KeyboardModifiers ) ) );
+        SLOT( on_imageView_imagePressed( int, int, Qt::MouseButton, Qt::KeyboardModifiers ) ), Qt::UniqueConnection );
 
    zoomView = new ImageView( ui->imageView );
    zoomView->setStyleSheet( "border-bottom:none;border-right:none;" );
@@ -206,7 +206,7 @@ void MainFrame::resizeEvent( QResizeEvent* event )
     }
 }
 
-static QPixmap focusingHelper( TRenderingMethod rendering, const CRawU16Image* image, int x0, int y0, int w, int h )
+static QPixmap focusingHelperPixmap( TRenderingMethod rendering, const CRawU16Image* image, int x0, int y0, int w, int h )
 {
     if( rendering == RM_HalfResolution ) {
         return Qt::CreatePixmap( CRawU16( image ).StretchHalfRes( x0, y0, w, h ) );
@@ -244,16 +244,30 @@ void MainFrame::showZoom( bool update )
         int imageSize = ( size * zoom ) / scale + 1;
         zoomView->resize( imageSize * scale + 1, imageSize * scale + 1 );
         if( currentImage != 0 ) {
-            QPoint c = zoomCenter.isNull() ? QPoint( currentImage->Width() / 2, currentImage->Height() / 2 ) : zoomCenter;
-            if( focusingHelperOn ) {
-                // Lock on the star (center on local maximum)
-                CRawU16 rawU16( currentImage.get() );
-                rawU16.GradientAscentToLocalMaximum( c.rx(), c.ry(), imageSize );
-                zoomCenter = c;
-            }
             QPixmap pixmap;
-            if( focusingHelperOn ) {
-                pixmap = focusingHelper( rendering, currentImage.get(), c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );
+            QPoint c = zoomCenter.isNull() ? QPoint( currentImage->Width() / 2, currentImage->Height() / 2 ) : zoomCenter;
+            if( focusingHelperOn ) {       
+                // Lock on the star (center on local maximum) and measure its params
+                CFocusingHelper focusingHelper( currentImage.get(), c.x(), c.y(), imageSize );
+                c.setX( focusingHelper.cx );
+                c.setY( focusingHelper.cy );
+                zoomCenter = c;
+                int R = focusingHelper.R;
+                double HFD = focusingHelper.HFD;
+
+                pixmap = focusingHelperPixmap( rendering, currentImage.get(), c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );
+                QPainter painter( &pixmap );
+                QPen pen( QColor::fromRgb( 0xFF, 0, 0 ) );
+                pen.setWidthF( 0.5 );
+                painter.setPen( pen );
+                painter.setRenderHint( QPainter::Antialiasing );
+                painter.drawEllipse( pixmap.width() / 2 - R, pixmap.height() / 2 - R, 2 * R, 2 * R );
+                painter.drawEllipse( pixmap.width() / 2 - R - 10, pixmap.height() / 2 - R - 10, 2 * R + 20, 2 * R + 20 );
+
+                QFont font( "Consolas" );
+                font.setPointSizeF( 9 );
+                painter.setFont( font );
+                painter.drawText( 5, 15, QString( "HFD %1" ).arg( QString::number( HFD, 'f', 2 ) ) );
             } else {
                 Renderer renderer( currentImage->RawPixels(), currentImage->Width(), currentImage->Height() );
                 pixmap = renderer.Render( rendering, c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );

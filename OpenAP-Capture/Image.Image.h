@@ -17,6 +17,9 @@ public:
     const T* ScanLine( int y ) const { return buffer.data() + y * stride; }
     T* ScanLine( int y ) { return buffer.data() + y * stride; }
 
+    const T* At( int x, int y ) const { return ScanLine( y ) + x; }
+    T* At( int x, int y ) { return ScanLine( y ) + x; }
+
 protected:
     int width;
     int height;
