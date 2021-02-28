@@ -49,7 +49,7 @@ public:
     static std::shared_ptr<CGrayImage> ToGray( const CGrayU16Image* );
 
     void GradientAscentToLocalMaximum( int& x, int& y, int size );
-    static void GradientAscentToLocalMaximum( const CGrayU16Image*, int& x, int& y );
+    static void GradientAscentToLocalMaximum( const CGrayU16Image*, int& x, int& y, int window );
 
     static CPixelStatistics CalculateStatistics( const CGrayU16Image* );
 

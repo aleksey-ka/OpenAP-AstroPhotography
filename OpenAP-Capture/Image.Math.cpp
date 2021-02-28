@@ -271,13 +271,15 @@ void CRawU16::GradientAscentToLocalMaximum( int& x, int& y, int size )
     auto gray = GrayU16( x - size / 2, y - size / 2, size, size );
     int _x = size / 2;
     int _y = size / 2;
-    CRawU16::GradientAscentToLocalMaximum( gray.get(), _x, _y );
+    CRawU16::GradientAscentToLocalMaximum( gray.get(), _x, _y, 25 );
+    CRawU16::GradientAscentToLocalMaximum( gray.get(), _x, _y, 3 );
     x += _x - size / 2;
     y += _y - size / 2;
 }
 
-void CRawU16::GradientAscentToLocalMaximum( const CGrayU16Image* image, int& x, int& y )
+void CRawU16::GradientAscentToLocalMaximum( const CGrayU16Image* image, int& x, int& y, int window )
 {
+    int halfW = window / 2;
     int stride = image->Stride();
     while( true ) {
         const ushort* p = image->ScanLine( y ) + x;
@@ -285,13 +287,13 @@ void CRawU16::GradientAscentToLocalMaximum( const CGrayU16Image* image, int& x, 
         int maxPos = 0;
         int pos = 0;
         // For each pixel around the current pixel
-        for( int i = -1; i <= 1; i++ ) {
-            for( int j = -1; j <= 1; j++ ) {
+        for( int i = -halfW; i <= halfW; i+= halfW ) {
+            for( int j = -halfW; j <= halfW; j+= halfW ) {
                 const ushort* s = p + i * stride + j;
                 int v = 0;
                 // Sum values of pixels in 3x3 area
-                for( int n = -1; n <= 1; n++ ) {
-                    for( int m = -1; m <= 1; m++ ) {
+                for( int n = -halfW; n <= halfW; n++ ) {
+                    for( int m = -halfW; m <= halfW; m++ ) {
                         v += s[n * stride + m];
                     }
                 }
@@ -495,8 +497,8 @@ CFocusingHelper::CFocusingHelper( const CRawU16Image* currentImage, int _cx, int
                 double value = src[x] - meanSky; // (?) ( s.Median + ( cVal - s.Median ) / 10 );
                 for( int n = 0; n < 3; n++ ) {
                     for( int m = 0; m < 3; m++ ) {
-                        double dx = x - ( imageSize / 2 + dX ) + n / 5.0;
-                        double dy = y - ( imageSize / 2 + dY ) + m / 5.0;
+                        double dx = x - ( imageSize / 2 + dX ) + n / 3.0;
+                        double dy = y - ( imageSize / 2 + dY ) + m / 3.0;
                         double r = sqrt( dx * dx + dy * dy );
                         if( r < R ) {
                             sumVR += value * r;
@@ -523,6 +525,7 @@ CFocusingHelper::CFocusingHelper( const CRawU16Image* currentImage, int _cx, int
 
     qDebug() << "(2) Count at half max:" << count;
     qDebug() << "(2) FWHM:" << 2 * sqrt ( count / M_PI );
+    qDebug() << "(2) Max:" << maxVal;
 
     Mask = mask;
 }

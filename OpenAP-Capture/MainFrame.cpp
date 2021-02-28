@@ -254,6 +254,7 @@ void MainFrame::showZoom( bool update )
                 zoomCenter = c;
                 int R = focusingHelper.R;
                 double HFD = focusingHelper.HFD;
+                //pixmap = Qt::CreatePixmap( focusingHelper.Mask );
 
                 pixmap = focusingHelperPixmap( rendering, currentImage.get(), c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );
                 QPainter painter( &pixmap );
