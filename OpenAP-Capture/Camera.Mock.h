@@ -6,6 +6,8 @@
 
 #include "Camera.h"
 
+#include <QStringList>
+
 #include <atomic>
 
 class MockCamera : public Camera {
@@ -80,6 +82,9 @@ public:
 
 private:
     int index;
+    QStringList frames;
+    mutable int nextFrame = 0;
+    mutable bool forwardPass = true;
     ImageInfo templateImageInfo;
     ImageInfo currentSettings;
     mutable std::atomic<bool> isClosing{ false };

@@ -10,17 +10,30 @@
 #include <iostream>
 #include <fstream>
 
-static QStringList files;
+static QStringList rootFileEntries;
 
-static std::shared_ptr<const CRawU16Image> loadImage( int index )
+static std::shared_ptr<const CRawU16Image> loadImage( QString filePath )
 {
-    return CRawU16Image::LoadFromFile( files[index].toStdString().c_str() );
+    return CRawU16Image::LoadFromFile( filePath.toStdString().c_str() );
+}
+
+static std::shared_ptr<const CRawU16Image> loadImage( int index, QStringList& frames )
+{
+    auto filePath = rootFileEntries[index];
+    QFileInfo fileInfo( filePath );
+    if( fileInfo.isDir() ) {
+        frames = QDir( filePath, "*.u16.pixels" ).entryList( QDir::Files );
+        return loadImage( filePath + QDir::separator() + frames[0] );
+    } else {
+        return loadImage( filePath.left( filePath.lastIndexOf( '.' ) ) + ".pixels" );
+    }
 }
 
 static std::shared_ptr<ASI_CAMERA_INFO> createCameraInfo( int index )
 {
     auto cameraInfo = std::make_shared<ASI_CAMERA_INFO>();
-    auto image = loadImage( index );
+    QStringList frames;
+    std::shared_ptr<const CRawU16Image> image = loadImage( index, frames );
     strcpy( cameraInfo->Name, image->Info().Camera.c_str() );
     cameraInfo->IsColorCam = image->Info().CFA.empty() ? ASI_FALSE : ASI_TRUE;
     cameraInfo->CameraID = -( index + 1 );
@@ -29,8 +42,8 @@ static std::shared_ptr<ASI_CAMERA_INFO> createCameraInfo( int index )
 
 int MockCamera::GetCount()
 {
-    files = QDir( "", "*.u16.pixels" ).entryList( QDir::Files );
-    return files.size();
+    rootFileEntries = QDir( "", "*.u16.info" ).entryList( QDir::AllEntries );
+    return rootFileEntries.size();
 }
 
 std::shared_ptr<ASI_CAMERA_INFO> MockCamera::GetInfo( int index )
@@ -41,7 +54,7 @@ std::shared_ptr<ASI_CAMERA_INFO> MockCamera::GetInfo( int index )
 MockCamera::MockCamera( int id )
 {
     index = -id - 1;
-    currentSettings = loadImage( index )->Info();
+    currentSettings = loadImage( index, frames )->Info();
 }
 
 std::shared_ptr<MockCamera> MockCamera::Open( int id )
@@ -87,7 +100,22 @@ std::shared_ptr<const CRawU16Image> MockCamera::DoExposure() const
     }
     QThread::usleep( delta );
     isExposure = false;
-    auto image = loadImage( index );
+
+    std::shared_ptr<const CRawU16Image> image;
+    if( frames.size() > 0 ) {
+        image = CRawU16Image::LoadFromFile( ( rootFileEntries[index] + QDir::separator() + frames[nextFrame] ).toStdString().c_str() );
+        nextFrame += forwardPass ? 1 : -1;
+        if( nextFrame == frames.size() ) {
+            forwardPass = false;
+            nextFrame = frames.size() - 2;
+        } else if ( nextFrame == -1 ) {
+            forwardPass = true;
+            nextFrame = 1;
+        }
+    } else {
+        QStringList empty;
+        image = loadImage( index, empty );
+    }
 
     auto& imageInfo = const_cast<ImageInfo&>( image->Info() );
     imageInfo = currentSettings;
