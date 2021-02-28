@@ -610,10 +610,10 @@ void MainFrame::imageReady()
 
         } ) );
 
+        currentImage = result;
+
         auto msec = render( result->RawPixels(), result->Width(), result->Height() );
         qDebug() << "Rendered in " << msec << "msec";
-
-        currentImage = result;
     }
 
     if( ui->continuousCaptureCheckBox->isChecked() ) {
