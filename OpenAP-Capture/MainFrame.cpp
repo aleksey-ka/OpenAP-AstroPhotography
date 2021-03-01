@@ -100,11 +100,15 @@ MainFrame::MainFrame( QWidget *parent ) :
    }
    connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_F ), this ), &QShortcut::activated, [=]() {
        if( zoomView->isHidden() ) {
-           // If zoom is not showing, then we want to show it with focusing helper on
-           focusingHelperOn = true;
+           // If zoom is not showing, then we want to show it with a new instance of focusing helper
+           focusingHelper = std::make_shared<CFocusingHelper>();
        } else {
            // Otherwise toggling focusing helper on and off
-           focusingHelperOn = !focusingHelperOn;
+           if( not focusingHelper ) {
+               focusingHelper = std::make_shared<CFocusingHelper>();
+           } else {
+               focusingHelper.reset();
+           }
        }
        showZoom();
    } );
@@ -246,14 +250,14 @@ void MainFrame::showZoom( bool update )
         if( currentImage != 0 ) {
             QPixmap pixmap;
             QPoint c = zoomCenter.isNull() ? QPoint( currentImage->Width() / 2, currentImage->Height() / 2 ) : zoomCenter;
-            if( focusingHelperOn ) {       
+            if( focusingHelper ) {
                 // Lock on the star (center on local maximum) and measure its params
-                CFocusingHelper focusingHelper( currentImage.get(), c.x(), c.y(), imageSize );
-                c.setX( focusingHelper.cx );
-                c.setY( focusingHelper.cy );
+                focusingHelper->AddFrame( currentImage.get(), c.x(), c.y(), imageSize );
+                c.setX( focusingHelper->cx );
+                c.setY( focusingHelper->cy );
                 zoomCenter = c;
-                int R = focusingHelper.R;
-                double HFD = focusingHelper.HFD;
+                int R = focusingHelper->R;
+                double HFD = focusingHelper->HFD;
                 //pixmap = Qt::CreatePixmap( focusingHelper.Mask );
 
                 pixmap = focusingHelperPixmap( rendering, currentImage.get(), c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );
@@ -797,10 +801,10 @@ void MainFrame::on_imageView_imagePressed( int cx, int cy, Qt::MouseButton butto
 
     if( modifiers.testFlag( Qt::ControlModifier ) ) {
         // Switch the focusing helper on
-        focusingHelperOn = true;
+        focusingHelper = std::make_shared<CFocusingHelper>();
     } else if( zoomView->isHidden() ) {
         // Normally the zoom view must open in normal mode
-        focusingHelperOn = false;
+        focusingHelper.reset();
     }
 
     showZoom();

@@ -15,6 +15,7 @@
 #include "Camera.h"
 #include "Focuser.h"
 #include "FilterWheel.h"
+#include "Image.Math.h"
 
 namespace Ui {
     class MainFrame;
@@ -87,7 +88,7 @@ private:
     std::shared_ptr<const CRawU16Image> currentImage;
     int zoom = 0;
     QPoint zoomCenter;
-    bool focusingHelperOn = false;
+    std::shared_ptr<CFocusingHelper> focusingHelper;
     int exposureRemainingTime;
     uint64_t seriesId = 0;
     QAtomicInt capturedFrames = 0;

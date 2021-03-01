@@ -61,7 +61,7 @@ private:
 
 class CFocusingHelper {
 public:
-    CFocusingHelper( const CRawU16Image*, int cx, int cy, int imageSize );
+    void AddFrame( const CRawU16Image*, int cx, int cy, int imageSize );
 
     int R;
     int cx;

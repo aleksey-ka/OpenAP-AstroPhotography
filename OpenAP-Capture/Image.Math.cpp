@@ -383,8 +383,11 @@ static std::shared_ptr<CGrayImage> starMask( const CGrayU16Image* image, int x, 
     return starMask( image, x, y, t, width, height, result, value );
 }
 
-CFocusingHelper::CFocusingHelper( const CRawU16Image* currentImage, int _cx, int _cy, int imageSize ) : cx( _cx ), cy( _cy )
+void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int _cx, int _cy, int imageSize )
 {
+    cx = _cx;
+    cy = _cy;
+
     // Lock on the star (center on local maximum)
     CRawU16 rawU16( currentImage );
     rawU16.GradientAscentToLocalMaximum( cx, cy, imageSize );
@@ -448,11 +451,44 @@ CFocusingHelper::CFocusingHelper( const CRawU16Image* currentImage, int _cx, int
     double dY = sumVY / sumV;
     qDebug() << "dX:" << QString::number( dX, 'f', 2 ) << "dY:" << QString::number( dY, 'f', 2 );
 
-    R = 0;
     double meanSky = INT_MAX;
-    int bestR = 0;
-    int samples = 0;
-    while( true ) {
+    if( R == 0 ) {
+        int bestR = 0;
+        int samples = 0;
+        while( true ) {
+            double sumV = 0;
+            int count = 0;
+            for( int y = 0; y < height; y++ ) {
+                const ushort* src = image->ScanLine( y );
+                for( int x = 0; x < width; x++ ) {
+                    int dx = x - imageSize / 2;
+                    int dy = y - imageSize / 2;
+                    int rr = dx * dx + dy * dy;
+                    if( rr >= R * R && rr < ( R + 10 ) * ( R + 10 ) ) {
+                        sumV += src[x];
+                        count++;
+                    }
+                }
+            }
+            double current = sumV / count;
+            //qDebug() << "R:" << R << "Mean Sky:" << current;
+            bool foundBoundary = false;
+            if( current < meanSky || R == 0 ) {
+                meanSky = current;
+                bestR = R;
+            } else {
+                foundBoundary = true;
+                //qDebug() << "----------";
+            }
+            if( foundBoundary || samples > 0 ) {
+                if( ++samples == 15 ) {
+                    break;
+                }
+            }
+            R += 3;
+        }
+        R = bestR;
+    } else {
         double sumV = 0;
         int count = 0;
         for( int y = 0; y < height; y++ ) {
@@ -467,24 +503,8 @@ CFocusingHelper::CFocusingHelper( const CRawU16Image* currentImage, int _cx, int
                 }
             }
         }
-        double current = sumV / count;
-        //qDebug() << "R:" << R << "Mean Sky:" << current;
-        bool foundBoundary = false;
-        if( current < meanSky || R == 0 ) {
-            meanSky = current;
-            bestR = R;
-        } else {
-            foundBoundary = true;
-            //qDebug() << "----------";
-        }
-        if( foundBoundary || samples > 0 ) {
-            if( ++samples == 15 ) {
-                break;
-            }
-        }
-        R += 3;
+        meanSky = sumV / count;
     }
-    R = bestR;
     qDebug() << "R:" << R << "Mean Sky:" << meanSky;
 
     sumV = 0;
