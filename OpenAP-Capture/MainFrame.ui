@@ -1142,7 +1142,7 @@ border-radius: 10px;</string>
   <customwidget>
    <class>ImageView</class>
    <extends>QLabel</extends>
-   <header>imageview.h</header>
+   <header>ImageView.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

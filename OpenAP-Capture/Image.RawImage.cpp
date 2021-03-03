@@ -83,10 +83,11 @@ std::shared_ptr<const CRawU16Image> CRawU16Image::LoadFromFile( const char* file
     std::wstring line;
     while( std::getline( info, line ) ) {
         size_t pos = line.find_first_of( L" \t" );
+        size_t trimPos = line.find_last_not_of( L" \n\r\t" );
         assert( pos != std::wstring::npos );
         map.insert( std::pair<std::wstring, std::wstring>(
             line.substr( 0, pos ),
-            line.substr( pos + 1 ) ) );
+            line.substr( pos + 1, trimPos - pos ) ) );
     }
     info.close();
 
