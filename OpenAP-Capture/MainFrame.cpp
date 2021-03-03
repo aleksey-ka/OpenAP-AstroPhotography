@@ -303,6 +303,9 @@ void MainFrame::showZoom( bool update )
                     painter.drawText( 5, pos += 15, QString( "dCX %1 (%2)" ).arg( QString::number( focusingHelper->dCX, 'f', 2 ), QString::number( focusingHelper->sigmadCX, 'f', 2 ) ) );
                     painter.drawText( 5, pos += 15, QString( "dCY %1 (%2)" ).arg( QString::number( focusingHelper->dCY, 'f', 2 ), QString::number( focusingHelper->sigmadCY, 'f', 2 ) ) );
                     painter.drawText( 5, pos += 15, QString( "L %1 (%2)" ).arg( QString::number( focusingHelper->L, 'f', 2 ), QString::number( focusingHelper->sigmaL, 'f', 2 ) ) );
+                } else {
+                    painter.drawText( 5, pos += 15, QString( "dCX %1" ).arg( QString::number( focusingHelper->dCX, 'f', 2 ) ) );
+                    painter.drawText( 5, pos += 15, QString( "dCY %1" ).arg( QString::number( focusingHelper->dCY, 'f', 2 ) ) );
                 }
 
                 if( debugMode ) {

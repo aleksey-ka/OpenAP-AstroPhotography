@@ -385,6 +385,9 @@ static std::shared_ptr<CGrayImage> starMask( const CGrayU16Image* image, int x, 
 
 void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int _cx, int _cy, int imageSize, int focuserPos )
 {
+    double prevCX = CX;
+    double prevCY = CY;
+
     cx = _cx;
     cy = _cy;
 
@@ -568,38 +571,50 @@ void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int _cx, int _
     currentSeries->FWHM.push_back( 2 * sqrt ( count / M_PI ) );
     currentSeries->Max.push_back( maxVal );
 
+    double sumdCX = 0;
+    double sumdCY = 0;
+    double sumdCXdCX = 0;
+    double sumdCYdCY = 0;
+    dCX = CX - prevCX;
+    dCY = CY - prevCY;
+
     if( extra.size() > 0 ) {
+        sumdCX += dCX;
+        sumdCXdCX += dCX * dCX;
+        sumdCY += dCY;
+        sumdCYdCY += dCY * dCY;
+        int countC = 1;
+
         CFocusingHelper* prev = this;
-        double d = 0;
-        double sumdCX = 0;
-        double sumdCY = 0;
-        double sumdCXdCX = 0;
-        double sumdCYdCY = 0;
-        int count = 0;
+        double d = 0; 
         for( auto helper : extra ) {
             double prevCX = helper->CX;
             double prevCY = helper->CY;
             helper->AddFrame( currentImage, helper->cx, helper->cy, imageSize, focuserPos );
-            double dx = prev->CX - helper->CX;
-            double dy = prev->CY - helper->CY;
+
             double dCX = helper->CX - prevCX;
+            double dCY = helper->CY - prevCY;
             sumdCX += dCX;
             sumdCXdCX += dCX * dCX;
-            double dCY = helper->CY - prevCY;
             sumdCY += dCY;
             sumdCYdCY += dCY * dCY;
-            count++;
+            countC++;
+
+            double dx = prev->CX - helper->CX;
+            double dy = prev->CY - helper->CY;
             d += sqrt( dx * dx + dy * dy );
             prev = helper.get();
-        }
-        dCX = sumdCX / count;
-        dCY = sumdCY / count;
-        sigmadCX = sqrt( sumdCXdCX / count - ( sumdCX * sumdCX ) / count / count );
-        sigmadCY = sqrt( sumdCYdCY / count - ( sumdCY * sumdCY ) / count / count );
+        }      
         sumD += d;
         sumDD += d * d;
         countL++;
         L = sumD / countL;
         sigmaL = sqrt( sumDD / countL - ( sumD * sumD ) / countL / countL );
+
+        sigmadCX = sqrt( sumdCXdCX / countC - ( sumdCX * sumdCX ) / countC / countC );
+        sigmadCY = sqrt( sumdCYdCY / countC - ( sumdCY * sumdCY ) / countC / countC );
+
+        dCX = sumdCX / countC;
+        dCY = sumdCY / countC;
     }
 }
