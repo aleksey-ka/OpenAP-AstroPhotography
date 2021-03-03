@@ -103,7 +103,7 @@ public:
         return FocuserPosStats( focuserPosition, sumV / count );
     }
 
-    FocuserPosStats getFocuserStatsByIndex( int index )
+    FocuserPosStats getFocuserStatsByIndex( size_t index )
     {
         return getFocuserStats( focuserPositions[index] );
     }

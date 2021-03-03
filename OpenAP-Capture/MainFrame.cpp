@@ -293,7 +293,7 @@ void MainFrame::showZoom( bool update )
                 painter.setFont( font );
                 int pos = 0;
                 if( focuserPos != INT_MIN ) {
-                    painter.drawText( 5, pos += 15, QString( "FOCUSER %1" ).arg( focuserPos ) );
+                    painter.drawText( 5, pos += 15, QString( "FOCUSER %1 (%2)" ).arg( QString::number( focuserPos ), QString::number( focuser.StepsPerMove() ) ) );
                 }
                 painter.drawText( 5, pos += 15, QString( "HFD %1" ).arg( QString::number( focusingHelper->HFD, 'f', 2 ) ) );
                 if( focusingHelper->extra.size() > 0 ) {
@@ -329,14 +329,12 @@ void MainFrame::showZoom( bool update )
                 if( focuserPos > INT_MIN && focusingHelper->focuserPositions.size() > 0 ) {
                     pen.setWidthF( 2.0 );
                     painter.setPen( pen );
-                    int focuserStepsPerMove = focuser.StepsPerMove();
-                    int xScale = 16;
                     for( size_t i = 0; i < focusingHelper->focuserPositions.size(); i++ ) {
                         auto stat = focusingHelper->getFocuserStatsByIndex( i );
                         if( stat.Pos > INT_MIN ) {
-                            int x = ( 2 * ( stat.Pos - focuserPos ) ) / xScale + imageSize / 2;
-                            int y = -15 * stat.HFD + imageSize;
-                            painter.drawLine( x - focuserStepsPerMove / xScale, y, x + focuserStepsPerMove / xScale, y );
+                            int x = ( 8 * ( stat.Pos - focuserPos ) ) / focuser.StepsPerMove() + imageSize / 2;
+                            int y = (int)round( -15 * stat.HFD ) + imageSize;
+                            painter.drawLine( x - 3, y, x + 3, y );
                         }
                     }
                 }
