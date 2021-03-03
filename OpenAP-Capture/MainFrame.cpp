@@ -707,18 +707,22 @@ ulong MainFrame::render( const ushort* raw, int width, int height )
 {
     auto start = std::chrono::steady_clock::now();
 
-    Renderer renderer( raw, width, height );
-    QPixmap pixmap = renderer.Render( ui->showFullResolution->isChecked() ? RM_FullResolution : RM_HalfResolution );
-    if( drawTargetingCircle ) {
-       QPainter painter( &pixmap );
-       QPen pen( QColor::fromRgb( 0xFF, 0, 0 ) );
-       pen.setWidth( 1 );
-       painter.setPen( pen );
-       painter.setRenderHint( QPainter::Antialiasing );
-       painter.drawEllipse( pixmap.width() / 2 - 30, pixmap.height() / 2 - 30, 60, 60 );
+    if( !ui->renderOffCheckBox->isChecked() ) {
+        Renderer renderer( raw, width, height );
+        QPixmap pixmap = renderer.Render( ui->showFullResolution->isChecked() ? RM_FullResolution : RM_HalfResolution );
+        if( drawTargetingCircle ) {
+           QPainter painter( &pixmap );
+           QPen pen( QColor::fromRgb( 0xFF, 0, 0 ) );
+           pen.setWidth( 1 );
+           painter.setPen( pen );
+           painter.setRenderHint( QPainter::Antialiasing );
+           painter.drawEllipse( pixmap.width() / 2 - 30, pixmap.height() / 2 - 30, 60, 60 );
+        }
+        ui->imageView->setPixmap( pixmap );
+        ui->histogramView->setPixmap( renderer.RenderHistogram() );
+    } else {
+        ui->imageView->clear();
     }
-    ui->imageView->setPixmap( pixmap );
-    ui->histogramView->setPixmap( renderer.RenderHistogram() );
     if( zoom > 0 ) {
         showZoom();
     }
