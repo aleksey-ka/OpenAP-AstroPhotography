@@ -16,19 +16,22 @@ public:
 
     void StepUp() { if( stepsToGo < 512 ) stepsToGo *= 2; }
     void StepDown() { if( stepsToGo > 1 ) stepsToGo /= 2; }
+    int StepsPerMove() const { return stepsToGo; }
 
     void MarkZero();
     void GoToPos( int );
+    int GetPos() const { return focuserPos; }
 
 private:
     // Focuser (arduino)
     QSerialPort* serial = nullptr;
     int stepsToGo = 128;
-    int targetPos = INT_MIN;
+    mutable int targetPos = INT_MIN;
+    mutable int focuserPos = INT_MIN;
     bool isInsideMoveTo() const { return targetPos != INT_MIN; }
-    void cancelMoveTo() { targetPos = INT_MIN; }
-    void writeToSerial( const QString& );
-    void readSerial();
+    void cancelMoveTo() const { targetPos = INT_MIN; }
+    void writeToSerial( const QString& ) const;
+    void readSerial() const;
 };
 
 #endif // FOCUSER_H

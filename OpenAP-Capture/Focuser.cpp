@@ -28,7 +28,6 @@ bool Focuser::Open()
             assert( serial->isOpen() );
 
             QObject::connect( serial, &QSerialPort::readyRead, this, &Focuser::readSerial ) ;
-
             qDebug() << "Connected to " << portName;
             return true;
         }
@@ -52,6 +51,7 @@ void Focuser::Forward()
         cancelMoveTo();
         return;
     }
+    focuserPos = INT_MIN;
     writeToSerial( QString( "FWD %1\n" ).arg( QString::number( stepsToGo ) ) );
 }
 
@@ -61,6 +61,7 @@ void Focuser::Backward()
         cancelMoveTo();
         return;
     }
+    focuserPos = INT_MIN;
     writeToSerial( QString( "BWD %1\n" ).arg( QString::number( stepsToGo ) ) );
 }
 
@@ -73,34 +74,41 @@ void Focuser::MarkZero()
 void Focuser::GoToPos( int pos )
 {
     if( !isInsideMoveTo() ) {
+        focuserPos = INT_MIN;
         writeToSerial( QString( "POS GET\n" ) );
     }
     targetPos = pos;
 }
 
-void Focuser::writeToSerial( const QString& str )
+void Focuser::writeToSerial( const QString& str ) const
 {
     assert( serial->isWritable() );
     serial->write( str.toLocal8Bit().constData() );
     serial->waitForBytesWritten( 5000) ;
 }
 
-void Focuser::readSerial()
+void Focuser::readSerial() const
 {
     QByteArray data = serial->readAll();
     QString reply = QString::fromStdString( data.toStdString() );
     qDebug() << reply;
-    if( isInsideMoveTo() && reply.startsWith( "POS " ) ) {
+    if( reply.contains( "RESET" ) ) {
+        writeToSerial( QString( "POS GET\n" ) );
+        return;
+    }
+    if( reply.startsWith( "POS " ) ) {
         int pos = reply.indexOf( ' ' );
         if( pos != -1 ) {
-            int focuserPos = reply.mid( pos + 1 ).toInt();
-            if( focuserPos < targetPos ) {
-                writeToSerial( QString( "FWD %1\n" ).arg( QString::number( qMin( 128, targetPos - focuserPos ) ) ) );
-            } else if( focuserPos > targetPos ) {
-                writeToSerial( QString( "BWD %1\n" ).arg( QString::number( qMin( 128, focuserPos - targetPos ) ) ) );
-            } else {
-                cancelMoveTo();
-            }
+            focuserPos = reply.mid( pos + 1 ).toInt();
+        }
+    }
+    if( isInsideMoveTo() ) {
+        if( focuserPos < targetPos ) {
+            writeToSerial( QString( "FWD %1\n" ).arg( QString::number( qMin( 128, targetPos - focuserPos ) ) ) );
+        } else if( focuserPos > targetPos ) {
+            writeToSerial( QString( "BWD %1\n" ).arg( QString::number( qMin( 128, focuserPos - targetPos ) ) ) );
+        } else {
+            cancelMoveTo();
         }
     }
 }
