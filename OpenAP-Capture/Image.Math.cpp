@@ -383,7 +383,7 @@ static std::shared_ptr<CGrayImage> starMask( const CGrayU16Image* image, int x, 
     return starMask( image, x, y, t, width, height, result, value );
 }
 
-void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int _cx, int _cy, int imageSize )
+void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int _cx, int _cy, int imageSize, int focuserPos )
 {
     cx = _cx;
     cy = _cy;
@@ -453,6 +453,7 @@ void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int _cx, int _
 
     double meanSky = INT_MAX;
     if( R == 0 ) {
+        const int dR = 10;
         int bestR = 0;
         int samples = 0;
         while( true ) {
@@ -464,7 +465,7 @@ void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int _cx, int _
                     int dx = x - imageSize / 2;
                     int dy = y - imageSize / 2;
                     int rr = dx * dx + dy * dy;
-                    if( rr >= R * R && rr < ( R + 10 ) * ( R + 10 ) ) {
+                    if( rr >= R * R && rr < ( R + dR ) * ( R + dR ) ) {
                         sumV += src[x];
                         count++;
                     }
@@ -488,6 +489,7 @@ void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int _cx, int _
             R += 3;
         }
         R = bestR;
+        R_out = R + dR;
     } else {
         double sumV = 0;
         int count = 0;
@@ -548,4 +550,56 @@ void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int _cx, int _
     qDebug() << "(2) Max:" << maxVal;
 
     Mask = mask;
+
+    CX = cx + dX;
+    CY = cy + dY;
+
+    auto it = focuserStats.find( focuserPos );
+    if( it == focuserStats.end() ) {
+        currentSeries = std::make_shared<Data>();
+        focuserStats[focuserPos] = currentSeries;
+        focuserPositions.push_back( focuserPos );
+        std::sort( focuserPositions.begin(), focuserPositions.end() );
+    } else {
+        currentSeries = it->second;
+    }
+
+    currentSeries->HFD.push_back( HFD );
+    currentSeries->FWHM.push_back( 2 * sqrt ( count / M_PI ) );
+    currentSeries->Max.push_back( maxVal );
+
+    if( extra.size() > 0 ) {
+        CFocusingHelper* prev = this;
+        double d = 0;
+        double sumdCX = 0;
+        double sumdCY = 0;
+        double sumdCXdCX = 0;
+        double sumdCYdCY = 0;
+        int count = 0;
+        for( auto helper : extra ) {
+            double prevCX = helper->CX;
+            double prevCY = helper->CY;
+            helper->AddFrame( currentImage, helper->cx, helper->cy, imageSize, focuserPos );
+            double dx = prev->CX - helper->CX;
+            double dy = prev->CY - helper->CY;
+            double dCX = helper->CX - prevCX;
+            sumdCX += dCX;
+            sumdCXdCX += dCX * dCX;
+            double dCY = helper->CY - prevCY;
+            sumdCY += dCY;
+            sumdCYdCY += dCY * dCY;
+            count++;
+            d += sqrt( dx * dx + dy * dy );
+            prev = helper.get();
+        }
+        dCX = sumdCX / count;
+        dCY = sumdCY / count;
+        sigmadCX = sqrt( sumdCXdCX / count - ( sumdCX * sumdCX ) / count / count );
+        sigmadCY = sqrt( sumdCYdCY / count - ( sumdCY * sumdCY ) / count / count );
+        sumD += d;
+        sumDD += d * d;
+        countL++;
+        L = sumD / countL;
+        sigmaL = sqrt( sumDD / countL - ( sumD * sumD ) / countL / countL );
+    }
 }

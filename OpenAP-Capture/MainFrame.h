@@ -125,6 +125,8 @@ private:
 
     // Temperature control
     void setCooler( bool isOn, int targetTemperature );
+
+    bool debugMode = false;
 };
 
 #endif // MAINFRAME_H

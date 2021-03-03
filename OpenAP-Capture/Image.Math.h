@@ -6,6 +6,7 @@
 
 #include <Image.Image.h>
 #include <Image.RawImage.h>
+#include <map>
 
 struct CChannelStat {
     int Median;
@@ -61,13 +62,71 @@ private:
 
 class CFocusingHelper {
 public:
-    void AddFrame( const CRawU16Image*, int cx, int cy, int imageSize );
+    CFocusingHelper() {}
+    CFocusingHelper( int x, int y ) : cx( x ), cy( y ) {}
+    void AddFrame( const CRawU16Image*, int cx, int cy, int imageSize, int focuserPos );
 
-    int R;
-    int cx;
-    int cy;
-    double HFD;
+    int R = 0;
+    int R_out = 0;
+    int cx = 0;
+    int cy = 0;
+    double HFD = 0;
+    double CX = 0;
+    double CY = 0;
     std::shared_ptr<const CGrayImage> Mask;
+
+    struct Data {
+        std::vector<double> HFD;
+        std::vector<double> FWHM;
+        std::vector<double> Max;
+    };
+
+    std::shared_ptr<Data> currentSeries;
+    std::map<int, std::shared_ptr<Data>> focuserStats;
+    std::vector<int> focuserPositions;
+
+    struct FocuserPosStats {
+        int Pos;
+        double HFD;
+
+        FocuserPosStats( int pos, double hfd ) : Pos( pos ), HFD( hfd ) {}
+    };
+
+    FocuserPosStats getFocuserStats( int focuserPosition )
+    {
+        double sumV = 0;
+        int count = 0;
+        for( auto v : focuserStats[focuserPosition]->HFD ) {
+            sumV += v;
+            count++;
+        }
+        return FocuserPosStats( focuserPosition, sumV / count );
+    }
+
+    FocuserPosStats getFocuserStatsByIndex( int index )
+    {
+        return getFocuserStats( focuserPositions[index] );
+    }
+
+    std::vector<std::shared_ptr<CFocusingHelper>> extra;
+    int countL = 0;
+    double sumD = 0;
+    double sumDD = 0;
+    double L;
+    double sigmaL;
+    double dCX = 0;
+    double dCY = 0;
+    double sigmadCX = 0;
+    double sigmadCY = 0;
+
+    void addExtra( int x, int y )
+    {
+        extra.push_back( std::make_shared<CFocusingHelper>( x, y ) );
+        L = 0;
+        countL = 0;
+        sumD = 0;
+        sumDD = 0;
+    }
 };
 
 #endif // IMAGE_MATH_H

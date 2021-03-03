@@ -161,7 +161,7 @@ QFrame {
            <widget class="QGroupBox" name="groupBox">
             <property name="maximumSize">
              <size>
-              <width>270</width>
+              <width>320</width>
               <height>16777215</height>
              </size>
             </property>
@@ -184,6 +184,13 @@ QFrame {
              <property name="bottomMargin">
               <number>0</number>
              </property>
+             <item>
+              <widget class="QCheckBox" name="countourCheckBox">
+               <property name="text">
+                <string>Countour</string>
+               </property>
+              </widget>
+             </item>
              <item>
               <widget class="QRadioButton" name="zoomOffRadioButton">
                <property name="text">

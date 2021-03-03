@@ -148,8 +148,8 @@ MainFrame::MainFrame( QWidget *parent ) :
    zoomView->setStyleSheet( "border-bottom:none;border-right:none;" );
    zoomView->hide();
    connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_Z ), this ), &QShortcut::activated, [=]() {
-       if( ++zoom > 2 ) {
-            zoom = 2;
+       if( ++zoom > 3 ) {
+            zoom = 3;
        } else {
             showZoom();
        }
@@ -169,13 +169,14 @@ MainFrame::MainFrame( QWidget *parent ) :
    connect( ui->zoom4xRadioButton, &QRadioButton::toggled, [=](bool checked ) { if( checked ) showZoom(); } );
    connect( ui->zoomCfaRadioButton, &QRadioButton::toggled, [=](bool checked ) { if( checked ) showZoom(); } );
 
-
    connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_R ), this ), &QShortcut::activated, [=]() {
        if( camera == 0 ) {
             on_cameraOpenCloseButton_clicked();
        }
        on_captureButton_clicked();
    } );
+
+   connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_D ), this ), &QShortcut::activated, [=]() { debugMode = !debugMode; } );
 
    updateUI();
 }
@@ -219,6 +220,20 @@ static QPixmap focusingHelperPixmap( TRenderingMethod rendering, const CRawU16Im
     }
 }
 
+static void drawTimeSeries( QPainter& painter, QColor color, int shift, double scale, int offset, const std::vector<double>& data )
+{
+    QPen penB( color );
+    penB.setWidthF( 0.5 );
+    painter.setPen( penB );
+    for( size_t i = 1; i < data.size(); i++ ) {
+        int x1 = 5 * ( i - 1 + shift );
+        int y1 = round( 300 + scale * data[i - 1] + offset);
+        int x2 = 5 * ( i + shift );
+        int y2 = round( 300 + scale * data[i] + offset );
+        painter.drawLine( x1, y1, x2, y2 );
+    }
+}
+
 void MainFrame::showZoom( bool update )
 {  
     if( ui->zoomOffRadioButton->isChecked() ) {
@@ -252,27 +267,77 @@ void MainFrame::showZoom( bool update )
             QPoint c = zoomCenter.isNull() ? QPoint( currentImage->Width() / 2, currentImage->Height() / 2 ) : zoomCenter;
             if( focusingHelper ) {
                 // Lock on the star (center on local maximum) and measure its params
-                focusingHelper->AddFrame( currentImage.get(), c.x(), c.y(), imageSize );
+                int focuserPos = focuser.GetPos();
+                focusingHelper->AddFrame( currentImage.get(), focusingHelper->cx, focusingHelper->cy, imageSize, focuserPos );
                 c.setX( focusingHelper->cx );
                 c.setY( focusingHelper->cy );
                 zoomCenter = c;
-                int R = focusingHelper->R;
-                double HFD = focusingHelper->HFD;
-                //pixmap = Qt::CreatePixmap( focusingHelper.Mask );
 
-                pixmap = focusingHelperPixmap( rendering, currentImage.get(), c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );
+                if( ui->countourCheckBox->isChecked() ) {
+                    // This mode is useful in many ways. Particularly it might be used over VNC to speed up drawing
+                    pixmap = Qt::CreatePixmap( focusingHelper->Mask );
+                } else {
+                    pixmap = focusingHelperPixmap( rendering, currentImage.get(), c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );
+                }
+
                 QPainter painter( &pixmap );
                 QPen pen( QColor::fromRgb( 0xFF, 0, 0 ) );
                 pen.setWidthF( 0.5 );
                 painter.setPen( pen );
                 painter.setRenderHint( QPainter::Antialiasing );
-                painter.drawEllipse( pixmap.width() / 2 - R, pixmap.height() / 2 - R, 2 * R, 2 * R );
-                painter.drawEllipse( pixmap.width() / 2 - R - 10, pixmap.height() / 2 - R - 10, 2 * R + 20, 2 * R + 20 );
+                painter.drawEllipse( pixmap.width() / 2 - focusingHelper->R, pixmap.height() / 2 - focusingHelper->R, 2 * focusingHelper->R, 2 * focusingHelper->R );
+                painter.drawEllipse( pixmap.width() / 2 - focusingHelper->R_out, pixmap.height() / 2 - focusingHelper->R_out, 2 * focusingHelper->R_out, 2 * focusingHelper->R_out );
 
                 QFont font( "Consolas" );
                 font.setPointSizeF( 9 );
                 painter.setFont( font );
-                painter.drawText( 5, 15, QString( "HFD %1" ).arg( QString::number( HFD, 'f', 2 ) ) );
+                int pos = 0;
+                if( focuserPos != INT_MIN ) {
+                    painter.drawText( 5, pos += 15, QString( "FOCUSER %1" ).arg( focuserPos ) );
+                }
+                painter.drawText( 5, pos += 15, QString( "HFD %1" ).arg( QString::number( focusingHelper->HFD, 'f', 2 ) ) );
+                if( focusingHelper->extra.size() > 0 ) {
+                    for( auto helper : focusingHelper->extra ) {
+                        painter.drawText( 5, pos += 15, QString( "HFD %1" ).arg( QString::number( helper->HFD, 'f', 2 ) ) );
+                    }
+                    painter.drawText( 5, pos += 15, QString( "dCX %1 (%2)" ).arg( QString::number( focusingHelper->dCX, 'f', 2 ), QString::number( focusingHelper->sigmadCX, 'f', 2 ) ) );
+                    painter.drawText( 5, pos += 15, QString( "dCY %1 (%2)" ).arg( QString::number( focusingHelper->dCY, 'f', 2 ), QString::number( focusingHelper->sigmadCY, 'f', 2 ) ) );
+                    painter.drawText( 5, pos += 15, QString( "L %1 (%2)" ).arg( QString::number( focusingHelper->L, 'f', 2 ), QString::number( focusingHelper->sigmaL, 'f', 2 ) ) );
+                }
+
+                if( debugMode ) {
+                    // Drawing series of metrics tp see correlations. For now only in debug mode
+                    const auto& seriesMax = focusingHelper->currentSeries->Max;
+                    int scale = seriesMax.empty() ? 1 : seriesMax[0] / 150;
+                    drawTimeSeries( painter, QColor::fromRgb( 0, 0xFF, 0 ), 0, -1.0 / scale, 150, seriesMax );
+                    drawTimeSeries( painter, QColor::fromRgb( 0x70, 0x70, 0xFF ), 0, 20, 0, focusingHelper->currentSeries->FWHM );
+                    drawTimeSeries( painter, QColor::fromRgb( 0xFF, 0, 0 ), 0, 30, 0, focusingHelper->currentSeries->HFD );
+
+                    for( auto helper : focusingHelper->extra ) {
+                        int shift = focusingHelper->currentSeries->Max.size() - helper->currentSeries->Max.size();
+                        const auto& seriesMax = helper->currentSeries->Max;
+                        int scale = seriesMax.empty() ? 1 : seriesMax[0] / 150;
+                        drawTimeSeries( painter, QColor::fromRgb( 0xFF, 0xFF, 0 ), shift, -1.0 / scale, 150, seriesMax );
+                        drawTimeSeries( painter, QColor::fromRgb( 0xFF, 0xFF, 0 ), shift, 20, 0, helper->currentSeries->FWHM );
+                        drawTimeSeries( painter, QColor::fromRgb( 0xFF, 0xFF, 0 ), shift, 30, 0, helper->currentSeries->HFD );
+                    }
+                }
+
+                if( focuserPos > INT_MIN && focusingHelper->focuserPositions.size() > 0 ) {
+                    pen.setWidthF( 2.0 );
+                    painter.setPen( pen );
+                    int focuserStepsPerMove = focuser.StepsPerMove();
+                    int xScale = 16;
+                    for( size_t i = 0; i < focusingHelper->focuserPositions.size(); i++ ) {
+                        auto stat = focusingHelper->getFocuserStatsByIndex( i );
+                        if( stat.Pos > INT_MIN ) {
+                            int x = ( 2 * ( stat.Pos - focuserPos ) ) / xScale + imageSize / 2;
+                            int y = -15 * stat.HFD + imageSize;
+                            painter.drawLine( x - focuserStepsPerMove / xScale, y, x + focuserStepsPerMove / xScale, y );
+                        }
+                    }
+                }
+
             } else {
                 Renderer renderer( currentImage->RawPixels(), currentImage->Width(), currentImage->Height() );
                 pixmap = renderer.Render( rendering, c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );
@@ -800,8 +865,13 @@ void MainFrame::on_imageView_imagePressed( int cx, int cy, Qt::MouseButton butto
     zoomCenter.setY( cy * scale );
 
     if( modifiers.testFlag( Qt::ControlModifier ) ) {
-        // Switch the focusing helper on
-        focusingHelper = std::make_shared<CFocusingHelper>();
+        if( focusingHelper && modifiers.testFlag( Qt::AltModifier ) ) {
+            // Add additional star to existing helper
+            focusingHelper->addExtra( zoomCenter.x(), zoomCenter.y() );
+        } else {
+            // Switch the focusing helper on
+            focusingHelper = std::make_shared<CFocusingHelper>( zoomCenter.x(), zoomCenter.y() );
+        }
     } else if( zoomView->isHidden() ) {
         // Normally the zoom view must open in normal mode
         focusingHelper.reset();
