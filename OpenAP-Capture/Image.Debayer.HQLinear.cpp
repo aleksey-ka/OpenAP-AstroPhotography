@@ -196,8 +196,8 @@ void CDebayer_RawU16_HQLinear::ToRgbU8( unsigned char* rgb, int stride, int x0, 
                 switch( channel ) {
                     case 0: // R
                     {
-                        R = addToStatistics( src[0] );
-                        hr[src[0] >> scaleTo8bits]++;
+                        R = addToStatistics( src[0] ) >> scaleTo8bits;
+                        hr[R]++;
 
                         // (0) Green at red location
                         G -= src[-width-width];
@@ -208,7 +208,7 @@ void CDebayer_RawU16_HQLinear::ToRgbU8( unsigned char* rgb, int stride, int x0, 
                         G += 2 * src[width];
                         G -= src[width+width];
                         if( G < 0 ) G = 0;
-                        G >>= 3;
+                        G >>= 3 + scaleTo8bits;
 
                         // (1) Blue at red location
                         int x = 0;
@@ -223,7 +223,7 @@ void CDebayer_RawU16_HQLinear::ToRgbU8( unsigned char* rgb, int stride, int x0, 
                         x >>= 1;
                         B -= x;
                         if( B < 0 ) B = 0;
-                        B >>= 3;
+                        B >>= 3 + scaleTo8bits;
                         break;
                     }
                     case 1: // G1
@@ -237,10 +237,10 @@ void CDebayer_RawU16_HQLinear::ToRgbU8( unsigned char* rgb, int stride, int x0, 
                         R -= src[width-1] + src[width+1];
                         R += src[width+width] >> 1;
                         if( R < 0 ) R = 0;
-                        R >>= 3;
+                        R >>= 3 + scaleTo8bits;
 
-                        G = addToStatistics( src[0] );
-                        hg[src[0] >> scaleTo8bits]++;
+                        G = addToStatistics( src[0] ) >> scaleTo8bits;
+                        hg[G]++;
 
                         // (4) Blue at G1 location
                         B -= src[-width-width];
@@ -253,7 +253,7 @@ void CDebayer_RawU16_HQLinear::ToRgbU8( unsigned char* rgb, int stride, int x0, 
                         B -= src[width-1];
                         B -= src[width+width];
                         if( B < 0 ) B = 0;
-                        B >>= 3;
+                        B >>= 3 + scaleTo8bits;
                         break;
                     }
                     case 2: // G2
@@ -269,10 +269,10 @@ void CDebayer_RawU16_HQLinear::ToRgbU8( unsigned char* rgb, int stride, int x0, 
                         R -= src[width-1];
                         R -= src[width+width];
                         if( R < 0 ) R = 0;
-                        R >>= 3;
+                        R >>= 3 + scaleTo8bits;
 
-                        G = addToStatistics( src[0] );
-                        hg[src[0] >> scaleTo8bits]++;
+                        G = addToStatistics( src[0] ) >> scaleTo8bits;
+                        hg[G]++;
 
                         // (3) Blue at G2 location
                         B += src[-width-width] >> 1;
@@ -283,7 +283,7 @@ void CDebayer_RawU16_HQLinear::ToRgbU8( unsigned char* rgb, int stride, int x0, 
                         B -= src[width-1] + src[width+1];
                         B += src[width+width] >> 1;
                         if( B < 0 ) B = 0;
-                        B >>= 3;
+                        B >>= 3 + scaleTo8bits;
                         break;
                     }
                     case 3: // B
@@ -301,7 +301,7 @@ void CDebayer_RawU16_HQLinear::ToRgbU8( unsigned char* rgb, int stride, int x0, 
                         x >>= 1;
                         R -= x;
                         if( R < 0 ) R = 0;
-                        R >>= 3;
+                        R >>= 3 + scaleTo8bits;
 
                         // (0) Green at blue location
                         G -= src[-width-width];
@@ -312,19 +312,16 @@ void CDebayer_RawU16_HQLinear::ToRgbU8( unsigned char* rgb, int stride, int x0, 
                         G += 2 * src[width];
                         G -= src[width+width];
                         if( G < 0 ) G = 0;
-                        G >>= 3;
+                        G >>= 3 + scaleTo8bits;
 
-                        B = addToStatistics( src[0] );
-                        hb[src[0] >> scaleTo8bits]++;
+                        B = addToStatistics( src[0] ) >> scaleTo8bits;
+                        hb[B]++;
                         break;
                     }
                 }
             }
 
             auto* dst = dstLine + 3 * x;
-            R >>= scaleTo8bits;
-            G >>= scaleTo8bits;
-            B >>= scaleTo8bits;
 
             dst[0] = R > UCHAR_MAX ? UCHAR_MAX : R;
             dst[1] = G > UCHAR_MAX ? UCHAR_MAX : G;
