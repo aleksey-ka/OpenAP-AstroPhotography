@@ -9,8 +9,8 @@
 
 class CDebayer_RawU16 {
 public:
-    CDebayer_RawU16( const unsigned short* _raw, int _width, int _height ) :
-        raw( _raw ), width( _width ), height( _height )
+    CDebayer_RawU16( const unsigned short* _raw, int _width, int _height, int bitDepth ) :
+        raw( _raw ), width( _width ), height( _height ), scaleTo8bits( bitDepth - 8 )
     {
     }
 
@@ -21,8 +21,9 @@ public:
 
 protected:
     const unsigned short* raw;
-    int width;
-    int height;
+    const int width;
+    const int height;
+    const int scaleTo8bits;
 
     // Fast statistics (calculated for each pixel on each frame)
     unsigned short addToStatistics( unsigned short value );

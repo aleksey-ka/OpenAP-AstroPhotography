@@ -10,8 +10,8 @@
 
 #include <QPainter>
 
-Renderer::Renderer( const ushort* _raw, int _width, int _height ) :
-    raw( _raw ), width( _width ), height( _height )
+Renderer::Renderer( const ushort* _raw, int _width, int _height, int _bitDepth ) :
+    raw( _raw ), width( _width ), height( _height ), bitDepth( _bitDepth )
 {
 
 }
@@ -33,7 +33,7 @@ QPixmap Renderer::Render( TRenderingMethod method, int x, int y, int W, int H )
         std::vector<uchar> pixels( byteWidth * h );   
         uchar* rgb = pixels.data();
 
-        CDebayer_RawU16_HalfRes debayer( raw, width, height );
+        CDebayer_RawU16_HalfRes debayer( raw, width, height, bitDepth );
         debayer.ToRgbU8( rgb, byteWidth, x, y, w, h, histR.data(), histG.data(), histB.data() );
         maxValue = debayer.MaxValue;
         maxCount = debayer.MaxCount;
@@ -50,7 +50,7 @@ QPixmap Renderer::Render( TRenderingMethod method, int x, int y, int W, int H )
         std::vector<uchar> pixels( byteWidth * h );
         uchar* rgb = pixels.data();
 
-        CDebayer_RawU16_HQLinear debayer( raw, width, height );
+        CDebayer_RawU16_HQLinear debayer( raw, width, height, bitDepth );
         debayer.ToRgbU8( rgb, byteWidth, x, y, w, h, histR.data(), histG.data(), histB.data() );
         maxValue = debayer.MaxValue;
         maxCount = debayer.MaxCount;
@@ -67,7 +67,7 @@ QPixmap Renderer::Render( TRenderingMethod method, int x, int y, int W, int H )
         std::vector<uchar> pixels( byteWidth * h );
         uchar* rgb = pixels.data();
 
-        CDebayer_RawU16_CFA debayer( raw, width, height );
+        CDebayer_RawU16_CFA debayer( raw, width, height, bitDepth );
         debayer.ToRgbU8( rgb, byteWidth, x, y, w, h, histR.data(), histG.data(), histB.data() );
         maxValue = debayer.MaxValue;
         maxCount = debayer.MaxCount;

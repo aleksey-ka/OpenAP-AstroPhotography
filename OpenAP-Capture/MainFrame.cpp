@@ -340,7 +340,7 @@ void MainFrame::showZoom( bool update )
                 }
 
             } else {
-                Renderer renderer( currentImage->RawPixels(), currentImage->Width(), currentImage->Height() );
+                Renderer renderer( currentImage->RawPixels(), currentImage->Width(), currentImage->Height(), currentImage->BitDepth() );
                 pixmap = renderer.Render( rendering, c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );
             }
             if( scale > 1 ) {
@@ -683,7 +683,7 @@ void MainFrame::imageReady()
 
         currentImage = result;
 
-        auto msec = render( result->RawPixels(), result->Width(), result->Height() );
+        auto msec = render( result->RawPixels(), result->Width(), result->Height(), result->BitDepth() );
         qDebug() << "Rendered in " << msec << "msec";
     }
 
@@ -704,12 +704,12 @@ void MainFrame::imageSaved()
     ui->infoLabel->setText( imageSavedWatcher.result() );
 }
 
-ulong MainFrame::render( const ushort* raw, int width, int height )
+ulong MainFrame::render( const ushort* raw, int width, int height, int bitDepth )
 {
     auto start = std::chrono::steady_clock::now();
 
     if( !ui->renderOffCheckBox->isChecked() ) {
-        Renderer renderer( raw, width, height );
+        Renderer renderer( raw, width, height, bitDepth );
         QPixmap pixmap = renderer.Render( ui->showFullResolution->isChecked() ? RM_FullResolution : RM_HalfResolution );
         if( drawTargetingCircle ) {
            QPainter painter( &pixmap );

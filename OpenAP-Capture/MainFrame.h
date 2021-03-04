@@ -111,7 +111,7 @@ private:
     FilterWheel filterWheel;
 
     // Rendering
-    ulong render( const ushort* raw, int width, int height );
+    ulong render( const ushort* raw, int width, int height, int bitDepth );
     bool drawTargetingCircle = false;
 
     // Exposure controls and scaling

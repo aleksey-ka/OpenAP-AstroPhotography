@@ -95,6 +95,11 @@ std::shared_ptr<const CRawU16Image> CRawU16Image::LoadFromFile( const char* file
 
     assert( map[L"PIXEL_FORMAT"] == L"u16" );
     imageInfo.CFA = toString( map[L"PIXEL_CFA"] );
+    if( map.find( L"PIXEL_BITDEPTH") != map.end() ) {
+        swscanf( map[L"PIXEL_BITDEPTH"].c_str(), L"%d", &imageInfo.BitDepth );
+    } else {
+        imageInfo.BitDepth = 12;
+    }
     swscanf( map[L"IMAGE_WIDTH"].c_str(), L"%d", &imageInfo.Width );
     swscanf( map[L"IMAGE_HEIGHT"].c_str(), L"%d", &imageInfo.Height );
     swscanf( map[L"CAMERA_GAIN"].c_str(), L"%d", &imageInfo.Gain );
@@ -123,6 +128,7 @@ void CRawU16Image::SaveToFile( const char* filePath, const ImageFileFormat* file
     fwprintf( info, L"IMAGE_WIDTH %d\n", imageInfo.Width );
     fwprintf( info, L"IMAGE_HEIGHT %d\n", imageInfo.Height );
     fwprintf( info, L"PIXEL_FORMAT u16\n" );
+    fwprintf( info, L"PIXEL_BITDEPTH %d\n", imageInfo.BitDepth );
     if( not imageInfo.CFA.empty() ) {
         fwprintf( info, L"PIXEL_CFA %s\n", imageInfo.CFA.c_str() );
     }

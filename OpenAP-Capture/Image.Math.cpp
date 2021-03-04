@@ -66,12 +66,12 @@ size_t CPixelStatistics::maxP( int channel, int start, int end ) const
 }
 
 CRawU16::CRawU16( const CRawU16Image* image ) :
-    CRawU16( image->RawPixels(), image->Width(), image->Height() )
+    CRawU16( image->RawPixels(), image->Width(), image->Height(), image->BitDepth() )
 {
 }
 
-CRawU16::CRawU16( const ushort* _raw, int _width, int _height ) :
-    raw( _raw ), width( _width ), height( _height )
+CRawU16::CRawU16( const ushort* _raw, int _width, int _height, int _bitDepth ) :
+    raw( _raw ), width( _width ), height( _height ), bitDepth( _bitDepth )
 {
 
 }
@@ -79,7 +79,7 @@ CRawU16::CRawU16( const ushort* _raw, int _width, int _height ) :
 std::shared_ptr<CRgbU16Image> CRawU16::DebayerRect( int x, int y, int w, int h ) const
 {
     auto result = std::make_shared<CRgbU16Image>( w, h );
-    CDebayer_RawU16_HQLinear debayer( raw, width, height );
+    CDebayer_RawU16_HQLinear debayer( raw, width, height, bitDepth );
     debayer.ToRgbU16( result->RgbPixels(), result->Stride(), x, y, w, h );
     return result;
 }
@@ -91,7 +91,7 @@ std::shared_ptr<CGrayU16Image> CRawU16::GrayU16( int x, int y, int width, int he
 
 CPixelStatistics CRawU16::CalculateStatistics( int x0, int y0, int W, int H ) const
 {
-    CPixelStatistics stats( 3, 12 );
+    CPixelStatistics stats( 3, bitDepth );
 
     auto& histR = stats[0];
     auto& histG = stats[1];
@@ -141,6 +141,8 @@ std::shared_ptr<CRgbImage> CRawU16::Stretch( int x0, int y0, int W, int H ) cons
 {
     CPixelStatistics stats = CalculateStatistics( x0, y0, W, H );
 
+    const int maxValue = ~(~0u << bitDepth) - 1;
+
     const CChannelStat sR = stats.stat( 0 );
     const CChannelStat sG = stats.stat( 1, 2);
     const CChannelStat sB = stats.stat( 2 );
@@ -159,7 +161,7 @@ std::shared_ptr<CRgbImage> CRawU16::Stretch( int x0, int y0, int W, int H ) cons
             uint g = src[1];
             uint b = src[2];
 
-            if( r >= 4094 || g >= 4094 || b >= 4094 ) {
+            if( r >= maxValue || g >= maxValue || b >= maxValue ) {
                 dst[0] = 0xFF;
                 dst[1] = 0x00;
                 dst[2] = 0x80;
@@ -178,6 +180,8 @@ std::shared_ptr<CRgbImage> CRawU16::Stretch( int x0, int y0, int W, int H ) cons
 std::shared_ptr<CRgbImage> CRawU16::StretchHalfRes( int x0, int y0, int W, int H ) const
 {
     CPixelStatistics stats = CalculateStatistics( x0, y0, W, H );
+
+    const int maxValue = ~(~0u << bitDepth) - 1;
 
     const CChannelStat sR = stats.stat( 0 );
     const CChannelStat sG = stats.stat( 1, 2);
@@ -212,7 +216,7 @@ std::shared_ptr<CRgbImage> CRawU16::StretchHalfRes( int x0, int y0, int W, int H
                 uint b = src[width + 1];
                 uint g = ( g1 + g2 ) / 2;
 
-                if( r >= 4094 || g1 >= 4094 || g2 >= 4094 || b >= 4094 ) {
+                if( r >= maxValue || g1 >= maxValue || g2 >= maxValue || b >= maxValue ) {
                     dst[0] = 0xFF;
                     dst[1] = 0x00;
                     dst[2] = 0x80;
@@ -321,7 +325,7 @@ void CRawU16::GradientAscentToLocalMaximum( const CGrayU16Image* image, int& x, 
 
 CPixelStatistics CRawU16::CalculateStatistics( const CGrayU16Image* image )
 {
-    CPixelStatistics stats( 1, 14 );
+    CPixelStatistics stats( 1, 16 );
     auto& hist = stats[0];
 
     int width = image->Width();

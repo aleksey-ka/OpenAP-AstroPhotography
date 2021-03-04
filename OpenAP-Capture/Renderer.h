@@ -15,7 +15,7 @@ enum TRenderingMethod {
 
 class Renderer {
 public:
-    Renderer( const ushort* raw, int width, int height );
+    Renderer( const ushort* raw, int width, int height, int bitDepth );
 
     QPixmap Render( TRenderingMethod, int x = 0, int y = 0, int w = 0, int h = 0 );
     QPixmap RenderHistogram();
@@ -24,6 +24,7 @@ private:
     const ushort* raw;
     int width;
     int height;
+    int bitDepth;
 
     // Histogram data
     std::vector<uint> histR;

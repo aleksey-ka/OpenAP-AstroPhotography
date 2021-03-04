@@ -18,7 +18,7 @@ void CDebayer_RawU16_CFA::ToRgbU8( unsigned char* rgb, int stride, int x0, int y
                 continue;
             }
             const auto* src = srcLine + X;
-            unsigned char v = addToStatistics( src[0] ) >> 4;
+            unsigned char v = addToStatistics( src[0] ) >> scaleTo8bits;
             unsigned char* dst = dstLine + 3 * x;
             switch( CFA_CHANNEL_AT( X, Y ) ) {
                 case 0: dst[0] = v; hr[v]++; continue;

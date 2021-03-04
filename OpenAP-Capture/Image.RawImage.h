@@ -13,6 +13,7 @@ struct ImageInfo {
     int Offset;
     int Gain;
     int Exposure;
+    int BitDepth;
     int64_t Timestamp;
     int64_t SeriesId;
     double Temperature;
@@ -38,6 +39,7 @@ public:
 
     int Width() const { return imageInfo.Width; }
     int Height() const { return imageInfo.Height; }
+    int BitDepth() const { return imageInfo.BitDepth; }
 
     const unsigned char* Buffer() const { return reinterpret_cast<const unsigned char*>( buf.data() ); }
     unsigned char* Buffer() { return reinterpret_cast<unsigned char*>( buf.data() ); }

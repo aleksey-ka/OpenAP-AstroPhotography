@@ -191,6 +191,7 @@ std::shared_ptr<const CRawU16Image> ASICamera::DoExposure() const
 
     imageInfo.Width = width;
     imageInfo.Height = height;
+    imageInfo.BitDepth = cameraInfo->BitDepth;
 
     bool isAuto;
     imageInfo.Exposure = exposure != -1 ? exposure : GetExposure( isAuto );

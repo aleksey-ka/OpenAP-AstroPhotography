@@ -36,7 +36,7 @@ private:
 class CRawU16 {
 public:
     CRawU16( const CRawU16Image* );
-    CRawU16( const unsigned short* raw, int width, int height );
+    CRawU16( const unsigned short* raw, int width, int height, int bitDepth );
 
     std::shared_ptr<CRgbU16Image> DebayerRect( int x, int y, int width, int height ) const;
     std::shared_ptr<CGrayU16Image> GrayU16( int x, int y, int width, int height ) const;
@@ -58,6 +58,7 @@ private:
     const unsigned short* raw;
     int width;
     int height;
+    int bitDepth;
 };
 
 class CFocusingHelper {
