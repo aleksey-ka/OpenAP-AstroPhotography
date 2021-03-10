@@ -80,6 +80,9 @@ public:
         std::vector<double> HFD;
         std::vector<double> FWHM;
         std::vector<double> Max;
+
+        std::vector<double> CX;
+        std::vector<double> CY;
     };
 
     std::shared_ptr<Data> currentSeries;
@@ -119,6 +122,9 @@ public:
     double dCY = 0;
     double sigmadCX = 0;
     double sigmadCY = 0;
+
+    double PX = 0;
+    double PY = 0;
 
     void addExtra( int x, int y )
     {
