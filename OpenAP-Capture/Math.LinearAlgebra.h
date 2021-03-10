@@ -4,7 +4,7 @@
 #ifndef MATH_LINEAR_ALGEBRA_H
 #define MATH_LINEAR_ALGEBRA_H
 
-#include "Math.Matrix.h"
+#include <Math.Matrix.h>
 
 #include <math.h>
 #include <float.h>
