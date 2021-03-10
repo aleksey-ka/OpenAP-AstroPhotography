@@ -37,6 +37,7 @@ SOURCES += \
         Image.RawImage.cpp \
         Image.Image.cpp \
         ImageView.cpp \
+        Math.LinearAlgebra.cpp \
         Main.cpp \
         MainFrame.cpp \
         Renderer.cpp \
@@ -57,6 +58,8 @@ HEADERS += \
         Image.Image.h \
         Image.Qt.h \
         ImageView.h \
+        Math.Matrix.h \
+        Math.LinearAlgebra.h \
         MainFrame.h \
         Renderer.h
 
