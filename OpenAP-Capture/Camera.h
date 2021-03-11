@@ -71,6 +71,8 @@ public:
     virtual void SetImageInfoTemplate( const ImageInfo& ) = 0;
 
     virtual void PrintDebugInfo() = 0;
+
+    virtual ~Camera() {}
 };
 
 #endif // CAMERA_H

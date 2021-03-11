@@ -59,6 +59,8 @@ class ImageFileFormat {
 public:
     virtual std::shared_ptr<const CRawU16Image> Load( const char* filePath, const ImageInfo& ) const = 0;
     virtual void Save( const char* filePath, const CRawU16Image* ) const = 0;
+
+    virtual ~ImageFileFormat() {}
 };
 
 #endif // IMAGE_RAWU16IMAGE_H
