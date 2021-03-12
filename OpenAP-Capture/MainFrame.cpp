@@ -3,6 +3,7 @@
 
 #include "MainFrame.h"
 #include "ui_MainFrame.h"
+
 #include <QShortcut>
 #include <QtConcurrent/QtConcurrent>
 #include <QPainter>
@@ -20,7 +21,8 @@
 
 MainFrame::MainFrame( QWidget *parent ) :
     QMainWindow( parent ),
-    ui( new Ui::MainFrame )
+    ui( new Ui::MainFrame ),
+    tools( ui )
 {
     // Multithreading noticibly improves throughput especially when writing to compressed image formats
     int numberOfCores = QThread::idealThreadCount();
@@ -41,7 +43,7 @@ MainFrame::MainFrame( QWidget *parent ) :
     new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_Right ), this, SLOT( on_guideRight() ) );
 
     // TODO: In Qt 5.15 lambdas can be used in QShortcut constructor
-    connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_T ), this ), &QShortcut::activated, [=]() { drawTargetingCircle = !drawTargetingCircle; } );
+    connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_T ), this ), &QShortcut::activated, [=]() { tools.Toggle<Tools::TargetCircle>(); } );
 
     connect( &imageReadyWatcher, &QFutureWatcher<std::shared_ptr<CRawU16Image>>::finished, this, &MainFrame::imageReady );
     connect( &imageSavedWatcher, &QFutureWatcher<QString>::finished, this, &MainFrame::imageSaved );
@@ -101,14 +103,10 @@ MainFrame::MainFrame( QWidget *parent ) :
    connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_F ), this ), &QShortcut::activated, [=]() {
        if( zoomView->isHidden() ) {
            // If zoom is not showing, then we want to show it with a new instance of focusing helper
-           focusingHelper = std::make_shared<CFocusingHelper>();
+           tools.New<Tools::FocusingHelper>();
        } else {
            // Otherwise toggling focusing helper on and off
-           if( not focusingHelper ) {
-               focusingHelper = std::make_shared<CFocusingHelper>();
-           } else {
-               focusingHelper.reset();
-           }
+           tools.Toggle<Tools::FocusingHelper>();
        }
        showZoom();
    } );
@@ -265,10 +263,12 @@ void MainFrame::showZoom( bool update )
         if( currentImage != 0 ) {
             QPixmap pixmap;
             QPoint c = zoomCenter.isNull() ? QPoint( currentImage->Width() / 2, currentImage->Height() / 2 ) : zoomCenter;
-            if( focusingHelper ) {
+            auto focusingHelperTool = tools.TryGet<Tools::FocusingHelper>();
+            if( focusingHelperTool ) {
+                auto focusingHelper = focusingHelperTool->getFocusingHelper();
                 // Lock on the star (center on local maximum) and measure its params
                 int focuserPos = focuser.GetPos();
-                focusingHelper->AddFrame( currentImage.get(), focusingHelper->cx, focusingHelper->cy, imageSize, focuserPos );
+                focusingHelper->AddFrame( currentImage.get(), imageSize, focuserPos );
                 c.setX( focusingHelper->cx );
                 c.setY( focusingHelper->cy );
                 zoomCenter = c;
@@ -708,24 +708,17 @@ ulong MainFrame::render( const ushort* raw, int width, int height, int bitDepth 
 {
     auto start = std::chrono::steady_clock::now();
 
+    if( zoom > 0 ) {
+        showZoom();
+    }
     if( !ui->renderOffCheckBox->isChecked() ) {
         Renderer renderer( raw, width, height, bitDepth );
         QPixmap pixmap = renderer.Render( ui->showFullResolution->isChecked() ? RM_FullResolution : RM_HalfResolution );
-        if( drawTargetingCircle ) {
-           QPainter painter( &pixmap );
-           QPen pen( QColor::fromRgb( 0xFF, 0, 0 ) );
-           pen.setWidth( 1 );
-           painter.setPen( pen );
-           painter.setRenderHint( QPainter::Antialiasing );
-           painter.drawEllipse( pixmap.width() / 2 - 30, pixmap.height() / 2 - 30, 60, 60 );
-        }
+        tools.Draw( pixmap );
         ui->imageView->setPixmap( pixmap );
         ui->histogramView->setPixmap( renderer.RenderHistogram() );
     } else {
         ui->imageView->clear();
-    }
-    if( zoom > 0 ) {
-        showZoom();
     }
 
     auto end = std::chrono::steady_clock::now();
@@ -870,16 +863,17 @@ void MainFrame::on_imageView_imagePressed( int cx, int cy, Qt::MouseButton butto
     zoomCenter.setY( cy * scale );
 
     if( modifiers.testFlag( Qt::ControlModifier ) ) {
-        if( focusingHelper && modifiers.testFlag( Qt::AltModifier ) ) {
+        auto focusingHelperTool = tools.TryGet<Tools::FocusingHelper>();
+        if( focusingHelperTool && modifiers.testFlag( Qt::AltModifier ) ) {
             // Add additional star to existing helper
-            focusingHelper->addExtra( zoomCenter.x(), zoomCenter.y() );
+            focusingHelperTool->getFocusingHelper()->addExtra( zoomCenter.x(), zoomCenter.y() );
         } else {
             // Switch the focusing helper on
-            focusingHelper = std::make_shared<CFocusingHelper>( zoomCenter.x(), zoomCenter.y() );
+            tools.New<Tools::FocusingHelper>( zoomCenter.x(), zoomCenter.y() );
         }
     } else if( zoomView->isHidden() ) {
         // Normally the zoom view must open in normal mode
-        focusingHelper.reset();
+        tools.Delete<Tools::FocusingHelper>();
     }
 
     showZoom();

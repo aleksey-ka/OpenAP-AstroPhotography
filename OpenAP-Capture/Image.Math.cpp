@@ -390,13 +390,10 @@ static std::shared_ptr<CGrayImage> starMask( const CGrayU16Image* image, int x, 
     return starMask( image, x, y, t, width, height, result, value );
 }
 
-void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int _cx, int _cy, int imageSize, int focuserPos )
+void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int imageSize, int focuserPos )
 {
     double prevCX = CX;
     double prevCY = CY;
-
-    cx = _cx;
-    cy = _cy;
 
     // Lock on the star (center on local maximum)
     CRawU16 rawU16( currentImage );
@@ -599,7 +596,7 @@ void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int _cx, int _
         for( auto helper : extra ) {
             double prevCX = helper->CX;
             double prevCY = helper->CY;
-            helper->AddFrame( currentImage, helper->cx, helper->cy, imageSize, focuserPos );
+            helper->AddFrame( currentImage, imageSize, focuserPos );
 
             double dCX = helper->CX - prevCX;
             double dCY = helper->CY - prevCY;

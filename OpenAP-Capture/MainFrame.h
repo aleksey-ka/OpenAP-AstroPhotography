@@ -15,7 +15,8 @@
 #include "Camera.h"
 #include "Focuser.h"
 #include "FilterWheel.h"
-#include "Image.Math.h"
+
+#include "MainFrame.Tools.h"
 
 namespace Ui {
     class MainFrame;
@@ -88,7 +89,6 @@ private:
     std::shared_ptr<const CRawU16Image> currentImage;
     int zoom = 0;
     QPoint zoomCenter;
-    std::shared_ptr<CFocusingHelper> focusingHelper;
     int exposureRemainingTime;
     uint64_t seriesId = 0;
     QAtomicInt capturedFrames = 0;
@@ -110,9 +110,10 @@ private:
     Focuser focuser;
     FilterWheel filterWheel;
 
+    Tools tools;
+
     // Rendering
     ulong render( const ushort* raw, int width, int height, int bitDepth );
-    bool drawTargetingCircle = false;
 
     // Exposure controls and scaling
     void setExposureInSpinBox( int exposure );

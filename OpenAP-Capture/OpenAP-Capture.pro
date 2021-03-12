@@ -41,6 +41,7 @@ SOURCES += \
         Math.LinearAlgebra.cpp \
         Main.cpp \
         MainFrame.cpp \
+        MainFrame.Tools.cpp \
         Renderer.cpp \
 
 HEADERS += \
@@ -63,6 +64,7 @@ HEADERS += \
         Math.LinearAlgebra.h \
         Math.Matrix.h \
         MainFrame.h \
+        MainFrame.Tools.h \
         Renderer.h
 
 FORMS += \
