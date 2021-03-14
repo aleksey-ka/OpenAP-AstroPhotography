@@ -186,8 +186,21 @@ QFrame {
              </item>
              <item>
               <widget class="QCheckBox" name="showFullResolution">
+               <property name="maximumSize">
+                <size>
+                 <width>90</width>
+                 <height>16777215</height>
+                </size>
+               </property>
                <property name="text">
                 <string>Full Resolution</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="stretchCheckBox">
+               <property name="text">
+                <string>Stretch</string>
                </property>
               </widget>
              </item>

@@ -190,12 +190,8 @@ std::shared_ptr<CRgbImage> CRawU16::StretchHalfRes( int x0, int y0, int W, int H
     const CChannelStat sG = stats.stat( 1, 2);
     const CChannelStat sB = stats.stat( 2 );
 
-    int cx = x0 + W / 2;
-    int cy = y0 + H / 2;
-    x0 = cx - W;
-    y0 = cy - H;
-    x0 += x0 % 2;
-    y0 += y0 % 2;
+    W /= 2;
+    H /= 2;
 
     auto result = std::make_shared<CRgbImage>( W, H );
     for( size_t y = 0; y < H; y++ ) {

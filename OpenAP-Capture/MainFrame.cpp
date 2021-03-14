@@ -212,6 +212,14 @@ void MainFrame::resizeEvent( QResizeEvent* event )
 static QPixmap focusingHelperPixmap( TRenderingMethod rendering, const CRawU16Image* image, int x0, int y0, int w, int h )
 {
     if( rendering == RM_HalfResolution ) {
+        int cx = x0 + w / 2;
+        int cy = y0 + h / 2;
+        x0 = cx - w;
+        y0 = cy - h;
+        x0 += x0 % 2;
+        y0 += y0 % 2;
+        w *= 2;
+        h *= 2;
         return Qt::CreatePixmap( CRawU16( image ).StretchHalfRes( x0, y0, w, h ) );
     } else {
         return Qt::CreatePixmap( CRawU16( image ).Stretch( x0, y0, w, h ) );
@@ -712,11 +720,21 @@ ulong MainFrame::render( const ushort* raw, int width, int height, int bitDepth 
         showZoom();
     }
     if( !ui->renderOffCheckBox->isChecked() ) {
-        Renderer renderer( raw, width, height, bitDepth );
-        QPixmap pixmap = renderer.Render( ui->showFullResolution->isChecked() ? RM_FullResolution : RM_HalfResolution );
+        QPixmap pixmap;
+        if( ui->stretchCheckBox->isChecked() ) {
+            CRawU16 rawU16( raw, width, height, bitDepth );
+            if( ui->showFullResolution->isChecked() ) {
+                pixmap = Qt::CreatePixmap( rawU16.Stretch( 0, 0, width, height ) );
+            } else {
+                pixmap = Qt::CreatePixmap( rawU16.StretchHalfRes( 0, 0, width, height ) );
+            }
+        } else {
+            Renderer renderer( raw, width, height, bitDepth );
+            pixmap = renderer.Render( ui->showFullResolution->isChecked() ? RM_FullResolution : RM_HalfResolution );
+            ui->histogramView->setPixmap( renderer.RenderHistogram() );
+        }
         tools.Draw( pixmap );
-        ui->imageView->setPixmap( pixmap );
-        ui->histogramView->setPixmap( renderer.RenderHistogram() );
+        ui->imageView->setPixmap( pixmap );    
     } else {
         ui->imageView->clear();
     }
