@@ -28,7 +28,7 @@ SOURCES += \
         Camera.Mock.cpp \
         Camera.ZWO.cpp \
         FilterWheel.cpp \
-        Focuser.cpp \
+		Focuser.DIY.cpp \
         Image.Debayer.CFA.cpp \
         Image.Debayer.HalfRes.cpp \
         Image.Debayer.HQLinear.cpp \
@@ -50,6 +50,7 @@ HEADERS += \
         Camera.ZWO.h \
         FilterWheel.h \
         Focuser.h \
+		Focuser.DIY.h \
         Image.Debayer.h \
         Image.Debayer.CFA.h \
         Image.Debayer.HalfRes.h \
@@ -72,7 +73,7 @@ FORMS += \
 
 win32: {
     INCLUDEPATH += "..\..\ASI SDK\include"
-    LIBS += -lASICamera2 -lEFW_filter
+	LIBS += -lASICamera2 -lEFW_filter -lEAF_focuser
     RC_ICONS += MainFrame.ico
 } else: unix: {
     INCLUDEPATH += /usr/include/libasi

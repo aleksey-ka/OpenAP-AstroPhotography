@@ -1,12 +1,12 @@
 // Copyright (C) 2020 Aleksey Kalyuzhny. Released under the terms of the
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
-#include "Focuser.h"
+#include "Focuser.DIY.h"
 
 #include <QtSerialPort/QSerialPortInfo>
 #include <QDebug>
 
-bool Focuser::Open()
+std::shared_ptr<Focuser> DIYFocuser::Open()
 {
     QString portName;
     foreach( const QSerialPortInfo &serialPortInfo, QSerialPortInfo::availablePorts() ) {
@@ -17,26 +17,35 @@ bool Focuser::Open()
         }
     }
     if( portName.length() > 0 ) {
-        serial = new QSerialPort( this );
-        serial->setPortName( portName );
-        serial->setBaudRate( QSerialPort::Baud9600 );
-        serial->setDataBits( QSerialPort::Data8 );
-        serial->setParity( QSerialPort::NoParity );
-        serial->setStopBits( QSerialPort::OneStop );
-        serial->setFlowControl( QSerialPort::NoFlowControl) ;
-        if( serial->open( QIODevice::ReadWrite ) ) {
-            assert( serial->isOpen() );
-
-            QObject::connect( serial, &QSerialPort::readyRead, this, &Focuser::readSerial ) ;
-            qDebug() << "Connected to " << portName;
-            return true;
+        auto focuser = std::make_shared<DIYFocuser>();
+        if( focuser->connect( portName ) ) {
+            return focuser;
         }
-        qDebug() << "Failed to connect to " << portName;
     }
+    return 0;
+}
+
+bool DIYFocuser::connect( const QString& portName )
+{
+    serial = new QSerialPort( this );
+    serial->setPortName( portName );
+    serial->setBaudRate( QSerialPort::Baud9600 );
+    serial->setDataBits( QSerialPort::Data8 );
+    serial->setParity( QSerialPort::NoParity );
+    serial->setStopBits( QSerialPort::OneStop );
+    serial->setFlowControl( QSerialPort::NoFlowControl) ;
+    if( serial->open( QIODevice::ReadWrite ) ) {
+        assert( serial->isOpen() );
+
+        QObject::connect( serial, &QSerialPort::readyRead, this, &DIYFocuser::readSerial ) ;
+        qDebug() << "Connected to " << portName;
+        return true;
+    }
+    qDebug() << "Failed to connect to " << portName;
     return false;
 }
 
-void Focuser::Close()
+void DIYFocuser::Close()
 {
     if( serial != nullptr && serial->isOpen() ) {
         cancelMoveTo();
@@ -45,7 +54,7 @@ void Focuser::Close()
     }
 }
 
-void Focuser::Forward()
+void DIYFocuser::Forward()
 {
     if( isInsideMoveTo() ) {
         cancelMoveTo();
@@ -55,7 +64,7 @@ void Focuser::Forward()
     writeToSerial( QString( "FWD %1\n" ).arg( QString::number( stepsToGo ) ) );
 }
 
-void Focuser::Backward()
+void DIYFocuser::Backward()
 {
     if( isInsideMoveTo() ) {
         cancelMoveTo();
@@ -65,13 +74,13 @@ void Focuser::Backward()
     writeToSerial( QString( "BWD %1\n" ).arg( QString::number( stepsToGo ) ) );
 }
 
-void Focuser::MarkZero()
+void DIYFocuser::MarkZero()
 {
     cancelMoveTo();
     writeToSerial( QString( "POS ZERO\n" ) );
 }
 
-void Focuser::GoToPos( int pos )
+void DIYFocuser::GoToPos( int pos )
 {
     if( !isInsideMoveTo() ) {
         focuserPos = INT_MIN;
@@ -80,14 +89,14 @@ void Focuser::GoToPos( int pos )
     targetPos = pos;
 }
 
-void Focuser::writeToSerial( const QString& str ) const
+void DIYFocuser::writeToSerial( const QString& str ) const
 {
     assert( serial->isWritable() );
     serial->write( str.toLocal8Bit().constData() );
     serial->waitForBytesWritten( 5000) ;
 }
 
-void Focuser::readSerial() const
+void DIYFocuser::readSerial() const
 {
     QByteArray data = serial->readAll();
     QString reply = QString::fromStdString( data.toStdString() );

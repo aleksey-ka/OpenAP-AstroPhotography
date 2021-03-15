@@ -4,34 +4,22 @@
 #ifndef FOCUSER_H
 #define FOCUSER_H
 
-#include <QtSerialPort/QSerialPort>
-
-class Focuser : public QObject {
+class Focuser {
 public:
-    bool Open();
-    void Close();
+    virtual void Close() = 0;
 
-    void Forward();
-    void Backward();
+    virtual void Forward() = 0;
+    virtual void Backward() = 0;
 
-    void StepUp() { if( stepsToGo < 512 ) stepsToGo *= 2; }
-    void StepDown() { if( stepsToGo > 1 ) stepsToGo /= 2; }
-    int StepsPerMove() const { return stepsToGo; }
+    virtual void StepUp() = 0;
+    virtual void StepDown() = 0;
+    virtual int StepsPerMove() const = 0;
 
-    void MarkZero();
-    void GoToPos( int );
-    int GetPos() const { return focuserPos; }
+    virtual void MarkZero() = 0;
+    virtual void GoToPos( int ) = 0;
+    virtual int GetPos() const = 0;
 
-private:
-    // Focuser (arduino)
-    QSerialPort* serial = nullptr;
-    int stepsToGo = 128;
-    mutable int targetPos = INT_MIN;
-    mutable int focuserPos = INT_MIN;
-    bool isInsideMoveTo() const { return targetPos != INT_MIN; }
-    void cancelMoveTo() const { targetPos = INT_MIN; }
-    void writeToSerial( const QString& ) const;
-    void readSerial() const;
+    virtual ~Focuser() {}
 };
 
 #endif // FOCUSER_H

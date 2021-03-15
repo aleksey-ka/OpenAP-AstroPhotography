@@ -13,6 +13,8 @@
 #include "Camera.ZWO.h"
 #include "Camera.Mock.h"
 
+#include "Focuser.DIY.h"
+
 #include "Renderer.h"
 
 #include "Image.Qt.h"
@@ -82,20 +84,21 @@ MainFrame::MainFrame( QWidget *parent ) :
     ui->offsetSpinBox->setValue( settings.value( "Offset", 64 ).toInt() );
     ui->useCameraWhiteBalanceCheckBox->setChecked( settings.value( "UseCameraWhiteBalance", false ).toBool() );
 
-   if( focuser.Open() ) {
+    focuser = DIYFocuser::Open();
+    if( focuser != 0 ) {
        // TODO: In Qt 5.15 lambdas can be used in QShortcut constructor
-       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Up ), this ), &QShortcut::activated, [=]() { focuser.Forward(); } );
-       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Down ), this ), &QShortcut::activated, [=]() { focuser.Backward(); } );
-       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Right ), this ), &QShortcut::activated, [=]() { focuser.StepUp(); } );
-       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Left ), this ), &QShortcut::activated, [=]() { focuser.StepDown(); } );
-       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_M ), this ), &QShortcut::activated, [=]() { focuser.MarkZero(); } );
-       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_0 ), this ), &QShortcut::activated, [=]() { focuser.GoToPos( 0 ); } );
+       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Up ), this ), &QShortcut::activated, [=]() { focuser->Forward(); } );
+       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Down ), this ), &QShortcut::activated, [=]() { focuser->Backward(); } );
+       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Right ), this ), &QShortcut::activated, [=]() { focuser->StepUp(); } );
+       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Left ), this ), &QShortcut::activated, [=]() { focuser->StepDown(); } );
+       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_M ), this ), &QShortcut::activated, [=]() { focuser->MarkZero(); } );
+       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_0 ), this ), &QShortcut::activated, [=]() { focuser->GoToPos( 0 ); } );
        connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_G ), this ),
             &QShortcut::activated, [=]() {
                 bool ok = false;
                 int pos = QInputDialog::getInt( this, "Focuser", "MoveTo:", 0, INT_MIN, INT_MAX, 1, &ok );
                 if( ok ) {
-                    focuser.GoToPos( pos );
+                    focuser->GoToPos( pos );
                 }
             }
        );
@@ -184,7 +187,9 @@ MainFrame::~MainFrame()
     if( camera != 0 ) {
         closeCamera();
     }
-    focuser.Close();
+    if( focuser != 0 ) {
+        focuser->Close();
+    }
     filterWheel.Close();
     delete zoomView;
     delete ui;
@@ -275,7 +280,7 @@ void MainFrame::showZoom( bool update )
             if( focusingHelperTool ) {
                 auto focusingHelper = focusingHelperTool->getFocusingHelper();
                 // Lock on the star (center on local maximum) and measure its params
-                int focuserPos = focuser.GetPos();
+                int focuserPos = focuser != 0 ? focuser->GetPos() : INT_MIN;
                 focusingHelper->AddFrame( currentImage.get(), imageSize, focuserPos );
                 c.setX( focusingHelper->cx );
                 c.setY( focusingHelper->cy );
@@ -300,8 +305,8 @@ void MainFrame::showZoom( bool update )
                 font.setPointSizeF( 9 );
                 painter.setFont( font );
                 int pos = 0;
-                if( focuserPos != INT_MIN ) {
-                    painter.drawText( 5, pos += 15, QString( "FOCUSER %1 (%2)" ).arg( QString::number( focuserPos ), QString::number( focuser.StepsPerMove() ) ) );
+                if( focuser != 0 && focuserPos != INT_MIN ) {
+                    painter.drawText( 5, pos += 15, QString( "FOCUSER %1 (%2)" ).arg( QString::number( focuserPos ), QString::number( focuser->StepsPerMove() ) ) );
                 }
                 painter.drawText( 5, pos += 15, QString( "HFD %1" ).arg( QString::number( focusingHelper->HFD, 'f', 2 ) ) );
                 if( focusingHelper->extra.size() > 0 ) {
@@ -334,13 +339,13 @@ void MainFrame::showZoom( bool update )
                     }
                 }
 
-                if( focuserPos > INT_MIN && focusingHelper->focuserPositions.size() > 0 ) {
+                if( focuser != 0 && focuserPos > INT_MIN && focusingHelper->focuserPositions.size() > 0 ) {
                     pen.setWidthF( 2.0 );
                     painter.setPen( pen );
                     for( size_t i = 0; i < focusingHelper->focuserPositions.size(); i++ ) {
                         auto stat = focusingHelper->getFocuserStatsByIndex( i );
                         if( stat.Pos > INT_MIN ) {
-                            int x = ( 8 * ( stat.Pos - focuserPos ) ) / focuser.StepsPerMove() + imageSize / 2;
+                            int x = ( 8 * ( stat.Pos - focuserPos ) ) / focuser->StepsPerMove() + imageSize / 2;
                             int y = (int)round( -15 * stat.HFD ) + imageSize;
                             painter.drawLine( x - 3, y, x + 3, y );
                         }

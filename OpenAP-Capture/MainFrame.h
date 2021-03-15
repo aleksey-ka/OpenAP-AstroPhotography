@@ -107,7 +107,7 @@ private:
     void guideStop();
 
     // Focuser
-    Focuser focuser;
+    std::shared_ptr<Focuser> focuser;
     FilterWheel filterWheel;
 
     Tools tools;
