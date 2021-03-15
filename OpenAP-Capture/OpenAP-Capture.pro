@@ -79,7 +79,7 @@ win32: {
     RC_ICONS += MainFrame.ico
 } else: unix: {
     INCLUDEPATH += /usr/include/libasi
-    LIBS += -lASICamera2 -lEFWFilter
+    LIBS += -lASICamera2 -lEFWFilter -lEAFFocuser
 }
 
 win32:contains(QMAKE_HOST.arch, x86_64) {  

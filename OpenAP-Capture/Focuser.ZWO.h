@@ -5,6 +5,7 @@
 #define FOCUSER_ZWO_H
 
 #include <memory>
+#include <limits.h>
 
 #include "Focuser.h"
 
