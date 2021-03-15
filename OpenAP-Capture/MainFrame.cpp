@@ -13,6 +13,7 @@
 #include "Camera.ZWO.h"
 #include "Camera.Mock.h"
 
+#include "Focuser.ZWO.h"
 #include "Focuser.DIY.h"
 
 #include "Renderer.h"
@@ -84,7 +85,10 @@ MainFrame::MainFrame( QWidget *parent ) :
     ui->offsetSpinBox->setValue( settings.value( "Offset", 64 ).toInt() );
     ui->useCameraWhiteBalanceCheckBox->setChecked( settings.value( "UseCameraWhiteBalance", false ).toBool() );
 
-    focuser = DIYFocuser::Open();
+    focuser = ZWOFocuser::Open();
+    if( focuser == 0 ) {
+        focuser = DIYFocuser::Open();
+    }
     if( focuser != 0 ) {
        // TODO: In Qt 5.15 lambdas can be used in QShortcut constructor
        connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Up ), this ), &QShortcut::activated, [=]() { focuser->Forward(); } );
