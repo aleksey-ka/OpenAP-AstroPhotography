@@ -619,41 +619,44 @@ void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int imageSize,
         dCX = sumdCX / countC;
         dCY = sumdCY / countC;
 
-        int minSize = currentSeries->CX.size();
-        for( auto helper : extra ) {
-            int size = helper->currentSeries->CX.size();
-            if( size < minSize ) {
-                minSize = size;
-            }
-        }
+        if( extra.size() > 1 ) {
 
-        if( minSize >= 2 ) {
-            std::vector<double> x1;
-            std::vector<double> y1;
-            x1.push_back( currentSeries->CX.cend()[-minSize] );
-            y1.push_back( currentSeries->CY.cend()[-minSize] );
+            int minSize = currentSeries->CX.size();
             for( auto helper : extra ) {
-                x1.push_back( helper->currentSeries->CX.cend()[-minSize] );
-                y1.push_back( helper->currentSeries->CY.cend()[-minSize] );
-            }
-            std::vector<double> x2;
-            std::vector<double> y2;
-            x2.push_back( currentSeries->CX.back() );
-            y2.push_back( currentSeries->CY.back() );
-            for( auto helper : extra ) {
-                x2.push_back( helper->currentSeries->CX.back() );
-                y2.push_back( helper->currentSeries->CY.back() );
+                int size = helper->currentSeries->CX.size();
+                if( size < minSize ) {
+                    minSize = size;
+                }
             }
 
-            CMatrix<double> Ax( 3, 1 );
-            CMatrix<double> Ay( 3, 1 );
-            if( LeastSquaresAffineTransform( Ax, Ay, x1, y1, x2, y2 ) ) {
-                double p[2];
-                if( SolveSystemOfTwoLinearEquations( p, Ax[0][0] - 1.0, Ax[1][0], Ax[2][0], Ay[0][0], Ay[1][0] - 1.0, Ay[2][0] ) ) {
-                    PX = p[0];
-                    PY = p[1];
-                    qDebug() << "PX" << PX;
-                    qDebug() << "PY" << PY;
+            if( minSize >= 2 ) {
+                std::vector<double> x1;
+                std::vector<double> y1;
+                x1.push_back( currentSeries->CX.cend()[-minSize] );
+                y1.push_back( currentSeries->CY.cend()[-minSize] );
+                for( auto helper : extra ) {
+                    x1.push_back( helper->currentSeries->CX.cend()[-minSize] );
+                    y1.push_back( helper->currentSeries->CY.cend()[-minSize] );
+                }
+                std::vector<double> x2;
+                std::vector<double> y2;
+                x2.push_back( currentSeries->CX.back() );
+                y2.push_back( currentSeries->CY.back() );
+                for( auto helper : extra ) {
+                    x2.push_back( helper->currentSeries->CX.back() );
+                    y2.push_back( helper->currentSeries->CY.back() );
+                }
+
+                CMatrix<double> Ax( 3, 1 );
+                CMatrix<double> Ay( 3, 1 );
+                if( LeastSquaresAffineTransform( Ax, Ay, x1, y1, x2, y2 ) ) {
+                    double p[2];
+                    if( SolveSystemOfTwoLinearEquations( p, Ax[0][0] - 1.0, Ax[1][0], Ax[2][0], Ay[0][0], Ay[1][0] - 1.0, Ay[2][0] ) ) {
+                        PX = p[0];
+                        PY = p[1];
+                        qDebug() << "PX" << PX;
+                        qDebug() << "PY" << PY;
+                    }
                 }
             }
         }
