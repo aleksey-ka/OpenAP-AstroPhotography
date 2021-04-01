@@ -33,6 +33,26 @@ private:
     int count = 0;
 };
 
+struct DetectionRegion {
+    int Vmax;
+    int Xmax;
+    int Ymax;
+    int Cmax;
+    int Background;
+    int AreaAtMax;
+    int AreaAt90PercentOfMax;
+    int AreaAtHalfMax;
+    int AreaAt10PercentOfMax;
+    int AreaAtHalfDetectionThreshold;
+    unsigned FluxAtHalfDetectionThreshold;
+};
+
+struct DetectionResults {
+    std::vector<std::shared_ptr<DetectionRegion>> DetectionRegions;
+    std::shared_ptr<CGrayU16Image> Image;
+    std::shared_ptr<CGrayImage> Mask;
+};
+
 class CRawU16 {
 public:
     CRawU16( const CRawU16Image* );
@@ -45,6 +65,8 @@ public:
 
     std::shared_ptr<CRgbImage> Stretch( int x, int y, int w, int h ) const;
     std::shared_ptr<CRgbImage> StretchHalfRes( int x, int y, int w, int h ) const;
+
+    DetectionResults DetectStars( int x, int y, int w, int h ) const;
 
     static std::shared_ptr<CGrayU16Image> ToGrayU16( const CRgbU16Image* );
     static std::shared_ptr<CGrayImage> ToGray( const CGrayU16Image* );
@@ -75,6 +97,7 @@ public:
     double CX = 0;
     double CY = 0;
     std::shared_ptr<const CGrayImage> Mask;
+    std::vector<std::pair<double,double>> Stars;
 
     struct Data {
         std::vector<double> HFD;
@@ -83,6 +106,8 @@ public:
 
         std::vector<double> CX;
         std::vector<double> CY;
+
+        std::vector<DetectionResults> DetectionResults;
     };
 
     std::shared_ptr<Data> currentSeries;
@@ -126,6 +151,9 @@ public:
     double PX = 0;
     double PY = 0;
 
+    double PX1 = 0;
+    double PY1 = 0;
+
     void addExtra( int x, int y )
     {
         extra.push_back( std::make_shared<CFocusingHelper>( x, y ) );
@@ -134,6 +162,9 @@ public:
         sumD = 0;
         sumDD = 0;
     }
+
+    bool isGlobalPolarAlign = false;
+    void toggleGlobalPolarAllign() { isGlobalPolarAlign = !isGlobalPolarAlign; }
 };
 
 #endif // IMAGE_MATH_H

@@ -182,6 +182,12 @@ MainFrame::MainFrame( QWidget *parent ) :
    } );
 
    connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_D ), this ), &QShortcut::activated, [=]() { debugMode = !debugMode; } );
+   connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_G ), this ), &QShortcut::activated, [=]() {
+       auto focusingHelperTool = tools.TryGet<Tools::FocusingHelper>();
+       if( focusingHelperTool ) {
+           focusingHelperTool->getFocusingHelper()->toggleGlobalPolarAllign();
+       }
+   } );
 
    updateUI();
 }

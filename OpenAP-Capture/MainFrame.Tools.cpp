@@ -21,10 +21,34 @@ void Tools::TargetCircle::Draw( QPainter& painter, QPixmap& pixmap ) const
 
 void Tools::FocusingHelper::Draw( QPainter& painter, QPixmap& ) const
 {
-    QPen pen( QColor::fromRgb( 0xFF, 0, 0 ) );
-    pen.setWidth( 1 );
-    painter.setPen( pen );
+    QFont font( "Consolas" );
+    font.setPointSizeF( 7 );
+    painter.setFont( font );
+
     painter.setRenderHint( QPainter::Antialiasing );
+
+    QPen pen1( QColor::fromRgb( 0xFF, 0x0, 0 ) );
+    pen1.setWidth( 1 );
+    painter.setPen( pen1 );
+
+    int index = 0;
+    for( auto star : focusingHelper->Stars ) {
+        double x = star.first;
+        double y = star.second;
+        if( not ui->showFullResolution->isChecked() ) {
+            x /= 2;
+            y /= 2;
+        }
+        if( x > 0 && y > 0 ) {
+            painter.drawEllipse( round( x ) - 3, round( y ) - 3, 6, 6 );
+            painter.drawText( x + 5, y + 10, QString::number( index ) );
+        }
+        index++;
+    }
+
+    QPen penx( QColor::fromRgb( 0, 0xFF, 0 ) );
+    penx.setWidth( 1 );
+    painter.setPen( penx );
 
     double x = focusingHelper->PX;
     double y = focusingHelper->PY;
@@ -33,6 +57,14 @@ void Tools::FocusingHelper::Draw( QPainter& painter, QPixmap& ) const
         y /= 2;
     }
     painter.drawEllipse( round( x ) - 3, round( y ) - 3, 6, 6 );
+
+    x = focusingHelper->PX1;
+    y = focusingHelper->PY1;
+    if( not ui->showFullResolution->isChecked() ) {
+        x /= 2;
+        y /= 2;
+    }
+    painter.drawRect( round( x ) - 3, round( y ) - 3, 6, 6 );
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
