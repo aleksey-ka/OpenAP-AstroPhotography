@@ -25,9 +25,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        Hardware.Camera.cpp \
         Hardware.Camera.MockCamera.cpp \
         Hardware.Camera.ZWO.ASICamera.cpp \
+        Hardware.FilterWheel.cpp \
         Hardware.FilterWheel.ZWO.EFWheel.cpp \
+        Hardware.Focuser.cpp \
         Hardware.Focuser.DIYFocuser.cpp \
         Hardware.Focuser.ZWO.EAFocuser.cpp \
         Image.Debayer.CFA.cpp \

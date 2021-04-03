@@ -8,6 +8,8 @@
 
 class FilterWheel {
 public:
+    static std::shared_ptr<FilterWheel> Open();
+
     virtual void Close() = 0;
 
     virtual int GetSlotsCount() const = 0;

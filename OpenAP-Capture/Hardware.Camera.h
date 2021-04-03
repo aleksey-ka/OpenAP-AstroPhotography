@@ -12,6 +12,10 @@
 
 class Camera {
 public:
+    static int GetCount();
+    static std::shared_ptr<ASI_CAMERA_INFO> GetInfo( int index );
+
+    static std::shared_ptr<Camera> Open( int id );
     virtual void Close() = 0;
 
     // Get camera info

@@ -10,14 +10,6 @@
 #include <QInputDialog>
 #include <QDebug>
 
-#include "Hardware.Camera.ZWO.ASICamera.h"
-#include "Hardware.Camera.MockCamera.h"
-
-#include "Hardware.Focuser.ZWO.EAFocuser.h"
-#include "Hardware.Focuser.DIYFocuser.h"
-
-#include "Hardware.FilterWheel.ZWO.EFWheel.h"
-
 #include "Renderer.h"
 
 #include "Image.Qt.h"
@@ -55,14 +47,9 @@ MainFrame::MainFrame( QWidget *parent ) :
 
     connect( &exposureTimer, &QTimer::timeout, [=]() { if( exposureRemainingTime > 0 ) exposureRemainingTime--; showCaptureStatus(); } );
 
-    int count = ASICamera::GetCount();
+    int count = Camera::GetCount();
     for( int i = 0; i < count; i++ ) {
-        camerasInfo.emplace_back( ASICamera::GetInfo( i ) );
-    }
-
-    count = MockCamera::GetCount();
-    for( int i = 0; i < count; i++ ) {
-        camerasInfo.emplace_back( MockCamera::GetInfo( i ) );
+        camerasInfo.emplace_back( Camera::GetInfo( i ) );
     }
 
     // TODO: Fixing a bug with text color on Raspberry Pi (old Qt?). It shows always gray
@@ -87,10 +74,7 @@ MainFrame::MainFrame( QWidget *parent ) :
     ui->offsetSpinBox->setValue( settings.value( "Offset", 64 ).toInt() );
     ui->useCameraWhiteBalanceCheckBox->setChecked( settings.value( "UseCameraWhiteBalance", false ).toBool() );
 
-    focuser = ZWOFocuser::Open();
-    if( focuser == 0 ) {
-        focuser = DIYFocuser::Open();
-    }
+    focuser = Focuser::Open();
     if( focuser != 0 ) {
        // TODO: In Qt 5.15 lambdas can be used in QShortcut constructor
        connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Up ), this ), &QShortcut::activated, [=]() { focuser->Forward(); } );
@@ -120,7 +104,7 @@ MainFrame::MainFrame( QWidget *parent ) :
        showZoom();
    } );
 
-   filterWheel = EFWheel::Open();
+   filterWheel = FilterWheel::Open();
    if( filterWheel ) {
        // TODO: Fixing a bug with text color on Raspberry Pi (old Qt?). It shows always gray
        // To fix it needs changing the combo to editable and the edit inside the combo to read-only
@@ -563,12 +547,7 @@ std::shared_ptr<ASI_CAMERA_INFO> MainFrame::openCamera( int index )
     auto start = std::chrono::steady_clock::now();
 
     auto cameraInfo = camerasInfo[index];
-    if( cameraInfo->CameraID < 0 ) {
-        // Mock camera
-        camera = MockCamera::Open( cameraInfo->CameraID );
-    } else {
-        camera = ASICamera::Open( cameraInfo->CameraID );
-    }
+    camera = Camera::Open( cameraInfo->CameraID );
 
     int width = 0;
     int height = 0;

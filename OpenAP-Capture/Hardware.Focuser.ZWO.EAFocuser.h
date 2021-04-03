@@ -4,7 +4,6 @@
 #ifndef HARDWARE_FOCUSER_ZWO_EAFOCUSER_H
 #define HARDWARE_FOCUSER_ZWO_EAFOCUSER_H
 
-#include <memory>
 #include <limits.h>
 
 #include "Hardware.Focuser.h"

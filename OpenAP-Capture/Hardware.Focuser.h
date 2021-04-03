@@ -4,8 +4,12 @@
 #ifndef HARDWARE_FOCUSER_H
 #define HARDWARE_FOCUSER_H
 
+#include <memory>
+
 class Focuser {
 public:
+    static std::shared_ptr<Focuser> Open();
+
     virtual void Close() = 0;
 
     virtual void Forward() = 0;

@@ -4,8 +4,6 @@
 #ifndef HARDWARE_FOCUSER_DIYFOCUSER_H
 #define HARDWARE_FOCUSER_DIYFOCUSER_H
 
-#include <memory>
-
 #include "Hardware.Focuser.h"
 #include <QtSerialPort/QSerialPort>
 
