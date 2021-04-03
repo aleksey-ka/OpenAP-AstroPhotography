@@ -1,7 +1,7 @@
 // Copyright (C) 2020 Aleksey Kalyuzhny. Released under the terms of the
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
-#include "Camera.Mock.h"
+#include "Hardware.Camera.MockCamera.h"
 
 #include <QThread>
 #include <QDir>

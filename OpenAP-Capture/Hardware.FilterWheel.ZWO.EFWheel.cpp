@@ -1,7 +1,7 @@
 // Copyright (C) 2020 Aleksey Kalyuzhny. Released under the terms of the
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
-#include "FilterWheel.h"
+#include "Hardware.FilterWheel.ZWO.EFWheel.h"
 
 #include "EFW_filter.h"
 
@@ -41,8 +41,16 @@ static void checkResult( EFW_ERROR_CODE errorCode )
         throw EFWException( errorCode );
     }
 }
+std::shared_ptr<EFWheel> EFWheel::Open()
+{
+    auto result = std::make_shared<EFWheel>();
+    if( result->open() ) {
+        return result;
+    }
+    return 0;
+}
 
-bool FilterWheel::Open()
+bool EFWheel::open()
 {
     int count = EFWGetNum();
     if( count > 0 ) {
@@ -56,7 +64,7 @@ bool FilterWheel::Open()
     return false;
 }
 
-int FilterWheel::GetPosition()
+int EFWheel::GetPosition()
 {
     if( slotsCount > 0 ) {
         int pos = -1;
@@ -66,14 +74,14 @@ int FilterWheel::GetPosition()
     return -1;
 }
 
-void FilterWheel::SetPosition( int pos )
+void EFWheel::SetPosition( int pos )
 {
     if( pos < slotsCount ) {
         checkResult( EFWSetPosition( id, pos ) );
     }
 }
 
-void FilterWheel::Close()
+void EFWheel::Close()
 {
     if( slotsCount > 0 ) {
         checkResult( EFWClose( id ) );

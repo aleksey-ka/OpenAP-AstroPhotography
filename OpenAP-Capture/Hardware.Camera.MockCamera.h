@@ -1,10 +1,10 @@
 // Copyright (C) 2020 Aleksey Kalyuzhny. Released under the terms of the
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
-#ifndef MOCKCAMERA_H
-#define MOCKCAMERA_H
+#ifndef HARDWARE_CAMERA_MOCKCAMERA_H
+#define HARDWARE_CAMERA_MOCKCAMERA_H
 
-#include "Camera.h"
+#include "Hardware.Camera.h"
 
 #include <QStringList>
 
@@ -91,4 +91,4 @@ private:
     mutable std::atomic<bool> isExposure{ false };
 };
 
-#endif // MOCKCAMERA_H
+#endif // HARDWARE_CAMERA_MOCKCAMERA_H

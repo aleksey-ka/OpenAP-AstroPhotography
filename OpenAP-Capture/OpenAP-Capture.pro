@@ -25,11 +25,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
-        Camera.Mock.cpp \
-        Camera.ZWO.cpp \
-        FilterWheel.cpp \
-		Focuser.DIY.cpp \
-		Focuser.ZWO.cpp \
+        Hardware.Camera.MockCamera.cpp \
+        Hardware.Camera.ZWO.ASICamera.cpp \
+        Hardware.FilterWheel.ZWO.EFWheel.cpp \
+        Hardware.Focuser.DIYFocuser.cpp \
+        Hardware.Focuser.ZWO.EAFocuser.cpp \
         Image.Debayer.CFA.cpp \
         Image.Debayer.HalfRes.cpp \
         Image.Debayer.HQLinear.cpp \
@@ -46,13 +46,14 @@ SOURCES += \
         Renderer.cpp \
 
 HEADERS += \
-        Camera.h \
-        Camera.Mock.h \
-        Camera.ZWO.h \
-        FilterWheel.h \
-        Focuser.h \
-		Focuser.DIY.h \
-		Focuser.ZWO.h \
+        Hardware.Camera.h \
+        Hardware.Camera.MockCamera.h \
+        Hardware.Camera.ZWO.ASICamera.h \
+        Hardware.FilterWheel.h \
+        Hardware.FilterWheel.ZWO.EFWheel.h \
+        Hardware.Focuser.h \
+        Hardware.Focuser.DIYFocuser.h \
+        Hardware.Focuser.ZWO.EAFocuser.h \
         Image.Debayer.h \
         Image.Debayer.CFA.h \
         Image.Debayer.HalfRes.h \

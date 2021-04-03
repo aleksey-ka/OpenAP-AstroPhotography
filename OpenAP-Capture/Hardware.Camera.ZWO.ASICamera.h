@@ -1,10 +1,10 @@
 // Copyright (C) 2020 Aleksey Kalyuzhny. Released under the terms of the
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
-#ifndef ASICAMERA_H
-#define ASICAMERA_H
+#ifndef HARDWARE_CAMERA_ZWO_ASICAMERA_H
+#define HARDWARE_CAMERA_ZWO_ASICAMERA_H
 
-#include "Camera.h"
+#include "Hardware.Camera.h"
 
 #include <atomic>
 #include <vector>
@@ -117,5 +117,5 @@ private:
     static void checkResult( ASI_ERROR_CODE );
 };
 
-#endif // ASICAMERA_H
+#endif // HARDWARE_CAMERA_ZWO_ASICAMERA_H
 

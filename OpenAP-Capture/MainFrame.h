@@ -12,9 +12,9 @@
 
 #include "ImageView.h"
 
-#include "Camera.h"
-#include "Focuser.h"
-#include "FilterWheel.h"
+#include "Hardware.Camera.h"
+#include "Hardware.Focuser.h"
+#include "Hardware.FilterWheel.h"
 
 #include "MainFrame.Tools.h"
 
@@ -108,7 +108,8 @@ private:
 
     // Focuser
     std::shared_ptr<Focuser> focuser;
-    FilterWheel filterWheel;
+     // Filter wheel
+    std::shared_ptr<FilterWheel> filterWheel;
 
     Tools tools;
 

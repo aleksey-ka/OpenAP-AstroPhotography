@@ -10,11 +10,13 @@
 #include <QInputDialog>
 #include <QDebug>
 
-#include "Camera.ZWO.h"
-#include "Camera.Mock.h"
+#include "Hardware.Camera.ZWO.ASICamera.h"
+#include "Hardware.Camera.MockCamera.h"
 
-#include "Focuser.ZWO.h"
-#include "Focuser.DIY.h"
+#include "Hardware.Focuser.ZWO.EAFocuser.h"
+#include "Hardware.Focuser.DIYFocuser.h"
+
+#include "Hardware.FilterWheel.ZWO.EFWheel.h"
 
 #include "Renderer.h"
 
@@ -118,7 +120,8 @@ MainFrame::MainFrame( QWidget *parent ) :
        showZoom();
    } );
 
-   if( filterWheel.Open() ) {
+   filterWheel = EFWheel::Open();
+   if( filterWheel ) {
        // TODO: Fixing a bug with text color on Raspberry Pi (old Qt?). It shows always gray
        // To fix it needs changing the combo to editable and the edit inside the combo to read-only
        ui->filterWheelComboBox->lineEdit()->setReadOnly( true );
@@ -142,7 +145,7 @@ MainFrame::MainFrame( QWidget *parent ) :
        }
 
        connect( ui->filterComboBox, QOverload<int>::of( &QComboBox::currentIndexChanged ),
-            [this]( int index ) { filterWheel.SetPosition( index ); } );
+            [this]( int index ) { filterWheel->SetPosition( index ); } );
    }
 
    ui->imageView->setCursor( QCursor( QPixmap( ":Res.CrossHair.png" ), 23, 23 ) );
@@ -200,7 +203,9 @@ MainFrame::~MainFrame()
     if( focuser != 0 ) {
         focuser->Close();
     }
-    filterWheel.Close();
+    if( filterWheel != 0 ) {
+        filterWheel->Close();
+    }
     delete zoomView;
     delete ui;
 }
@@ -213,7 +218,7 @@ void MainFrame::updateUI()
     ui->temperatureFrame->setVisible( camera != 0 && camera->HasCooler() );
     ui->cameraOpenCloseButton->setText( camera != 0 ? "X" : ">" );
     ui->useCameraWhiteBalanceCheckBox->setVisible( camera != 0 && camera->GetInfo()->IsColorCam );
-    ui->filterWheelFrame->setVisible( filterWheel.GetSlotsCount() > 0 );
+    ui->filterWheelFrame->setVisible( filterWheel != 0 );
 }
 
 void MainFrame::resizeEvent( QResizeEvent* event )
@@ -613,7 +618,7 @@ void MainFrame::startCapture()
     camera->SetOffset( offset );
 
     ImageInfo imageInfo;
-    if( filterWheel.GetSlotsCount() > 0 ) {
+    if( filterWheel != 0 ) {
         auto channel = ui->filterComboBox->currentText();
         imageInfo.Channel = channel.toStdString().c_str();
         auto fullFilterDescription = ui->filterComboBox->currentData( Qt::ToolTipRole ).toString();
@@ -872,7 +877,7 @@ void MainFrame::on_filterWheelComboBox_currentIndexChanged( int index )
 
     QSignalBlocker lock( ui->filterComboBox );
     ui->filterComboBox->clear();
-    for( size_t i = 0; i < filterWheel.GetSlotsCount(); i++ ) {
+    for( size_t i = 0; i < filterWheel->GetSlotsCount(); i++ ) {
         QString name;
         QString description;
         if( i < slotNames.size() ) {
@@ -886,7 +891,7 @@ void MainFrame::on_filterWheelComboBox_currentIndexChanged( int index )
         ui->filterComboBox->setItemData( i, description, Qt::ToolTipRole );
 
     }
-    ui->filterComboBox->setCurrentIndex( filterWheel.GetPosition() );
+    ui->filterComboBox->setCurrentIndex( filterWheel->GetPosition() );
 }
 
 void MainFrame::on_imageView_imagePressed( int cx, int cy, Qt::MouseButton button, Qt::KeyboardModifiers modifiers )

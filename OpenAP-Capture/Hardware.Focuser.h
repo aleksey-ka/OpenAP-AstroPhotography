@@ -1,8 +1,8 @@
 // Copyright (C) 2020 Aleksey Kalyuzhny. Released under the terms of the
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
-#ifndef FOCUSER_H
-#define FOCUSER_H
+#ifndef HARDWARE_FOCUSER_H
+#define HARDWARE_FOCUSER_H
 
 class Focuser {
 public:
@@ -22,4 +22,4 @@ public:
     virtual ~Focuser() {}
 };
 
-#endif // FOCUSER_H
+#endif // HARDWARE_FOCUSER_H

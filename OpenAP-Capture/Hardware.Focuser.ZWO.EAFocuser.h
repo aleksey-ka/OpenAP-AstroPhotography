@@ -1,13 +1,13 @@
 // Copyright (C) 2020 Aleksey Kalyuzhny. Released under the terms of the
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
-#ifndef FOCUSER_ZWO_H
-#define FOCUSER_ZWO_H
+#ifndef HARDWARE_FOCUSER_ZWO_EAFOCUSER_H
+#define HARDWARE_FOCUSER_ZWO_EAFOCUSER_H
 
 #include <memory>
 #include <limits.h>
 
-#include "Focuser.h"
+#include "Hardware.Focuser.h"
 
 class ZWOFocuser : public Focuser {
 public:
@@ -37,4 +37,4 @@ private:
     bool connect( int id );
 };
 
-#endif // FOCUSER_ZWO_H
+#endif // HARDWARE_FOCUSER_ZWO_EAFOCUSER_H
