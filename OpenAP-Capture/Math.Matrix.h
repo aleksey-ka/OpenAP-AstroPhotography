@@ -27,6 +27,9 @@ public:
 	const T* operator [] ( int row ) const { return data.data() + row * columns; }
 	T* operator [] ( int row ) { return data.data() + row * columns; }
 
+	const T& First() const { return data[0]; }
+	T& First() { return data[0]; }
+
 	const T& Last() const { return data[rows * columns - 1]; }
 	T& Last() { return data[rows * columns - 1]; }
 
@@ -37,6 +40,7 @@ public:
 	void Multiply( const CMatrix<T>& );
 
 	static void Multiply( CMatrix<T>&, const CMatrix<T>&, const CMatrix<T>& );
+	CMatrix<T> operator * ( const CMatrix<T>& );
 
 private:
 	std::vector<T> data;
@@ -88,6 +92,13 @@ inline void CMatrix<T>::Multiply( const CMatrix<T>& m )
 {
 	CMatrix<T> temp( *this );
 	Multiply( *this, temp, m );
+}
+
+template<typename T>
+inline CMatrix<T> CMatrix<T>::operator * ( const CMatrix<T>& m )
+{
+	CMatrix<T> result;
+	return result;
 }
 
 #endif // MATH_MATRIX_H
