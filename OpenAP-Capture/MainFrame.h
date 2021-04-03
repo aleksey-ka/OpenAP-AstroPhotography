@@ -78,7 +78,7 @@ private:
     QSettings settings;
 
     std::vector<std::shared_ptr<ASI_CAMERA_INFO>> camerasInfo;
-    std::shared_ptr<Camera> camera;
+    std::shared_ptr<Hardware::Camera> camera;
 
     std::shared_ptr<ASI_CAMERA_INFO> openCamera( int index );
     void closeCamera();
@@ -107,9 +107,9 @@ private:
     void guideStop();
 
     // Focuser
-    std::shared_ptr<Focuser> focuser;
+    std::shared_ptr<Hardware::Focuser> focuser;
      // Filter wheel
-    std::shared_ptr<FilterWheel> filterWheel;
+    std::shared_ptr<Hardware::FilterWheel> filterWheel;
 
     Tools tools;
 

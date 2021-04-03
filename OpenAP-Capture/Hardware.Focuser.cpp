@@ -6,6 +6,8 @@
 #include "Hardware.Focuser.ZWO.EAFocuser.h"
 #include "Hardware.Focuser.DIYFocuser.h"
 
+using namespace Hardware;
+
 std::shared_ptr<Focuser> Focuser::Open()
 {
     std::shared_ptr<Focuser> focuser = ZWOFocuser::Open();

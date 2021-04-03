@@ -47,9 +47,9 @@ MainFrame::MainFrame( QWidget *parent ) :
 
     connect( &exposureTimer, &QTimer::timeout, [=]() { if( exposureRemainingTime > 0 ) exposureRemainingTime--; showCaptureStatus(); } );
 
-    int count = Camera::GetCount();
+    int count = Hardware::Camera::GetCount();
     for( int i = 0; i < count; i++ ) {
-        camerasInfo.emplace_back( Camera::GetInfo( i ) );
+        camerasInfo.emplace_back( Hardware::Camera::GetInfo( i ) );
     }
 
     // TODO: Fixing a bug with text color on Raspberry Pi (old Qt?). It shows always gray
@@ -74,7 +74,7 @@ MainFrame::MainFrame( QWidget *parent ) :
     ui->offsetSpinBox->setValue( settings.value( "Offset", 64 ).toInt() );
     ui->useCameraWhiteBalanceCheckBox->setChecked( settings.value( "UseCameraWhiteBalance", false ).toBool() );
 
-    focuser = Focuser::Open();
+    focuser = Hardware::Focuser::Open();
     if( focuser != 0 ) {
        // TODO: In Qt 5.15 lambdas can be used in QShortcut constructor
        connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_Up ), this ), &QShortcut::activated, [=]() { focuser->Forward(); } );
@@ -104,7 +104,7 @@ MainFrame::MainFrame( QWidget *parent ) :
        showZoom();
    } );
 
-   filterWheel = FilterWheel::Open();
+   filterWheel = Hardware::FilterWheel::Open();
    if( filterWheel ) {
        // TODO: Fixing a bug with text color on Raspberry Pi (old Qt?). It shows always gray
        // To fix it needs changing the combo to editable and the edit inside the combo to read-only
@@ -547,7 +547,7 @@ std::shared_ptr<ASI_CAMERA_INFO> MainFrame::openCamera( int index )
     auto start = std::chrono::steady_clock::now();
 
     auto cameraInfo = camerasInfo[index];
-    camera = Camera::Open( cameraInfo->CameraID );
+    camera = Hardware::Camera::Open( cameraInfo->CameraID );
 
     int width = 0;
     int height = 0;

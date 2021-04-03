@@ -10,7 +10,7 @@
 
 #include <atomic>
 
-class MockCamera : public Camera {
+class MockCamera : public Hardware::Camera {
 public:
     // Get mock cameras count
     static int GetCount();

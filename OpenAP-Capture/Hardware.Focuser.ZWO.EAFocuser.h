@@ -8,9 +8,9 @@
 
 #include "Hardware.Focuser.h"
 
-class ZWOFocuser : public Focuser {
+class ZWOFocuser : public Hardware::Focuser {
 public:
-    static std::shared_ptr<Focuser> Open();
+    static std::shared_ptr<ZWOFocuser> Open();
     virtual void Close() override;
 
     virtual void Forward() override;

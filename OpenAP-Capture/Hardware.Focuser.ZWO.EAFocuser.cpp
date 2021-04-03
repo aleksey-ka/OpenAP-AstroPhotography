@@ -43,7 +43,7 @@ static void checkResult( EAF_ERROR_CODE errorCode )
     }
 }
 
-std::shared_ptr<Focuser> ZWOFocuser::Open()
+std::shared_ptr<ZWOFocuser> ZWOFocuser::Open()
 {
     if( EAFGetNum()  > 0 ) {
         int id = -1;

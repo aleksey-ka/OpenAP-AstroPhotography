@@ -6,6 +6,8 @@
 
 #include <memory>
 
+namespace Hardware {
+
 class FilterWheel {
 public:
     static std::shared_ptr<FilterWheel> Open();
@@ -19,5 +21,7 @@ public:
 
     virtual ~FilterWheel() {}
 };
+
+} // namespace Hardware
 
 #endif // HARDWARE_FILTERWHEEL_H

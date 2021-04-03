@@ -7,9 +7,9 @@
 #include "Hardware.Focuser.h"
 #include <QtSerialPort/QSerialPort>
 
-class DIYFocuser : public QObject, public Focuser {
+class DIYFocuser : public QObject, public Hardware::Focuser {
 public:
-    static std::shared_ptr<Focuser> Open();
+    static std::shared_ptr<DIYFocuser> Open();
     virtual void Close() override;
 
     virtual void Forward() override;

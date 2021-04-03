@@ -6,6 +6,8 @@
 
 #include <memory>
 
+namespace Hardware {
+
 class Focuser {
 public:
     static std::shared_ptr<Focuser> Open();
@@ -25,5 +27,7 @@ public:
 
     virtual ~Focuser() {}
 };
+
+} // namespace Hardware
 
 #endif // HARDWARE_FOCUSER_H

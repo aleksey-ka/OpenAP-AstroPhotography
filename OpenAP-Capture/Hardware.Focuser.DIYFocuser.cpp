@@ -6,7 +6,7 @@
 #include <QtSerialPort/QSerialPortInfo>
 #include <QDebug>
 
-std::shared_ptr<Focuser> DIYFocuser::Open()
+std::shared_ptr<DIYFocuser> DIYFocuser::Open()
 {
     QString portName;
     foreach( const QSerialPortInfo &serialPortInfo, QSerialPortInfo::availablePorts() ) {

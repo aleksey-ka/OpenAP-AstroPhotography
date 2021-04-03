@@ -5,6 +5,8 @@
 
 #include "Hardware.FilterWheel.ZWO.EFWheel.h"
 
+using namespace Hardware;
+
 std::shared_ptr<FilterWheel> FilterWheel::Open()
 {
     return EFWheel::Open();

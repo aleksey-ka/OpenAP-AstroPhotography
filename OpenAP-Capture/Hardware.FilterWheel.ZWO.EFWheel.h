@@ -6,7 +6,7 @@
 
 #include "Hardware.FilterWheel.h"
 
-class EFWheel : public FilterWheel {
+class EFWheel : public Hardware::FilterWheel {
 public:
     static std::shared_ptr<EFWheel> Open();
     virtual void Close() override;

@@ -10,6 +10,8 @@
 
 #include "Image.RawImage.h"
 
+namespace Hardware {
+
 class Camera {
 public:
     static int GetCount();
@@ -78,5 +80,7 @@ public:
 
     virtual ~Camera() {}
 };
+
+} // namespace Hardware
 
 #endif // HARDWARE_CAMERA_H

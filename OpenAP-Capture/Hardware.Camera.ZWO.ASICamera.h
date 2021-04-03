@@ -9,7 +9,7 @@
 #include <atomic>
 #include <vector>
 
-class ASICamera : public Camera {
+class ASICamera : public Hardware::Camera {
 public:
     // Get attached cameras count
     static int GetCount();

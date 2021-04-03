@@ -6,6 +6,8 @@
 #include "Hardware.Camera.ZWO.ASICamera.h"
 #include "Hardware.Camera.MockCamera.h"
 
+using namespace Hardware;
+
 int Camera::GetCount()
 {
     return ASICamera::GetCount() + MockCamera::GetCount();
