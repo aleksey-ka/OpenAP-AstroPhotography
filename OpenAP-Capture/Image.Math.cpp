@@ -12,6 +12,7 @@
 
 #include <math.h>
 #include <stack>
+#include <algorithm>
 
 CPixelStatistics::CPixelStatistics( int numberOfChannels, int bitsPerChannel ) :
     channelSize( 2 << bitsPerChannel )
@@ -345,6 +346,110 @@ CPixelStatistics CRawU16::CalculateStatistics( const CGrayU16Image* image )
     return stats;
 }
 
+static std::tuple<int, int, int, int, int, unsigned> starMaskWithMax( const CGrayU16Image* image, int x, int y, int t, int width, int height, std::shared_ptr<CGrayImage> result, int value )
+{
+    int vmax = 0;
+    int xmax = 0;
+    int ymax = 0;
+    int cmax = 0;
+    int count = 0;
+    unsigned sum = 0;
+    std::stack<std::tuple<int, int>> s;
+    s.emplace( x, y );
+    while( not s.empty() ) {
+        int x, y;
+        std::tie( x, y ) = s.top();
+        s.pop();
+        if( x >= 0 && x < width && y > 0 && y < height ) {
+            auto dst = result->At( x, y );
+            int v = image->At( x, y )[0];
+            if( dst[0] < value && v >= t ) {
+                dst[0] = value;
+                count++;
+                sum += v;
+                if( v >= vmax ) {
+                    if( v > vmax ) {
+                        vmax = v;
+                        xmax = x;
+                        ymax = y;
+                        cmax = 1;
+                    } else {
+                        cmax++;
+                    }
+                }
+                s.emplace( x - 1, y );
+                s.emplace( x + 1, y );
+                s.emplace( x - 1, y - 1 );
+                s.emplace( x, y - 1);
+                s.emplace( x + 1, y - 1);
+                s.emplace( x - 1, y + 1 );
+                s.emplace( x, y + 1);
+                s.emplace( x + 1, y + 1);
+            }
+        }
+    }
+    return std::make_tuple( vmax, xmax, ymax, cmax, count, sum );
+}
+
+static void erase( int x, int y, int width, int height, std::shared_ptr<CGrayImage> result )
+{
+    std::stack<std::tuple<int, int>> s;
+    s.emplace( x, y );
+    while( not s.empty() ) {
+        int x, y;
+        std::tie( x, y ) = s.top();
+        s.pop();
+        if( x >= 0 && x < width && y > 0 && y < height ) {
+            auto dst = result->At( x, y );
+            if( dst[0] != 0  ) {
+                dst[0] = 0;
+                s.emplace( x - 1, y );
+                s.emplace( x + 1, y );
+                s.emplace( x - 1, y - 1 );
+                s.emplace( x, y - 1);
+                s.emplace( x + 1, y - 1);
+                s.emplace( x - 1, y + 1 );
+                s.emplace( x, y + 1);
+                s.emplace( x + 1, y + 1);
+            }
+        }
+    }
+}
+
+static void enumerate(const CGrayU16Image* image, int x, int y, int width, int height, int th, std::shared_ptr<CGrayImage> mask, std::function<void(int, int, ushort)> f )
+{
+    std::stack<std::tuple<int, int, int>> undo;
+    std::stack<std::tuple<int, int>> s;
+    s.emplace( x, y );
+    while( not s.empty() ) {
+        int x, y;
+        std::tie( x, y ) = s.top();
+        s.pop();
+        if( x >= 0 && x < width && y > 0 && y < height ) {
+            auto dst = mask->At( x, y );
+            if( dst[0] >= th  ) {
+                f( x, y, image->At( x, y )[0] );
+                undo.emplace( x, y, dst[0] );
+                dst[0] = 0;
+                s.emplace( x - 1, y );
+                s.emplace( x + 1, y );
+                s.emplace( x - 1, y - 1 );
+                s.emplace( x, y - 1);
+                s.emplace( x + 1, y - 1);
+                s.emplace( x - 1, y + 1 );
+                s.emplace( x, y + 1);
+                s.emplace( x + 1, y + 1);
+            }
+        }
+    }
+    while( not undo.empty() ) {
+        int x, y, v;
+        std::tie( x, y, v ) = undo.top();
+        undo.pop();
+        mask->At( x, y )[0] = v;
+    }
+}
+
 static std::shared_ptr<CGrayImage> starMask( const CGrayU16Image* image, int x, int y, int t, int width, int height, std::shared_ptr<CGrayImage> result, int value )
 {
     std::stack<std::tuple<int, int>> s;
@@ -384,6 +489,203 @@ static std::shared_ptr<CGrayImage> starMask( const CGrayU16Image* image, int x, 
     int width = image->Width();
     int height = image->Height();
     return starMask( image, x, y, t, width, height, result, value );
+}
+
+class CalculateXY {
+public:
+    CalculateXY( int _x0, int _y0, int _halfMax ) : x0( _x0 ), y0( _y0 ), halfMax( _halfMax ){}
+    void operator()( int x, int y, ushort v )
+    {
+        double value = v - halfMax;
+        if( value > 0 ) {
+            sumVX += value * ( x - x0 );
+            sumVY += value * ( y - y0 );
+            sumV += value;
+        }
+    }
+
+    double dx() { return sumVX / sumV; }
+    double dy() { return sumVY / sumV; }
+
+private:
+    int x0;
+    int y0;
+    int halfMax;
+    double sumVX = 0;
+    double sumVY = 0;
+    double sumV = 0;
+};
+
+struct StarXY {
+    double NormalizedBrightness;
+    double X;
+    double Y;
+    std::vector<int> Neighbours;
+    std::vector<double> Distances;
+    std::vector<double> Angles;
+    int MatchedIndex = -1;
+};
+
+static std::vector<StarXY> normalizedBrightStarsXY( const DetectionResults& r0, size_t num )
+{
+    auto d0 = r0.DetectionRegions;
+    auto sortByBrightness = [&]( std::shared_ptr<DetectionRegion> r0, std::shared_ptr<DetectionRegion> r1 ) { return r0->FluxAtHalfDetectionThreshold > r1->FluxAtHalfDetectionThreshold; };
+    std::sort( d0.begin(), d0.end(), sortByBrightness );
+    auto size = std::min( d0.size(), num );
+    auto b0 =  d0.front()->FluxAtHalfDetectionThreshold;
+
+    std::vector<StarXY> result;
+    result.resize( size );
+    for( size_t i = 0; i < size; i++ ) {
+        auto dr0 = *d0[i];
+        result[i].NormalizedBrightness = 1.0 * dr0.FluxAtHalfDetectionThreshold / b0;
+        CalculateXY c0( dr0.Xmax, dr0.Ymax, dr0.Background + ( dr0.Vmax - dr0.Background ) / 2 );
+        enumerate( r0.Image.get(), dr0.Xmax, dr0.Ymax, r0.Image->Width(), r0.Image->Height(), 128, r0.Mask, std::ref( c0 ) );
+        result[i].X = dr0.Xmax + c0.dx();
+        result[i].Y = dr0.Ymax + c0.dy();
+    }
+    return result;
+}
+
+template <typename T, typename Compare>
+std::vector<std::size_t> sort_permutation(
+    const std::vector<T>& vec,
+    const Compare& compare)
+{
+    std::vector<std::size_t> p(vec.size());
+    std::iota(p.begin(), p.end(), 0);
+    std::sort(p.begin(), p.end(),
+        [&](std::size_t i, std::size_t j){ return compare(vec[i], vec[j]); });
+    return p;
+}
+
+template <typename T>
+std::vector<T> apply_permutation(
+    const std::vector<T>& vec,
+    const std::vector<std::size_t>& p)
+{
+    std::vector<T> sorted_vec(vec.size());
+    std::transform(p.begin(), p.end(), sorted_vec.begin(),
+        [&](std::size_t i){ return vec[i]; });
+    return sorted_vec;
+}
+
+static void calculateDistances( std::vector<StarXY>& stars )
+{
+    for( size_t i = 0; i < stars.size(); i++ ) {
+        auto& d = stars[i].Distances;
+        std::vector<double> DX;
+        std::vector<double> DY;
+        auto& neighbours = stars[i].Neighbours;
+        for( size_t j = 0; j < i; j++ ) {
+            double dX = stars[j].X - stars[i].X;
+            double dY = stars[j].Y - stars[i].Y;
+            double L = sqrt( dX * dX + dY * dY );
+            d.push_back( L );
+            DX.push_back( dX );
+            DY.push_back( dY );
+            neighbours.push_back( j );
+        }
+        if( d.size() < 7 ) {
+            for( size_t j = i + 1; j < stars.size() && d.size() < 7; j++ ) {
+                double dX = stars[j].X - stars[i].X;
+                double dY = stars[j].Y - stars[i].Y;
+                double L = sqrt( dX * dX + dY * dY );
+                d.push_back( L );
+                DX.push_back( dX );
+                DY.push_back( dY );
+                neighbours.push_back( j );
+            }
+        }
+        if( d.size() > 7 ) {
+            auto p = sort_permutation( d, std::less<double>() );
+            d = apply_permutation( d, p );
+            DX = apply_permutation( DX, p );
+            DY = apply_permutation( DY, p );
+            neighbours = apply_permutation( neighbours, p );
+            d.resize( 7 );
+            DX.resize( 7 );
+            DY.resize( 7 );
+            neighbours.resize( 7 );
+
+            std::vector<double> brightness;
+            for( size_t j = 0; j < neighbours.size(); j++ ) {
+                brightness.push_back( stars[neighbours[j]].NormalizedBrightness );
+            }
+            auto p1 = sort_permutation( brightness, std::greater<double>() );
+            d = apply_permutation( d, p1 );
+            DX = apply_permutation( DX, p1 );
+            DY = apply_permutation( DY, p1 );
+            neighbours = apply_permutation( neighbours, p1 );
+        }
+        auto& a = stars[i].Angles;
+        for( size_t j = 0; j < d.size(); j++ ) {
+            a.push_back( atan2( DX[j], DY[j] ) );
+        }
+    }
+}
+
+static bool match( const StarXY& star0, const StarXY& star1 )
+{
+    const auto& n0 = star0.Neighbours;
+    const auto& n1 = star1.Neighbours;
+    const auto& d0 = star0.Distances;
+    const auto& d1 = star1.Distances;
+    const auto& a0 = star0.Angles;
+    const auto& a1 = star1.Angles;
+    int count = 0;
+    int fCount = 0;
+    for( size_t n = 0; n < std::min( n0.size(), n1.size() ); n++ ) {
+        double L0 = d0[n];
+        double A0 = a0[n] - a0[0];
+        double L1 = d1[n];
+        double A1 = a1[n] - a1[0];
+        if( fabs( L0 - L1 ) < 2 && fabs( A0 - A1 ) < 2 / L0 ) {
+            count++;
+        } else {
+            fCount++;
+        }
+    }
+    if( fCount == 0 || count > 2 ) {
+        return true;
+    }
+    count = 0;
+    for( size_t n = 0; n < std::min( n0.size(), n1.size() ); n++ ) {
+        double L0 = d0[n];
+        double A0 = a0[n] - a0[1];
+        double L1 = d1[n];
+        double A1 = a1[n] - a1[1];
+        if( fabs( L0 - L1 ) < 2 && fabs( A0 - A1 ) < 2 / L0 ) {
+            count++;
+        }
+    }
+    return count > 2;
+}
+
+std::vector<std::pair<double, double>> align( std::vector<StarXY>& stars0, std::vector<StarXY>& stars1 )
+{
+    calculateDistances( stars0 );
+    calculateDistances( stars1 );
+
+    std::vector<std::pair<double, double>> result;
+    for( size_t i = 0; i < stars0.size(); i++ ) {
+        const auto& s0 = stars0[i];
+        bool matched = false;
+        for( size_t j = 0; j < stars1.size(); j++ ) {
+            auto& s1 = stars1[j];
+            if( match( s0, s1 ) ) {
+                qDebug() << "Matched" << i << j << s0.X << s0.Y << s1.X << s1.Y;
+                assert( !matched );
+                matched = true;
+                result.push_back( std::make_pair( s1.X, s1.Y ) );
+                s1.MatchedIndex = i;
+            }
+        }
+        if( !matched ) {
+            result.push_back( std::make_pair( 0, 0 ) );
+        }
+    }
+    return result;
 }
 
 void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int imageSize, int focuserPos )
@@ -573,12 +875,28 @@ void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int imageSize,
     currentSeries->CX.push_back( CX );
     currentSeries->CY.push_back( CY );
 
+    if( isGlobalPolarAlign ) {
+        currentSeries->DetectionResults.push_back( rawU16.DetectStars( 0, 0, currentImage->Width(), currentImage->Height() ) );
+    } else {
+        currentSeries->DetectionResults.push_back( DetectionResults() );
+    }
+
     double sumdCX = 0;
     double sumdCY = 0;
     double sumdCXdCX = 0;
     double sumdCYdCY = 0;
     dCX = CX - prevCX;
     dCY = CY - prevCY;
+
+    int minSize = currentSeries->CX.size();
+    for( auto helper : extra ) {
+        if( helper->currentSeries ) {
+            int size = helper->currentSeries->CX.size();
+            if( size < minSize ) {
+                minSize = size;
+            }
+        }
+    }
 
     if( extra.size() > 0 ) {
         sumdCX += dCX;
@@ -620,15 +938,6 @@ void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int imageSize,
         dCY = sumdCY / countC;
 
         if( extra.size() > 1 ) {
-
-            int minSize = currentSeries->CX.size();
-            for( auto helper : extra ) {
-                int size = helper->currentSeries->CX.size();
-                if( size < minSize ) {
-                    minSize = size;
-                }
-            }
-
             if( minSize >= 2 ) {
                 std::vector<double> x1;
                 std::vector<double> y1;
@@ -661,4 +970,94 @@ void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int imageSize,
             }
         }
     }
+    if( isGlobalPolarAlign && minSize > 1 ) {
+        std::vector<StarXY> stars0;
+        for( auto i = currentSeries->DetectionResults.cend() - minSize; i < currentSeries->DetectionResults.cend() - 1; i++ ) {
+            const auto& dr = *i;
+            if( dr.DetectionRegions.size() > 0 ) {
+                stars0 = normalizedBrightStarsXY( dr, 50 );
+                break;
+            }
+        }
+        auto stars1 = normalizedBrightStarsXY( currentSeries->DetectionResults.back(), 50 );
+        Stars = align( stars0, stars1 );
+        //currentSeries->DetectionResults.back().Image.reset();
+        //currentSeries->DetectionResults.back().Mask.reset();
+
+        std::vector<double> x1;
+        std::vector<double> y1;
+        std::vector<double> x2;
+        std::vector<double> y2;
+        for( const auto& s1 : stars1 ) {
+            if( s1.MatchedIndex >= 0 ) {
+                const auto& s0 = stars0[s1.MatchedIndex];
+                x1.push_back( s0.X );
+                y1.push_back( s0.Y );
+                x2.push_back( s1.X );
+                y2.push_back( s1.Y );
+            }
+        }
+        if( x1.size() > 2 ) {
+            CMatrix<double> Ax( 3, 1 );
+            CMatrix<double> Ay( 3, 1 );
+            if( LeastSquaresAffineTransform( Ax, Ay, x1, y1, x2, y2 ) ) {
+                double p[2];
+                if( SolveSystemOfTwoLinearEquations( p, Ax[0][0] - 1.0, Ax[1][0], Ax[2][0], Ay[0][0], Ay[1][0] - 1.0, Ay[2][0] ) ) {
+                    PX1 = p[0];
+                    PY1 = p[1];
+                    qDebug() << "PX1" << PX1;
+                    qDebug() << "PY1" << PY1;
+                }
+            }
+        }
+    }
+}
+
+DetectionResults CRawU16::DetectStars( int x0, int y0, int W, int H ) const
+{
+    auto image = GrayU16( x0, y0, W, H );
+
+    const auto s = CRawU16::CalculateStatistics( image.get() ).stat( 0 );
+    qDebug() << "Median:" << s.Median << "Sigma:" << s.Sigma;
+
+    int th = s.Median + 6 * s.Sigma;
+    int halfTh = s.Median + 3 * s.Sigma;
+
+
+    DetectionResults results;
+    auto& regions = results.DetectionRegions;
+    auto mask = std::make_shared<CGrayImage>( W, H );
+    for( int y = 0; y < H; y++ ) {
+        const ushort* srcLine = image->ScanLine( y );
+        uchar* dstLine = mask->ScanLine( y );
+        for( int x = 0; x < W; x++ ) {
+            const ushort* src = srcLine + x;
+            uchar* dst = dstLine + x;
+
+            if( dst[0] == 0 && src[0] >= th ) {
+                auto region = std::make_shared<DetectionRegion>();
+                int vmax, xmax, ymax, cmax, count;
+                unsigned sum;
+                std::tie( vmax, xmax, ymax, cmax, count, sum ) = starMaskWithMax( image.get(), x, y, halfTh, image->Width(), image->Height(), mask, 32 );
+                region->Vmax = vmax;
+                region->Xmax = xmax;
+                region->Ymax = ymax;
+                region->Cmax = cmax;
+                region->AreaAtHalfDetectionThreshold = count;
+                region->FluxAtHalfDetectionThreshold = sum;
+                region->FluxAtHalfDetectionThreshold -= count * s.Median;
+                region->Background = s.Median;
+                int base = s.Median + ( vmax - s.Median ) / 10;
+                if( base > halfTh ) {
+                    starMask( image.get(), xmax, ymax, base, 64, mask );
+                }
+                starMask( image.get(), xmax, ymax, s.Median + ( vmax - s.Median ) / 2, 128, mask );
+                starMask( image.get(), xmax, ymax, s.Median + 9 * ( vmax - s.Median ) / 10, 255, mask );
+                regions.push_back( region );
+            }
+        }
+    }
+    results.Mask = mask;
+    results.Image = image;
+    return std::move( results );
 }
