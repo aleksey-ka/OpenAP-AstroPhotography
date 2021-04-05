@@ -361,10 +361,10 @@ static std::tuple<int, int, int, int, int, unsigned> starMaskWithMax( const CGra
         std::tie( x, y ) = s.top();
         s.pop();
         if( x >= 0 && x < width && y > 0 && y < height ) {
-            auto dst = result->At( x, y );
-            int v = image->At( x, y )[0];
-            if( dst[0] < value && v >= t ) {
-                dst[0] = value;
+            auto& dst = result->At( x, y );
+            int v = image->At( x, y );
+            if( dst < value && v >= t ) {
+                dst = value;
                 count++;
                 sum += v;
                 if( v >= vmax ) {
@@ -400,9 +400,9 @@ static void erase( int x, int y, int width, int height, std::shared_ptr<CGrayIma
         std::tie( x, y ) = s.top();
         s.pop();
         if( x >= 0 && x < width && y > 0 && y < height ) {
-            auto dst = result->At( x, y );
-            if( dst[0] != 0  ) {
-                dst[0] = 0;
+            auto& dst = result->At( x, y );
+            if( dst != 0  ) {
+                dst = 0;
                 s.emplace( x - 1, y );
                 s.emplace( x + 1, y );
                 s.emplace( x - 1, y - 1 );
@@ -426,11 +426,11 @@ static void enumerate(const CGrayU16Image* image, int x, int y, int width, int h
         std::tie( x, y ) = s.top();
         s.pop();
         if( x >= 0 && x < width && y > 0 && y < height ) {
-            auto dst = mask->At( x, y );
-            if( dst[0] >= th  ) {
-                f( x, y, image->At( x, y )[0] );
-                undo.emplace( x, y, dst[0] );
-                dst[0] = 0;
+            auto& dst = mask->At( x, y );
+            if( dst >= th  ) {
+                f( x, y, image->At( x, y ) );
+                undo.emplace( x, y, dst );
+                dst = 0;
                 s.emplace( x - 1, y );
                 s.emplace( x + 1, y );
                 s.emplace( x - 1, y - 1 );
@@ -446,7 +446,7 @@ static void enumerate(const CGrayU16Image* image, int x, int y, int width, int h
         int x, y, v;
         std::tie( x, y, v ) = undo.top();
         undo.pop();
-        mask->At( x, y )[0] = v;
+        mask->At( x, y ) = v;
     }
 }
 
@@ -459,9 +459,9 @@ static std::shared_ptr<CGrayImage> starMask( const CGrayU16Image* image, int x, 
         std::tie( x, y ) = s.top();
         s.pop();
         if( x >= 0 && x < width && y > 0 && y < height ) {
-            auto dst = result->At( x, y );
-            if( dst[0] < value && image->At( x, y )[0] >= t ) {
-                dst[0] = value;
+            auto& dst = result->At( x, y );
+            if( dst < value && image->At( x, y ) >= t ) {
+                dst = value;
                 s.emplace( x - 1, y );
                 s.emplace( x + 1, y );
                 s.emplace( x - 1, y - 1 );
@@ -704,7 +704,7 @@ void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int imageSize,
     const auto s = CRawU16::CalculateStatistics( image.get() ).stat( 0 );
     qDebug() << "Median:" << s.Median << "Sigma:" << s.Sigma;
 
-    int cVal = image->At( imageSize / 2, imageSize / 2 )[0];
+    int cVal = image->At( imageSize / 2, imageSize / 2 );
 
     int maxVal = 0;
     int halfMax = s.Median + ( cVal - s.Median ) / 2;

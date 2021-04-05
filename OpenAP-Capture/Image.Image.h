@@ -14,11 +14,17 @@ public:
     int Width() const { return width; }
     int Height() const { return height; }
 
+    const T* Pixels() const { return buffer.data(); };
+    T* Pixels() { return buffer.data(); };
+
     const T* ScanLine( int y ) const { return buffer.data() + y * stride; }
     T* ScanLine( int y ) { return buffer.data() + y * stride; }
 
-    const T* At( int x, int y ) const { return ScanLine( y ) + x; }
-    T* At( int x, int y ) { return ScanLine( y ) + x; }
+    const T* Ptr( int x, int y ) const { return ScanLine( y ) + numOfChannels * x; }
+    T* Ptr( int x, int y ) { return ScanLine( y ) + numOfChannels * x; }
+
+    const T& At( int x, int y, int ch = 0 ) const { return ( ScanLine( y ) + numOfChannels * x )[ch]; }
+    T& At( int x, int y, int ch = 0 ) { return ( ScanLine( y ) + numOfChannels * x )[ch]; }
 
 protected:
     int width;
@@ -59,18 +65,12 @@ class CGrayU16Image : public CPixelBuffer<unsigned short, 1> {
 public:
     using CPixelBuffer::CPixelBuffer;
 
-    const unsigned short* Pixels() const { return buffer.data(); };
-    unsigned short* Pixels() { return buffer.data(); };
-
     int Stride() const { return stride; }
 };
 
 class CGrayImage : public CPixelBuffer<unsigned char, 1> {
 public:
     using CPixelBuffer::CPixelBuffer;
-
-    const unsigned char* Pixels() const { return buffer.data(); };
-    unsigned char* Pixels() { return buffer.data(); };
 
     int ByteWidth() const { return stride; }
 };
