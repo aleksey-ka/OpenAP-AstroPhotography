@@ -13,7 +13,7 @@ int Camera::GetCount()
     return ASICamera::GetCount() + MockCamera::GetCount();
 }
 
-std::shared_ptr<ASI_CAMERA_INFO> Camera::GetInfo( int index )
+std::shared_ptr<Hardware::CAMERA_INFO> Camera::GetInfo( int index )
 {
     int count = ASICamera::GetCount();
     if( index < count ) {

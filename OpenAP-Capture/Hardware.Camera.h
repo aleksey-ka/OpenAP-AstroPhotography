@@ -6,22 +6,56 @@
 
 #include <memory>
 
-#include <ASICamera2.h>
-
 #include "Image.RawImage.h"
 
 namespace Hardware {
 
+enum BAYER_PATTERN {
+    BP_BAYER_RG = 0,
+    BP_BAYER_BG,
+    BP_BAYER_GR,
+    BP_BAYER_GB
+};
+
+struct CAMERA_INFO {
+    int Id;
+    char Name[64];
+    bool IsColorCamera;
+    BAYER_PATTERN BayerPattern;
+    double PixelSize;
+    float ElectronsPerADU;
+    int BitDepth;
+};
+
+enum IMG_TYPE {
+    IT_RAW8 = 0,
+    IT_RGB24,
+    IT_RAW16,
+    IT_Y8,
+    IT_NONE
+};
+
+enum GUIDE_DIRECTION {
+    GD_GUIDE_NORTH = 0,
+    GD_GUIDE_SOUTH,
+    GD_GUIDE_EAST,
+    GD_GUIDE_WEST
+};
+
 class Camera {
 public:
+    // Number of available cameras
     static int GetCount();
-    static std::shared_ptr<ASI_CAMERA_INFO> GetInfo( int index );
+    // Camera info for a camera by index
+    static std::shared_ptr<CAMERA_INFO> GetInfo( int index );
 
+    // Open camera
     static std::shared_ptr<Camera> Open( int id );
+    // Close camera
     virtual void Close() = 0;
 
     // Get camera info
-    virtual std::shared_ptr<ASI_CAMERA_INFO> GetInfo() const = 0;
+    virtual std::shared_ptr<CAMERA_INFO> GetInfo() const = 0;
 
     // Exposure in microsectods
     virtual long GetExposure( bool& isAuto ) const = 0;
@@ -47,13 +81,13 @@ public:
     virtual void GetWhiteBalanceBCaps( long& min, long& max, long& defaultVal ) const = 0;
 
     // Image format
-    virtual ASI_IMG_TYPE GetFormat() const = 0;
+    virtual IMG_TYPE GetFormat() const = 0;
     virtual int GetWidth() const = 0;
     virtual int GetHeight() const = 0;
     virtual int GetBinning() const = 0;
     // Image format (all in one)
-    virtual void GetROIFormat( int& width, int& height, int& bin, ASI_IMG_TYPE& imgType ) const = 0;
-    virtual void SetROIFormat( int width, int height, int bin, ASI_IMG_TYPE imgType ) = 0;
+    virtual void GetROIFormat( int& width, int& height, int& bin, IMG_TYPE& imgType ) const = 0;
+    virtual void SetROIFormat( int width, int height, int bin, IMG_TYPE imgType ) = 0;
 
     // Do single exposure
     virtual std::shared_ptr<const CRawU16Image> DoExposure() const = 0;
@@ -70,8 +104,8 @@ public:
     virtual void SetTargetTemperature( double ) = 0;
 
     // Guiding through ST4 port
-    virtual void GuideOn( ASI_GUIDE_DIRECTION ) const = 0;
-    virtual void GuideOff( ASI_GUIDE_DIRECTION ) const = 0;
+    virtual void GuideOn( GUIDE_DIRECTION ) const = 0;
+    virtual void GuideOff( GUIDE_DIRECTION ) const = 0;
 
     // Set image info to be used as a template for capture images
     virtual void SetImageInfoTemplate( const ImageInfo& ) = 0;

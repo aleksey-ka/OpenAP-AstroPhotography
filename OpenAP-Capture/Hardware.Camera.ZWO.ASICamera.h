@@ -6,6 +6,8 @@
 
 #include "Hardware.Camera.h"
 
+#include <ASICamera2.h>
+
 #include <atomic>
 #include <vector>
 
@@ -14,7 +16,7 @@ public:
     // Get attached cameras count
     static int GetCount();
     // Get attached camera info by index
-    static std::shared_ptr<ASI_CAMERA_INFO> GetInfo( int index );
+    static std::shared_ptr<Hardware::CAMERA_INFO> GetInfo( int index );
 
     // Open and initialize the camera by id (see camera info)
     static std::shared_ptr<ASICamera> Open( int id );
@@ -22,7 +24,7 @@ public:
     void Close() override;
 
     // Get camera info
-    std::shared_ptr<ASI_CAMERA_INFO> GetInfo() const override;
+    std::shared_ptr<Hardware::CAMERA_INFO> GetInfo() const override;
 
     // Exposure in microsectods
     long GetExposure( bool& isAuto ) const override;
@@ -48,13 +50,13 @@ public:
     void GetWhiteBalanceBCaps( long& min, long& max, long& defaultVal ) const override;
 
     // Image format
-    ASI_IMG_TYPE GetFormat() const override { lazyROIFormat(); return imgType; }
+    Hardware::IMG_TYPE GetFormat() const override { lazyROIFormat(); return convert( imgType ); }
     int GetWidth() const override { lazyROIFormat(); return width; }
     int GetHeight() const override { lazyROIFormat(); return height; }
     int GetBinning() const override { lazyROIFormat(); return bin; }
     // Image format (all in one)
-    void GetROIFormat( int& width, int& height, int& bin, ASI_IMG_TYPE& imgType ) const override;
-    void SetROIFormat( int width, int height, int bin, ASI_IMG_TYPE imgType ) override;
+    void GetROIFormat( int& width, int& height, int& bin, Hardware::IMG_TYPE& imgType ) const override;
+    void SetROIFormat( int width, int height, int bin, Hardware::IMG_TYPE imgType ) override;
 
     // Do single exposure
     std::shared_ptr<const CRawU16Image> DoExposure() const override;
@@ -71,8 +73,8 @@ public:
     void SetTargetTemperature( double ) override;
 
     // Guiding
-    void GuideOn( ASI_GUIDE_DIRECTION ) const override;
-    void GuideOff( ASI_GUIDE_DIRECTION ) const override;
+    void GuideOn( Hardware::GUIDE_DIRECTION ) const override;
+    void GuideOff( Hardware::GUIDE_DIRECTION ) const override;
 
     virtual void SetImageInfoTemplate( const ImageInfo& imageInfo ) override { imageInfoTemplate = imageInfo; };
 
@@ -83,7 +85,7 @@ public:
 
 private:
     int id;
-    mutable std::shared_ptr<ASI_CAMERA_INFO> cameraInfo;
+    mutable std::shared_ptr<Hardware::CAMERA_INFO> cameraInfo;
 
     mutable std::vector<ASI_CONTROL_CAPS> controlCaps;
 
@@ -115,6 +117,13 @@ private:
     bool hasControlCaps( ASI_CONTROL_TYPE ) const;
     void getControlCaps( ASI_CONTROL_TYPE, long& min, long& max, long& defaultVal ) const;
     static void checkResult( ASI_ERROR_CODE );
+
+    static std::shared_ptr<Hardware::CAMERA_INFO> createCameraInfo( const ASI_CAMERA_INFO& );
+    static Hardware::IMG_TYPE convert( ASI_IMG_TYPE );
+    static ASI_IMG_TYPE convert( Hardware::IMG_TYPE );
+    static Hardware::BAYER_PATTERN convert( ASI_BAYER_PATTERN );
+    static Hardware::GUIDE_DIRECTION convert( ASI_GUIDE_DIRECTION );
+    static ASI_GUIDE_DIRECTION convert( Hardware::GUIDE_DIRECTION );
 };
 
 #endif // HARDWARE_CAMERA_ZWO_ASICAMERA_H

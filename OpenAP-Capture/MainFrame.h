@@ -77,10 +77,10 @@ private:
 
     QSettings settings;
 
-    std::vector<std::shared_ptr<ASI_CAMERA_INFO>> camerasInfo;
+    std::vector<std::shared_ptr<Hardware::CAMERA_INFO>> camerasInfo;
     std::shared_ptr<Hardware::Camera> camera;
 
-    std::shared_ptr<ASI_CAMERA_INFO> openCamera( int index );
+    std::shared_ptr<Hardware::CAMERA_INFO> openCamera( int index );
     void closeCamera();
 
     // Capture
@@ -103,7 +103,7 @@ private:
 
     // Manual guider controls
     int guiding = -1;
-    void guide( ASI_GUIDE_DIRECTION );
+    void guide( Hardware::GUIDE_DIRECTION );
     void guideStop();
 
     // Focuser

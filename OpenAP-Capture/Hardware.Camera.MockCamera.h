@@ -15,14 +15,14 @@ public:
     // Get mock cameras count
     static int GetCount();
     // Get mock camera info by index
-    static std::shared_ptr<ASI_CAMERA_INFO> GetInfo( int index );
+    static std::shared_ptr<Hardware::CAMERA_INFO> GetInfo( int index );
 
     // Open and initialize the camera by id (see camera info)
     static std::shared_ptr<MockCamera> Open( int id );
     virtual void Close() override;
 
     // Get camera info
-    virtual std::shared_ptr<ASI_CAMERA_INFO> GetInfo() const override;
+    virtual std::shared_ptr<Hardware::CAMERA_INFO> GetInfo() const override;
 
     // Exposure in microsectods
     virtual long GetExposure( bool& isAuto ) const override { isAuto = false; return currentSettings.Exposure; }
@@ -48,13 +48,13 @@ public:
     virtual void GetWhiteBalanceBCaps( long& /*min*/, long& /*max*/, long& /*defaultVal*/ ) const override {}
 
     // Image format
-    virtual ASI_IMG_TYPE GetFormat() const override { return ASI_IMG_RAW16; }
+    virtual Hardware::IMG_TYPE GetFormat() const override { return Hardware::IT_RAW16; }
     virtual int GetWidth() const override { return currentSettings.Width; }
     virtual int GetHeight() const override { return currentSettings.Height; }
     virtual int GetBinning() const override { return 1; }
     // Image format (all in one)
-    virtual void GetROIFormat( int& width, int& height, int& bin, ASI_IMG_TYPE& imgType ) const override;
-    virtual void SetROIFormat( int /*width*/, int /*height*/, int /*bin*/, ASI_IMG_TYPE /*imgType*/ ) override {}
+    virtual void GetROIFormat( int& width, int& height, int& bin, Hardware::IMG_TYPE& imgType ) const override;
+    virtual void SetROIFormat( int /*width*/, int /*height*/, int /*bin*/, Hardware::IMG_TYPE /*imgType*/ ) override {}
 
     // Do single exposure
     virtual std::shared_ptr<const CRawU16Image> DoExposure() const override;
@@ -71,8 +71,8 @@ public:
     virtual void SetTargetTemperature( double ) override {}
 
     // Guiding
-    virtual void GuideOn( ASI_GUIDE_DIRECTION ) const override {}
-    virtual void GuideOff( ASI_GUIDE_DIRECTION ) const override {}
+    virtual void GuideOn( Hardware::GUIDE_DIRECTION ) const override {}
+    virtual void GuideOff( Hardware::GUIDE_DIRECTION ) const override {}
 
     virtual void SetImageInfoTemplate( const ImageInfo& imageInfo ) override { templateImageInfo = imageInfo; };
 

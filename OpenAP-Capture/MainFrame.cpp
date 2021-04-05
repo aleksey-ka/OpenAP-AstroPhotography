@@ -201,7 +201,7 @@ void MainFrame::updateUI()
     ui->captureFrame->setVisible( camera != 0 );
     ui->temperatureFrame->setVisible( camera != 0 && camera->HasCooler() );
     ui->cameraOpenCloseButton->setText( camera != 0 ? "X" : ">" );
-    ui->useCameraWhiteBalanceCheckBox->setVisible( camera != 0 && camera->GetInfo()->IsColorCam );
+    ui->useCameraWhiteBalanceCheckBox->setVisible( camera != 0 && camera->GetInfo()->IsColorCamera );
     ui->filterWheelFrame->setVisible( filterWheel != 0 );
 }
 
@@ -454,28 +454,28 @@ void MainFrame::on_temperatureSpinBox_valueChanged( int targetTemperature )
 
 void MainFrame::on_guideUp()
 {
-    guide( ASI_GUIDE_NORTH );
+    guide( Hardware::GD_GUIDE_NORTH );
 }
 
 void MainFrame::on_guideDown()
 {
-    guide( ASI_GUIDE_SOUTH );
+    guide( Hardware::GD_GUIDE_SOUTH );
 }
 
 void MainFrame::on_guideLeft()
 {
-    guide( ASI_GUIDE_EAST );
+    guide( Hardware::GD_GUIDE_EAST );
 }
 
 void MainFrame::on_guideRight()
 {
-    guide( ASI_GUIDE_WEST );
+    guide( Hardware::GD_GUIDE_WEST );
 }
 
-void MainFrame::guide( ASI_GUIDE_DIRECTION direction )
+void MainFrame::guide( Hardware::GUIDE_DIRECTION direction )
 {
     if( guiding != -1 ) {
-        camera->GuideOff( (ASI_GUIDE_DIRECTION)guiding );
+        camera->GuideOff( (Hardware::GUIDE_DIRECTION)guiding );
     }
     if( guiding != direction ) {
         camera->GuideOn( direction );
@@ -488,7 +488,7 @@ void MainFrame::guide( ASI_GUIDE_DIRECTION direction )
 void MainFrame::guideStop()
 {
     if( guiding != -1 ) {
-        camera->GuideOff( (ASI_GUIDE_DIRECTION)guiding );
+        camera->GuideOff( (Hardware::GUIDE_DIRECTION)guiding );
         guiding = -1;
     }
 }
@@ -542,27 +542,27 @@ void MainFrame::on_captureButton_clicked()
     startCapture();
 }
 
-std::shared_ptr<ASI_CAMERA_INFO> MainFrame::openCamera( int index )
+std::shared_ptr<Hardware::CAMERA_INFO> MainFrame::openCamera( int index )
 {
     auto start = std::chrono::steady_clock::now();
 
     auto cameraInfo = camerasInfo[index];
-    camera = Hardware::Camera::Open( cameraInfo->CameraID );
+    camera = Hardware::Camera::Open( cameraInfo->Id );
 
     int width = 0;
     int height = 0;
     int bin = 0;
-    ASI_IMG_TYPE imgType = ASI_IMG_END;
+    Hardware::IMG_TYPE imgType = Hardware::IT_NONE;
     camera->GetROIFormat( width, height, bin, imgType );
-    imgType = ASI_IMG_RAW16;
+    imgType = Hardware::IT_RAW16;
     camera->SetROIFormat( width, height, bin, imgType );
     camera->GetROIFormat( width, height, bin, imgType );
     qDebug() << width << "x" << height << " bin" << bin;
     switch( imgType ) {
-        case ASI_IMG_RAW8: qDebug() << "RAW8"; break;
-        case ASI_IMG_RGB24: qDebug() << "RGB24"; break;
-        case ASI_IMG_RAW16: qDebug() << "RAW16"; break;
-        case ASI_IMG_Y8: qDebug() << "Y8"; break;
+        case Hardware::IT_RAW8: qDebug() << "RAW8"; break;
+        case Hardware::IT_RGB24: qDebug() << "RGB24"; break;
+        case Hardware::IT_RAW16: qDebug() << "RAW16"; break;
+        case Hardware::IT_Y8: qDebug() << "Y8"; break;
         default:
             assert( false );
     }
@@ -607,7 +607,7 @@ void MainFrame::startCapture()
     camera->SetImageInfoTemplate( imageInfo );
 
     auto info = camera->GetInfo();
-    ui->ePerADULabel->setText( QString( "e<sup>-</sup>/ADU: <span style='color:#008800;'>%1</span>" ).arg( QString::number( info->ElecPerADU, 'f', 3 ) ) );
+    ui->ePerADULabel->setText( QString( "e<sup>-</sup>/ADU: <span style='color:#008800;'>%1</span>" ).arg( QString::number( info->ElectronsPerADU, 'f', 3 ) ) );
 
     imageReadyWatcher.setFuture( QtConcurrent::run( [=]() {
         auto start = std::chrono::steady_clock::now();

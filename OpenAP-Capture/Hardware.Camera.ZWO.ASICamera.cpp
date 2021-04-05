@@ -11,11 +11,25 @@ int ASICamera::GetCount()
     return ASIGetNumOfConnectedCameras();
 }
 
-std::shared_ptr<ASI_CAMERA_INFO> ASICamera::GetInfo( int index )
+std::shared_ptr<Hardware::CAMERA_INFO> ASICamera::createCameraInfo( const ASI_CAMERA_INFO& cameraInfo )
 {
-    auto cameraInfo = std::make_shared<ASI_CAMERA_INFO>();
-    checkResult( ASIGetCameraProperty( cameraInfo.get(), index ) );
-    return cameraInfo;
+    auto result = std::make_shared<Hardware::CAMERA_INFO>();
+    result->Id = cameraInfo.CameraID;
+    strncpy( result->Name, cameraInfo.Name, sizeof( result->Name ) );
+    result->IsColorCamera = cameraInfo.IsColorCam;
+    result->BayerPattern = convert( cameraInfo.BayerPattern );
+    result->BitDepth = cameraInfo.BitDepth;
+    result->PixelSize = cameraInfo.PixelSize;
+    result->ElectronsPerADU = cameraInfo.ElecPerADU;
+
+    return result;
+}
+
+std::shared_ptr<Hardware::CAMERA_INFO> ASICamera::GetInfo( int index )
+{
+    ASI_CAMERA_INFO cameraInfo;
+    checkResult( ASIGetCameraProperty( &cameraInfo, index ) );
+    return createCameraInfo( cameraInfo );
 }
 
 std::shared_ptr<ASICamera> ASICamera::Open( int id )
@@ -33,11 +47,12 @@ void ASICamera::Close()
     }
 }
 
-std::shared_ptr<ASI_CAMERA_INFO> ASICamera::GetInfo() const
+std::shared_ptr<Hardware::CAMERA_INFO> ASICamera::GetInfo() const
 {
     if( cameraInfo == 0 ) {
-        cameraInfo = std::make_shared<ASI_CAMERA_INFO>();
-        checkResult( ASIGetCameraPropertyByID( id, cameraInfo.get() ) );
+        ASI_CAMERA_INFO _cameraInfo;
+        checkResult( ASIGetCameraPropertyByID( id, &_cameraInfo ) );
+        cameraInfo = createCameraInfo( _cameraInfo );
     }
     return cameraInfo;
 }
@@ -147,14 +162,14 @@ void ASICamera::GetWhiteBalanceBCaps( long& min, long& max, long& defaultVal ) c
     getControlCaps( ASI_WB_B, min, max, defaultVal );
 }
 
-void ASICamera::GetROIFormat( int& _width, int& _height, int& _bin, ASI_IMG_TYPE& _imgType ) const
+void ASICamera::GetROIFormat( int& _width, int& _height, int& _bin, Hardware::IMG_TYPE& _imgType ) const
 {
     lazyROIFormat();
 
     _width = width;
     _height = height;
     _bin = bin;
-    _imgType = imgType;
+    _imgType = convert( imgType );
 }
 
 void ASICamera::lazyROIFormat() const
@@ -164,9 +179,9 @@ void ASICamera::lazyROIFormat() const
     }
 }
 
-void ASICamera::SetROIFormat( int width, int height, int bin, ASI_IMG_TYPE imgType )
+void ASICamera::SetROIFormat( int width, int height, int bin, Hardware::IMG_TYPE imgType )
 {
-    checkResult( ASISetROIFormat( id, width, height, bin, imgType ) );
+    checkResult( ASISetROIFormat( id, width, height, bin, convert( imgType ) ) );
     this->imgType = ASI_IMG_END; cameraInfo = 0;
 }
 
@@ -184,8 +199,8 @@ std::shared_ptr<const CRawU16Image> ASICamera::DoExposure() const
 
     auto cameraInfo = GetInfo();
     imageInfo.Camera = cameraInfo->Name;
-    if( cameraInfo->IsColorCam ) {
-        assert( cameraInfo->BayerPattern == ASI_BAYER_RG );
+    if( cameraInfo->IsColorCamera ) {
+        assert( cameraInfo->BayerPattern == Hardware::BP_BAYER_RG );
         imageInfo.CFA = "RGGB";
     }
 
@@ -302,14 +317,14 @@ void ASICamera::SetTargetTemperature( double temperature )
     }
 }
 
-void ASICamera::GuideOn( ASI_GUIDE_DIRECTION direction ) const
+void ASICamera::GuideOn( Hardware::GUIDE_DIRECTION direction ) const
 {
-    checkResult( ASIPulseGuideOn( id, direction ) );
+    checkResult( ASIPulseGuideOn( id, convert( direction ) ) );
 }
 
-void ASICamera::GuideOff( ASI_GUIDE_DIRECTION direction ) const
+void ASICamera::GuideOff( Hardware::GUIDE_DIRECTION direction ) const
 {
-    checkResult( ASIPulseGuideOff( id, direction ) );
+    checkResult( ASIPulseGuideOff( id, convert( direction ) ) );
 }
 
 void ASICamera::PrintDebugInfo()
@@ -362,6 +377,71 @@ void ASICamera::getControlCaps( ASI_CONTROL_TYPE controlType, long& min, long& m
         }
     }
     assert( false );
+}
+
+Hardware::IMG_TYPE ASICamera::convert( ASI_IMG_TYPE type )
+{
+    switch( type ) {
+        case ASI_IMG_RAW16: return Hardware::IT_RAW16;
+        case ASI_IMG_RAW8: return Hardware::IT_RAW8;
+        case ASI_IMG_RGB24: return Hardware::IT_RGB24;
+        case ASI_IMG_Y8: return Hardware::IT_Y8;
+        default:
+            assert( false );
+    }
+    return Hardware::IT_NONE;
+}
+
+ASI_IMG_TYPE ASICamera::convert( Hardware::IMG_TYPE type )
+{
+    switch( type ) {
+        case Hardware::IT_RAW8: return ASI_IMG_RAW8;
+        case Hardware::IT_RGB24: return ASI_IMG_RGB24;
+        case Hardware::IT_RAW16: return ASI_IMG_RAW16;
+        case Hardware::IT_Y8: return ASI_IMG_Y8;
+        default:
+            assert( false );
+    }
+    return ASI_IMG_END;
+}
+
+Hardware::BAYER_PATTERN ASICamera::convert( ASI_BAYER_PATTERN pattern )
+{
+    switch( pattern ) {
+        case ASI_BAYER_RG: return Hardware::BP_BAYER_RG;
+        case ASI_BAYER_BG: return Hardware::BP_BAYER_BG;
+        case ASI_BAYER_GR: return Hardware::BP_BAYER_GR;
+        case ASI_BAYER_GB: return Hardware::BP_BAYER_GB;
+        default:
+            assert( false );
+    }
+    return Hardware::BP_BAYER_RG;
+}
+
+Hardware::GUIDE_DIRECTION ASICamera::convert( ASI_GUIDE_DIRECTION direction )
+{
+    switch( direction ) {
+        case ASI_GUIDE_NORTH: return Hardware::GD_GUIDE_NORTH;
+        case ASI_GUIDE_SOUTH: return Hardware::GD_GUIDE_SOUTH;
+        case ASI_GUIDE_EAST: return Hardware::GD_GUIDE_EAST;
+        case ASI_GUIDE_WEST: return Hardware::GD_GUIDE_WEST;
+        default:
+            assert( false );
+    }
+    return Hardware::GD_GUIDE_NORTH;
+}
+
+ASI_GUIDE_DIRECTION ASICamera::convert( Hardware::GUIDE_DIRECTION direction )
+{
+    switch( direction ) {
+        case Hardware::GD_GUIDE_NORTH: return ASI_GUIDE_NORTH;
+        case Hardware::GD_GUIDE_SOUTH: return ASI_GUIDE_SOUTH;
+        case Hardware::GD_GUIDE_EAST: return ASI_GUIDE_EAST;
+        case Hardware::GD_GUIDE_WEST: return ASI_GUIDE_WEST;
+        default:
+            assert( false );
+    }
+    return ASI_GUIDE_NORTH;
 }
 
 class ASIException : public std::exception {

@@ -29,14 +29,14 @@ static std::shared_ptr<const CRawU16Image> loadImage( int index, QStringList& fr
     }
 }
 
-static std::shared_ptr<ASI_CAMERA_INFO> createCameraInfo( int index )
+static std::shared_ptr<Hardware::CAMERA_INFO> createCameraInfo( int index )
 {
-    auto cameraInfo = std::make_shared<ASI_CAMERA_INFO>();
+    auto cameraInfo = std::make_shared<Hardware::CAMERA_INFO>();
     QStringList frames;
     std::shared_ptr<const CRawU16Image> image = loadImage( index, frames );
     strcpy( cameraInfo->Name, image->Info().Camera.c_str() );
-    cameraInfo->IsColorCam = image->Info().CFA.empty() ? ASI_FALSE : ASI_TRUE;
-    cameraInfo->CameraID = -( index + 1 );
+    cameraInfo->IsColorCamera = image->Info().CFA.empty();
+    cameraInfo->Id = -( index + 1 );
     return cameraInfo;
 }
 
@@ -46,7 +46,7 @@ int MockCamera::GetCount()
     return rootFileEntries.size();
 }
 
-std::shared_ptr<ASI_CAMERA_INFO> MockCamera::GetInfo( int index )
+std::shared_ptr<Hardware::CAMERA_INFO> MockCamera::GetInfo( int index )
 {
     return createCameraInfo( index );
 }
@@ -68,17 +68,17 @@ void MockCamera::Close()
     while( isExposure );
 }
 
-std::shared_ptr<ASI_CAMERA_INFO> MockCamera::GetInfo() const
+std::shared_ptr<Hardware::CAMERA_INFO> MockCamera::GetInfo() const
 {
     return createCameraInfo( index );
 }
 
-void MockCamera::GetROIFormat( int& width, int& height, int& bin, ASI_IMG_TYPE& imgType ) const
+void MockCamera::GetROIFormat( int& width, int& height, int& bin, Hardware::IMG_TYPE& imgType ) const
 {
     width = currentSettings.Width;
     height = currentSettings.Height;
     bin = 1;
-    imgType = ASI_IMG_RAW16;
+    imgType = Hardware::IT_RAW16;
 }
 
 std::shared_ptr<const CRawU16Image> MockCamera::DoExposure() const
