@@ -876,9 +876,9 @@ void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int imageSize,
     currentSeries->CY.push_back( CY );
 
     if( isGlobalPolarAlign ) {
-        currentSeries->DetectionResults.push_back( rawU16.DetectStars( 0, 0, currentImage->Width(), currentImage->Height() ) );
+        currentSeries->theDetectionResults.push_back( rawU16.DetectStars( 0, 0, currentImage->Width(), currentImage->Height() ) );
     } else {
-        currentSeries->DetectionResults.push_back( DetectionResults() );
+        currentSeries->theDetectionResults.push_back( DetectionResults() );
     }
 
     double sumdCX = 0;
@@ -972,14 +972,14 @@ void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int imageSize,
     }
     if( isGlobalPolarAlign && minSize > 1 ) {
         std::vector<StarXY> stars0;
-        for( auto i = currentSeries->DetectionResults.cend() - minSize; i < currentSeries->DetectionResults.cend() - 1; i++ ) {
+        for( auto i = currentSeries->theDetectionResults.cend() - minSize; i < currentSeries->theDetectionResults.cend() - 1; i++ ) {
             const auto& dr = *i;
             if( dr.DetectionRegions.size() > 0 ) {
                 stars0 = normalizedBrightStarsXY( dr, 50 );
                 break;
             }
         }
-        auto stars1 = normalizedBrightStarsXY( currentSeries->DetectionResults.back(), 50 );
+        auto stars1 = normalizedBrightStarsXY( currentSeries->theDetectionResults.back(), 50 );
         Stars = align( stars0, stars1 );
         //currentSeries->DetectionResults.back().Image.reset();
         //currentSeries->DetectionResults.back().Mask.reset();

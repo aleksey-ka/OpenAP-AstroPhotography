@@ -107,7 +107,7 @@ public:
         std::vector<double> CX;
         std::vector<double> CY;
 
-        std::vector<DetectionResults> DetectionResults;
+        std::vector<DetectionResults> theDetectionResults;
     };
 
     std::shared_ptr<Data> currentSeries;
