@@ -122,5 +122,10 @@ std::shared_ptr<const CRawU16Image> MockCamera::DoExposure() const
 	imageInfo.SeriesId = templateImageInfo.SeriesId;
     imageInfo.Channel = templateImageInfo.Channel;
     imageInfo.FilterDescription = templateImageInfo.FilterDescription;
+
+    auto now = std::chrono::system_clock::now();
+    auto timestamp = std::chrono::system_clock::to_time_t( now );
+    imageInfo.Timestamp = timestamp;
+
     return image;
 }
