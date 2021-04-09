@@ -44,8 +44,8 @@ static void fwprintf_no_trailing_zeroes( FILE* file, const wchar_t* name, float 
 {
     char buf[50];
     sprintf( buf, "%f", value );
-    int pos = strlen( buf );
-    for( int i = pos - 1; i > 0; i-- ) {
+    size_t pos = strlen( buf );
+    for( size_t i = pos - 1; i > 0; i-- ) {
         if( buf[i] == '.' ) {
             buf[i] = 0;
             break;
@@ -56,6 +56,33 @@ static void fwprintf_no_trailing_zeroes( FILE* file, const wchar_t* name, float 
         }
     }
     fwprintf( file, L"%S %s\n", name, buf );
+}
+
+static void fwprintf_normalize_spaces( FILE* file, const wchar_t* name, long long value )
+{
+    char buf[100];
+    sprintf( buf, "%I64d", value );
+    size_t len = strlen( buf );
+
+    bool isSpace = false;
+    char out[100];
+    size_t j = 0;
+    for( size_t i = 0; i < len; i++ ) {
+        if( buf[i] == L' ' ) {
+            if( isSpace ) {
+                continue;
+            }
+            isSpace = true;
+            if( i == 0 ) {
+                continue;
+            }
+        } else if( isSpace ) {
+            isSpace = false;
+        }
+        out[j++] = buf[i];
+    }
+    out[j] = 0;
+    fwprintf( file, L"%S %s\n", name, out );
 }
 
 static void replace( std::string& str, const std::string& from, const std::string& to )
@@ -143,8 +170,8 @@ void CRawU16Image::SaveToFile( const char* filePath, const ImageFileFormat* file
     fwprintf( info, L"CAMERA_OFFSET %d\n", imageInfo.Offset );
     fwprintf_no_trailing_zeroes( info, L"CAMERA_EXPOSURE", 0.000001f * imageInfo.Exposure );
     fwprintf_no_trailing_zeroes( info, L"CAMERA_TEMPERATURE", imageInfo.Temperature );
-    fwprintf( info, L"SERIES_ID %I64d\n", imageInfo.SeriesId );
-    fwprintf( info, L"TIMESTAMP %I64d\n", imageInfo.Timestamp );
+    fwprintf_normalize_spaces( info, L"SERIES_ID", imageInfo.SeriesId );
+    fwprintf_normalize_spaces( info, L"TIMESTAMP", imageInfo.Timestamp );
     fclose( info );
 
     if( fileFormat == 0 ) {
