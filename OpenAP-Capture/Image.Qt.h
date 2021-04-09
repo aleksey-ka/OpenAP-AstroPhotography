@@ -54,7 +54,7 @@ inline QPixmap CreatePixmap( std::shared_ptr<const CGrayImage> image )
 
 inline QImage CreateImage( const CRawU16Image* image )
 {
-#if QT_VERSION >= 0x051300
+#if QT_VERSION >= QT_VERSION_CHECK( 5, 13, 0 )
     return QImage( image->Buffer(), image->Width(), image->Height(), sizeof( ushort ) * image->Width(), QImage::Format_Grayscale16 );
 #else
     assert( false );
