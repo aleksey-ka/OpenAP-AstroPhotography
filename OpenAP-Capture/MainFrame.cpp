@@ -176,6 +176,8 @@ MainFrame::MainFrame( QWidget *parent ) :
        }
    } );
 
+   connect( new QShortcut( QKeySequence( Qt::Key_Q ), this ), &QShortcut::activated, [=]() { doIt(); } );
+
    updateUI();
 }
 
@@ -918,4 +920,370 @@ void MainFrame::on_imageView_imagePressed( int cx, int cy, Qt::MouseButton butto
         auto center = zoomView->contentsRect().center();
         QCursor::setPos( zoomView->mapToGlobal( center ) );
     }
+}
+
+struct CRawStatistics {
+    int Count;
+    int Median;
+    int Min;
+    int Max;
+};
+
+static CRawStatistics calcRawStats( const CRawU16Image* rawImage )
+{
+    auto pixels = rawImage->RawPixels();
+    int count = rawImage->Count();
+
+    std::vector<unsigned int> hist;
+    hist.resize( 2 << rawImage->BitDepth() );
+
+    unsigned short minValue = USHRT_MAX;
+    unsigned short maxValue = 0;
+    for( size_t i = 0; i < count; i++ ) {
+        unsigned short val = pixels[i];
+        if( val < minValue ) {
+            minValue = val;
+        }
+        if( val > maxValue ) {
+            maxValue = val;
+        }
+        hist[val]++;
+    }
+
+    int median = 0;
+    int sum = 0;
+    for( size_t i = 0; i < hist.size(); i++ ) {
+        int counts = hist[i];
+        sum += counts;
+        if( sum >= count / 2 ) {
+            median = i;
+            break;
+        }
+    }
+
+    CRawStatistics result;
+    result.Count = count;
+    result.Min = minValue;
+    result.Max = maxValue;
+    result.Median = median;
+    return result;
+}
+
+struct CIntegrator {
+    std::shared_ptr<CPixelBuffer<double>> Darks ;
+    std::shared_ptr<CPixelBuffer<size_t>> Counts;
+
+    QPixmap Add( const CRawU16Image* rawImage1, const CRawU16Image* rawImage2, bool filter )
+    {
+        if( Darks == 0 ) {
+            Darks = std::make_shared<CPixelBuffer<double>>( rawImage1->Width(), rawImage1->Height() );
+            Counts = std::make_shared<CPixelBuffer<size_t>>( rawImage1->Width(), rawImage1->Height() );
+        }
+
+        CRawStatistics rawStats1 = calcRawStats( rawImage1 );
+        CRawStatistics rawStats2 = calcRawStats( rawImage2 );
+
+        auto pixels1 = rawImage1->RawPixels();
+        auto pixels2 = rawImage2->RawPixels();
+        int count = rawImage1->Count();
+
+        auto darksPixels = Darks->Pixels();
+        auto countPixels = Counts->Pixels();
+
+        auto graph = std::make_shared<CRgbImage>( 1000, 1000 );
+        memset( graph->RgbPixels(), 0, graph->ByteWidth() * graph->Height() );
+
+        int minValue = std::min( rawStats1.Min, rawStats2.Min );
+
+        if( filter ) {
+            for( int i = 0; i < count; i++ ) {
+                double v1 =  pixels1[i] - minValue;
+                double v2 =  pixels2[i] - minValue;
+                double dv1 = pixels1[i] - rawStats1.Median;
+                double dv2 = pixels2[i] - rawStats2.Median;
+                double dv = v1 - v2;
+                auto p = graph->Ptr( std::min( 999.0, v1 / 1 ), std::min( 999.0, v2 / 1 ) );
+                if( ( dv1 * dv1 + dv2 * dv2 < 25000 ) || dv * dv < 250 || ( ( v1 < v2 && v1 / v2 > 0.7 ) || ( v2 < v1 && v2 / v1 > 0.7 ) ) ) {
+                    p[1] = std::min( 255, p[1] + 15 );
+
+                    darksPixels[i] += pixels1[i];
+                    darksPixels[i] += pixels2[i];
+                    countPixels[i] += 2;
+                } else {
+                    p[0] = std::min( 255, p[0] + 15 );
+                }
+            }
+        } else {
+            for( int i = 0; i < count; i++ ) {
+                darksPixels[i] += pixels1[i];
+                darksPixels[i] += pixels2[i];
+                countPixels[i] += 2;
+            }
+
+        }
+        return Qt::CreatePixmap( graph );
+    }
+
+    void Finalize()
+    {
+        auto darksPixels = Darks->Pixels();
+        auto countPixels = Counts->Pixels();
+
+        int count = Darks->Count();
+        for( int i = 0; i < count; i++ ) {
+            size_t counts = countPixels[i];
+            if( counts > 0 ) {
+                darksPixels[i] /= counts;
+            }
+        }
+    }
+};
+
+void MainFrame::doIt()
+{    
+    QString path{ "D:\\Temp2\\2021-04-10T04-55-58-DARKS-L" };
+    auto files = QDir( path, "*.u16.pixels" ).entryList( QDir::AllEntries );
+
+    QString path2{ "C:\\Users\\Aleksey\\Desktop\\RPi\\2021-04-08T01-48-27-M101-1" };
+    auto files2 = QDir( path2, "*.u16.pixels" ).entryList( QDir::AllEntries );
+
+    int n = 16;
+
+    CIntegrator integrator1;
+    for( int i = 0; i < n / 2; i++ ) {
+        auto rawImage1 = CRawU16Image::LoadFromFile( ( path + QDir::separator() + files[i] ).toStdString().c_str() );
+        auto rawImage2 = CRawU16Image::LoadFromFile( ( path + QDir::separator() + files[i + n / 2] ).toStdString().c_str() );
+        ui->imageView->setPixmap( integrator1.Add( rawImage1.get(), rawImage2.get(), false ) );
+        QCoreApplication::processEvents();
+    }
+    integrator1.Finalize();
+    auto darkPixels1 = integrator1.Darks->Pixels();
+
+    CIntegrator integrator2;
+    for( int i = n; i < n + n / 2 ; i++ ) {
+        auto rawImage1 = CRawU16Image::LoadFromFile( ( path + QDir::separator() + files[i] ).toStdString().c_str() );
+        auto rawImage2 = CRawU16Image::LoadFromFile( ( path + QDir::separator() + files[i + n / 2] ).toStdString().c_str() );
+        ui->imageView->setPixmap( integrator2.Add( rawImage1.get(), rawImage2.get(), false ) );
+        QCoreApplication::processEvents();
+    }
+    integrator2.Finalize();
+    auto darkPixels2 = integrator2.Darks->Pixels();
+
+    auto rawImage = CRawU16Image::LoadFromFileRW( ( path + QDir::separator() + files[0] ).toStdString().c_str() );
+    currentImage = rawImage;
+    int count = currentImage->Count();
+
+    double mean, sigma, min, max;
+    std::tie( mean, sigma, min, max ) = simple_pixel_statistics( currentImage->Pixels(), count );
+    qDebug() << "Single: Mean/Sigma/Min/Max" << mean << sigma << min << max;
+
+    CPixelBuffer<double> lights1( currentImage->Width(), currentImage->Height() );
+    auto lightPixels1 = lights1.Pixels();
+
+    for( int i = 2 * n; i < 3 * n; i++ ) {
+        auto rawImage = CRawU16Image::LoadFromFile( ( path + QDir::separator() + files[i] ).toStdString().c_str() );
+        pixels_add( lightPixels1, rawImage->Pixels(), count );
+    }
+    pixels_divide( lightPixels1, n, count );
+
+    std::tie( mean, sigma, min, max ) = simple_pixel_statistics( lightPixels1, count );
+    qDebug() << "Darks: Mean/Sigma/Min/Max" << mean << sigma << min << max;
+
+    CPixelBuffer<double> lights2( currentImage->Width(), currentImage->Height() );
+    auto lightPixels2 = lights2.Pixels();
+
+    for( int i = 3 * n; i < 4 * n; i++ ) {
+        auto rawImage = CRawU16Image::LoadFromFile( ( path + QDir::separator() + files[i] ).toStdString().c_str() );
+        pixels_add( lightPixels2, rawImage->Pixels(), count );
+    }
+    pixels_divide( lightPixels2, n, count );
+
+    std::tie( mean, sigma, min, max ) = simple_pixel_statistics( lightPixels2, count );
+    qDebug() << "Lights: Mean/Sigma/Min/Max" << mean << sigma << min << max;
+
+    CPixelBuffer<double> result1( currentImage->Width(), currentImage->Height() );
+    auto resultPixels1 = result1.Pixels();
+
+    pixels_copy( resultPixels1, lightPixels1, count );
+    pixels_subtract( resultPixels1, darkPixels1, count );
+    //pixels_copy( resultPixels1, darkPixels1, count );
+
+    std::tie( mean, sigma, min, max ) = simple_pixel_statistics( resultPixels1, count );
+    pixels_add( resultPixels1, -min, count );
+    std::tie( mean, sigma, min, max ) = simple_pixel_statistics( resultPixels1, count );
+    qDebug() << "Result1: Mean/Sigma/Min/Max" << mean << sigma << min << max;
+
+    pixels_copy( rawImage->Pixels(), resultPixels1, count );
+
+    render( currentImage->RawPixels(), currentImage->Width(), currentImage->Height(), currentImage->BitDepth() );
+    QCoreApplication::processEvents();
+    //QThread::sleep( 15 );
+
+    CPixelBuffer<double> result2( currentImage->Width(), currentImage->Height() );
+    auto resultPixels2 = result2.Pixels();
+
+    pixels_copy( resultPixels2, lightPixels2, count );
+    pixels_subtract( resultPixels2, darkPixels2, count );
+    //pixels_copy( resultPixels2, darkPixels2, count );
+
+    std::tie( mean, sigma, min, max ) = simple_pixel_statistics( resultPixels2, count );
+    pixels_add( resultPixels2, -min, count );
+    std::tie( mean, sigma, min, max ) = simple_pixel_statistics( resultPixels2, count );
+    qDebug() << "Result2: Mean/Sigma/Min/Max" << mean << sigma << min << max;
+
+    pixels_copy( rawImage->Pixels(), resultPixels2, count );
+
+    render( currentImage->RawPixels(), currentImage->Width(), currentImage->Height(), currentImage->BitDepth() );
+    QCoreApplication::processEvents();
+    //QThread::sleep( 15 );
+
+    auto graph = std::make_shared<CRgbImage>( 1000, 1000 );
+    memset( graph->RgbPixels(), 0, graph->ByteWidth() * graph->Height() );
+
+    double min1, min2;
+    std::tie( mean, sigma, min1, max ) = simple_pixel_statistics( resultPixels1, count );
+    std::tie( mean, sigma, min2, max ) = simple_pixel_statistics( resultPixels2, count );
+
+    min = std::min( min1, min2 );
+
+    for( int i = 0; i < count; i++ ) {
+        double v1 =  resultPixels1[i] - min + 50;
+        double v2 =  resultPixels2[i] - min + 50;
+        auto p = graph->Ptr( std::min( 999.0, v1 / 1 ), std::min( 999.0, v2 / 1 ) );
+        p[1] = std::min( 255, p[1] + 128 );
+    }
+
+    ui->imageView->setPixmap(  Qt::CreatePixmap( graph ) );
+
+    return;
+
+    /*CIntegrator integrator1;
+    CIntegrator integrator2;
+
+    int filesCount = 64;//files.count();
+
+    int split = filesCount / 2;
+
+    for( int i = 0; i < split / 2; i++ ) {
+        auto rawImage1 = CRawU16Image::LoadFromFile( ( path + QDir::separator() + files[i] ).toStdString().c_str() );
+        auto rawImage2 = CRawU16Image::LoadFromFile( ( path + QDir::separator() + files[i + split / 2] ).toStdString().c_str() );
+        qDebug() << "1:" << i << i + split / 2;
+
+        ui->imageView->setPixmap( integrator1.Add( rawImage1.get(), rawImage2.get(), true ) );
+        QCoreApplication::processEvents();
+    }
+
+    for( int i = split; i < split + split / 2; i++ ) {
+        auto rawImage1 = CRawU16Image::LoadFromFile( ( path + QDir::separator() + files[i] ).toStdString().c_str() );
+        auto rawImage2 = CRawU16Image::LoadFromFile( ( path + QDir::separator() + files[i + split / 2] ).toStdString().c_str() );
+        qDebug() << "1:" << i << i + split / 2;
+
+        ui->imageView->setPixmap( integrator2.Add( rawImage1.get(), rawImage2.get(), false ) );
+        QCoreApplication::processEvents();
+    }
+
+    integrator1.Finalize();
+    integrator2.Finalize();
+
+    auto pixels1 = integrator1.Darks->Pixels();
+    auto pixels2 = integrator2.Darks->Pixels();
+    int count = integrator1.Darks->Count();
+
+    auto graph = std::make_shared<CRgbImage>( 1000, 1000 );
+    memset( graph->RgbPixels(), 0, graph->ByteWidth() * graph->Height() );
+
+    for( int i = 0; i < count; i++ ) {
+        double v1 = std::min( 999.0, ( pixels1[i] ) / 1.0 );
+        double v2 = std::min( 999.0, ( pixels2[i] ) / 1.0 );
+
+        double dv = v1 - v2;
+        auto p = graph->Ptr( v1 , v2 );
+        if( dv * dv < 250 || ( ( v1 < v2 && v1 / v2 > 0.7 ) || ( v2 < v1 && v2 / v1 > 0.7 ) ) ) {
+            if( p[1] < 255 ) {
+                p[1] += std::min( p[1] + 55, 255 );
+            }
+            //pixels1[i] = ( pixels1[i] + pixels2[i] ) / 2;
+        } else {
+            p[0] = 255;
+            //pixels1[i] = 0;
+        }
+    }
+    ui->imageView->setPixmap( Qt::CreatePixmap( graph ) );
+    QCoreApplication::processEvents();
+    QThread::sleep( 3 );
+
+    auto rawImage = CRawU16Image::LoadFromFileRW( ( path + QDir::separator() + files[0] ).toStdString().c_str() );
+    currentImage = rawImage;
+
+    std::tie( mean, sigma, min, max ) = simple_pixel_statistics( pixels2, count );
+    qDebug() << "Mean/Sigma/Min/Max" << mean << sigma << min << max;
+
+    int maxVal = 2 << rawImage->BitDepth();
+    auto pixels = rawImage->RawPixels();
+    for( int j = 0; j < rawImage->Count(); j++ ) {
+        int p = pixels2[j];
+        p -= pixels1[j];
+        p += 500;
+        pixels[j] = std::max( 0, std::min( maxVal, p ) );
+    }
+    std::tie( mean, sigma, min, max ) = simple_pixel_statistics( pixels, rawImage->Count() );
+    qDebug() << "Mean/Sigma/Min/Max" << mean << sigma << min << max;
+    render( rawImage->RawPixels(), rawImage->Width(), rawImage->Height(), rawImage->BitDepth() );
+    QCoreApplication::processEvents();
+    return;
+    QThread::sleep( 3 );
+
+    std::shared_ptr<CPixelBuffer<float>> sum;
+    int sumN = 0;
+    for( int i = 0; i < files2.size(); i++ ) {
+        qDebug() << "A";
+        auto rawImage = CRawU16Image::LoadFromFileRW( ( path2 + QDir::separator() + files2[i] ).toStdString().c_str() );
+        currentImage = rawImage;
+
+        if( sum == 0 ) {
+            sum = std::make_shared<CPixelBuffer<float>>( rawImage->Width(), rawImage->Height() );
+        }
+
+        //render( rawImage->RawPixels(), rawImage->Width(), rawImage->Height(), rawImage->BitDepth() );
+        //QCoreApplication::processEvents();
+        //QThread::sleep( 3 );
+
+        qDebug() << "B";
+
+        CRawStatistics rawStats = calcRawStats( rawImage.get() );
+
+        auto pixels = rawImage->RawPixels();
+        auto sumPixels = sum->Pixels();
+        for( int j = 0; j < rawImage->Count(); j++ ) {
+            if( pixels1[j] > 0 ) {
+                if( pixels[j] > pixels1[j] ) {
+                    pixels[j] += rawStats.Median;
+                    pixels[j] -= pixels1[j];
+                }
+            } else if( j > 0 ) {
+                pixels[j] = pixels[j - 1];
+            }
+            sumPixels[j] += pixels[j];
+        }
+        sumN++;
+
+        qDebug() << "C";
+
+        //render( rawImage->RawPixels(), rawImage->Width(), rawImage->Height(), rawImage->BitDepth() );
+        //QCoreApplication::processEvents();
+        //QThread::sleep( 3 );
+
+        float maxVal = 2 << rawImage->BitDepth();
+        for( int j = 0; j < rawImage->Count(); j++ ) {
+            pixels[j] = std::min( maxVal, sumPixels[j] / sumN );
+        }
+        qDebug() << "D";
+
+        render( rawImage->RawPixels(), rawImage->Width(), rawImage->Height(), rawImage->BitDepth() );
+        QCoreApplication::processEvents();
+        QThread::msleep( 100 );
+
+        qDebug() << "E";
+
+    }*/
 }
