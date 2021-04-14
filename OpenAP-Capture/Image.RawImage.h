@@ -4,6 +4,8 @@
 #ifndef IMAGE_RAWU16IMAGE_H
 #define IMAGE_RAWU16IMAGE_H
 
+#include <Image.Image.h>
+
 #include <memory>
 #include <vector>
 
@@ -25,25 +27,22 @@ struct ImageInfo {
 
 class ImageFileFormat;
 
-class CRawU16Image {
+class CRawU16Image : public CPixelBuffer<unsigned short> {
 public:
     CRawU16Image( const ImageInfo& _imageInfo ) :
         imageInfo( _imageInfo ),
-        buf( _imageInfo.Width * _imageInfo.Height )
+        CPixelBuffer( _imageInfo.Width, _imageInfo.Height )
     {
     }
 
-    const unsigned short* RawPixels() const { return buf.data(); };
-    unsigned short* RawPixels() { return buf.data(); };
-    int Count() const { return buf.size(); }
+    const unsigned short* RawPixels() const { return Pixels(); };
+    unsigned short* RawPixels() { return Pixels(); };
 
-    int Width() const { return imageInfo.Width; }
-    int Height() const { return imageInfo.Height; }
     int BitDepth() const { return imageInfo.BitDepth; }
 
-    const unsigned char* Buffer() const { return reinterpret_cast<const unsigned char*>( buf.data() ); }
-    unsigned char* Buffer() { return reinterpret_cast<unsigned char*>( buf.data() ); }
-    int BufferSize() const { return buf.size() * sizeof( unsigned short ); }
+    const unsigned char* Buffer() const { return reinterpret_cast<const unsigned char*>( buffer.data() ); }
+    unsigned char* Buffer() { return reinterpret_cast<unsigned char*>( buffer.data() ); }
+    int BufferSize() const { return buffer.size() * sizeof( unsigned short ); }
 
     static std::shared_ptr<const CRawU16Image> LoadFromFile( const char* filePath ) { return LoadFromFileRW( filePath ); }
     static std::shared_ptr<CRawU16Image> LoadFromFileRW( const char* filePath );
@@ -53,7 +52,6 @@ public:
 
 private:
     ImageInfo imageInfo;
-    std::vector<unsigned short> buf;
 };
 
 class ImageFileFormat {
