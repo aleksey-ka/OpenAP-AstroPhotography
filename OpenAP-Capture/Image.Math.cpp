@@ -147,9 +147,13 @@ std::shared_ptr<CRgbImage> CRawU16::Stretch( int x0, int y0, int W, int H ) cons
 
     const int maxValue = ~(~0u << bitDepth) - 1;
 
-    const CChannelStat sR = stats.stat( 0 );
-    const CChannelStat sG = stats.stat( 1, 2);
-    const CChannelStat sB = stats.stat( 2 );
+    CChannelStat sR = stats.stat( 0 );
+    CChannelStat sG = stats.stat( 1, 2);
+    CChannelStat sB = stats.stat( 2 );
+
+    sR.Sigma = std::max( 1, sR.Sigma );
+    sG.Sigma = std::max( 1, sG.Sigma );
+    sB.Sigma = std::max( 1, sB.Sigma );
 
     auto rgb16 = DebayerRect( x0, y0, W, H );
 
@@ -187,9 +191,13 @@ std::shared_ptr<CRgbImage> CRawU16::StretchHalfRes( int x0, int y0, int W, int H
 
     const int maxValue = ~(~0u << bitDepth) - 1;
 
-    const CChannelStat sR = stats.stat( 0 );
-    const CChannelStat sG = stats.stat( 1, 2);
-    const CChannelStat sB = stats.stat( 2 );
+    CChannelStat sR = stats.stat( 0 );
+    CChannelStat sG = stats.stat( 1, 2);
+    CChannelStat sB = stats.stat( 2 );
+
+    sR.Sigma = std::max( 1, sR.Sigma );
+    sG.Sigma = std::max( 1, sG.Sigma );
+    sB.Sigma = std::max( 1, sB.Sigma );
 
     W /= 2;
     H /= 2;
