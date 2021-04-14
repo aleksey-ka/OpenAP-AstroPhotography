@@ -4,7 +4,7 @@
 #include "Image.Formats.h"
 #include "Image.Qt.h"
 
-std::shared_ptr<const CRawU16Image> Png16BitGrayscale::Load( const char* filePath, const ImageInfo& imageInfo ) const
+std::shared_ptr<CRawU16Image> Png16BitGrayscale::Load( const char* filePath, const ImageInfo& imageInfo ) const
 {
     auto result = std::make_shared<CRawU16Image>( imageInfo );
 

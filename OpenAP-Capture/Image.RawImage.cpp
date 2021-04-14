@@ -18,11 +18,11 @@
 
 class Pixels16BitUncompressed : public ImageFileFormat {
 public:
-    virtual std::shared_ptr<const CRawU16Image> Load( const char* filePath, const ImageInfo& ) const override;
+    virtual std::shared_ptr<CRawU16Image> Load( const char* filePath, const ImageInfo& ) const override;
     virtual void Save( const char* filePath, const CRawU16Image* ) const override;
 };
 
-std::shared_ptr<const CRawU16Image> Pixels16BitUncompressed::Load( const char* filePath, const ImageInfo& imageInfo ) const
+std::shared_ptr<CRawU16Image> Pixels16BitUncompressed::Load( const char* filePath, const ImageInfo& imageInfo ) const
 {
     auto result = std::make_shared<CRawU16Image>( imageInfo );
 
@@ -99,7 +99,7 @@ static std::string toString( std::wstring s )
     return converter.to_bytes( s );
 }
 
-std::shared_ptr<const CRawU16Image> CRawU16Image::LoadFromFile( const char* filePath )
+std::shared_ptr<CRawU16Image> CRawU16Image::LoadFromFileRW( const char* filePath )
 {
     std::string infoFilePath( filePath );
     replace( infoFilePath, ".pixels", ".info" );

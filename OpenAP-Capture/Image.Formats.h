@@ -8,7 +8,7 @@
 
 class Png16BitGrayscale : public ImageFileFormat {
 public:
-    virtual std::shared_ptr<const CRawU16Image> Load( const char* filePath, const ImageInfo& ) const override;
+    virtual std::shared_ptr<CRawU16Image> Load( const char* filePath, const ImageInfo& ) const override;
     virtual void Save( const char* filePath, const CRawU16Image* ) const override;
 };
 
