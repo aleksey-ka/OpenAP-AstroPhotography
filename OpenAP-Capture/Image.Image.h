@@ -43,7 +43,7 @@ inline CPixelBuffer<T, numOfChannels>::CPixelBuffer( int _width, int _height ) :
     width( _width ), height( _height )
 {
     stride = numOfChannels * width;
-    buffer.resize( sizeof( T ) * stride * height );
+    buffer.resize( stride * height );
 }
 
 class CRgbU16Image : public CPixelBuffer<unsigned short, 3> {
@@ -70,12 +70,18 @@ class CGrayU16Image : public CPixelBuffer<unsigned short, 1> {
 public:
     using CPixelBuffer::CPixelBuffer;
 
+    const unsigned short* GrayPixels() const { return buffer.data(); };
+    unsigned short* GrayPixels() { return buffer.data(); };
+
     int Stride() const { return stride; }
 };
 
 class CGrayImage : public CPixelBuffer<unsigned char, 1> {
 public:
     using CPixelBuffer::CPixelBuffer;
+
+    const unsigned char* GrayPixels() const { return buffer.data(); };
+    unsigned char* GrayPixels() { return buffer.data(); };
 
     int ByteWidth() const { return stride; }
 };
