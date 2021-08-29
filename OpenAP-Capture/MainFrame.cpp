@@ -727,14 +727,22 @@ ulong MainFrame::render( const ushort* raw, int width, int height, int bitDepth 
         QPixmap pixmap;
         if( ui->stretchCheckBox->isChecked() ) {
             CRawU16 rawU16( raw, width, height, bitDepth );
-            if( ui->showFullResolution->isChecked() ) {
+            if( ui->showQuarterResolution->isChecked() ) {
+                pixmap = Qt::CreatePixmap( rawU16.StretchQuarterRes( 0, 0, width, height ) );
+            } else if( ui->showFullResolution->isChecked() ) {
                 pixmap = Qt::CreatePixmap( rawU16.Stretch( 0, 0, width, height ) );
             } else {
                 pixmap = Qt::CreatePixmap( rawU16.StretchHalfRes( 0, 0, width, height ) );
             }
         } else {
             Renderer renderer( raw, width, height, bitDepth );
-            pixmap = renderer.Render( ui->showFullResolution->isChecked() ? RM_FullResolution : RM_HalfResolution );
+            if( ui->showQuarterResolution->isChecked() ) {
+                pixmap = renderer.Render( RM_QuarterResolution );
+            } else if( ui->showFullResolution->isChecked() ) {
+                pixmap = renderer.Render(  RM_FullResolution );
+            } else {
+                pixmap = renderer.Render( RM_HalfResolution );
+            }
             ui->histogramView->setPixmap( renderer.RenderHistogram() );
         }
         tools.Draw( pixmap );
@@ -880,7 +888,12 @@ void MainFrame::on_filterWheelComboBox_currentIndexChanged( int index )
 
 void MainFrame::on_imageView_imagePressed( int cx, int cy, Qt::MouseButton button, Qt::KeyboardModifiers modifiers )
 {
-    int scale = ui->showFullResolution->isChecked() ? 1 : 2;
+    int scale = 2;
+    if( ui->showFullResolution->isChecked() ) {
+        scale = 1;
+    } else if( ui->showQuarterResolution->isChecked() ) {
+        scale = 4;
+    }
     zoomCenter.setX( cx * scale );
     zoomCenter.setY( cy * scale );
 
