@@ -6,7 +6,7 @@
 
 #include <vector>
 
-template<typename T, int numOfChannels>
+template<typename T, int numOfChannels = 1>
 class CPixelBuffer {
 public:
     CPixelBuffer( int width, int height );
@@ -23,8 +23,13 @@ public:
     const T* Ptr( int x, int y ) const { return ScanLine( y ) + numOfChannels * x; }
     T* Ptr( int x, int y ) { return ScanLine( y ) + numOfChannels * x; }
 
+    const T* Ptr( int index ) const { return numOfChannels * index; }
+    T* Ptr( int index ) { return numOfChannels * index; }
+
     const T& At( int x, int y, int ch = 0 ) const { return ( ScanLine( y ) + numOfChannels * x )[ch]; }
     T& At( int x, int y, int ch = 0 ) { return ( ScanLine( y ) + numOfChannels * x )[ch]; }
+
+    size_t Count() const { return buffer.size(); }
 
 protected:
     int width;
