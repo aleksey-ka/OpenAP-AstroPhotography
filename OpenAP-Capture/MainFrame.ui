@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1314</width>
+    <width>1359</width>
     <height>819</height>
    </rect>
   </property>
@@ -194,6 +194,13 @@ QFrame {
                </property>
                <property name="text">
                 <string>Full Resolution</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="showQuarterResolution">
+               <property name="text">
+                <string>1/4</string>
                </property>
               </widget>
              </item>

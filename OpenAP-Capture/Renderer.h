@@ -8,6 +8,7 @@
 #include <QPixmap>
 
 enum TRenderingMethod {
+    RM_QuarterResolution,
     RM_HalfResolution,
     RM_FullResolution,
     RM_CFA

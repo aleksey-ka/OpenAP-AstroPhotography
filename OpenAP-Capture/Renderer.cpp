@@ -24,7 +24,7 @@ QPixmap Renderer::Render( TRenderingMethod method, int x, int y, int W, int H )
     histG.resize( hSize );
     histB.resize( hSize );
 
-    if( method == RM_HalfResolution ) {
+    if( method == RM_HalfResolution || method == RM_QuarterResolution) {
         x -= W / 2;
         y -= H / 2;
         size_t w = W > 0 ? W : width / 2;
@@ -40,7 +40,27 @@ QPixmap Renderer::Render( TRenderingMethod method, int x, int y, int W, int H )
         minValue = debayer.MinValue;
         minCount = debayer.MinCount;
 
-        return Qt::CreatePixmap( rgb, w, h, byteWidth );
+        if( method == RM_HalfResolution ) {
+            return Qt::CreatePixmap( rgb, w, h, byteWidth );
+        } else {
+            // Downscale twice
+            size_t byteWidth2= byteWidth / 2;
+            std::vector<uchar> pixels2( byteWidth2 * h / 2);
+            uchar* rgb2 = pixels.data();
+            for( int i = 0; i < h / 2; i++ ) {
+                const uchar* ptr = rgb + 2 * i * byteWidth;
+                uchar* ptr2 = rgb2 + i * byteWidth2;
+                for( int j = 0; j < w / 2; j++ ) {
+                    const uchar* p = ptr + 6 * j;
+                    uchar* p2 = ptr2 + 3 * j;
+                    p2[0] = ( p[0] + p[3] + p[byteWidth] + p[byteWidth + 3] ) / 4;
+                    p2[1] = ( p[1] + p[4] + p[byteWidth + 1] + p[byteWidth + 4] ) / 4;
+                    p2[2] = ( p[2] + p[5] + p[byteWidth + 2] + p[byteWidth + 5] ) / 4;
+                }
+            }
+
+            return Qt::CreatePixmap( rgb2, w / 2, h / 2, byteWidth2 );
+        }
     } else if( method == RM_FullResolution ) {
         assert( method == RM_FullResolution );
 
