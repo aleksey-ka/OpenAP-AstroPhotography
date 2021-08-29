@@ -352,8 +352,13 @@ void MainFrame::showZoom( bool update )
                 }
 
             } else {
-                Renderer renderer( currentImage->RawPixels(), currentImage->Width(), currentImage->Height(), currentImage->BitDepth() );
-                pixmap = renderer.Render( rendering, c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );
+                // Not in focusing mode
+                if( ui->stretchCheckBox->isChecked() ) {
+                    pixmap = focusingHelperPixmap( rendering, currentImage.get(), c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );
+                } else {
+                    Renderer renderer( currentImage->RawPixels(), currentImage->Width(), currentImage->Height(), currentImage->BitDepth() );
+                    pixmap = renderer.Render( rendering, c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );
+                }
             }
             if( scale > 1 ) {
                 pixmap = pixmap.scaled( imageSize * scale, imageSize * scale, Qt::IgnoreAspectRatio );
