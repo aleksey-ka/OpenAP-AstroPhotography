@@ -5,12 +5,14 @@
 
 #include <QThread>
 #include <QDir>
+#include <QTextStream>
 
 #include <string.h>
 #include <iostream>
 #include <fstream>
 
 static QStringList rootFileEntries;
+static QStringList rootDescription;
 
 static std::shared_ptr<const CRawU16Image> loadImage( QString filePath )
 {
@@ -34,7 +36,9 @@ static std::shared_ptr<Hardware::CAMERA_INFO> createCameraInfo( int index )
     auto cameraInfo = std::make_shared<Hardware::CAMERA_INFO>();
     QStringList frames;
     std::shared_ptr<const CRawU16Image> image = loadImage( index, frames );
-    strcpy( cameraInfo->Name, image->Info().Camera.c_str() );
+    std::string name( image->Info().Camera );
+    name += rootDescription[index].toStdString();
+    strcpy( cameraInfo->Name, name.c_str() );
     cameraInfo->IsColorCamera = image->Info().CFA.empty();
     cameraInfo->Id = -( index + 1 );
     return cameraInfo;
@@ -42,7 +46,27 @@ static std::shared_ptr<Hardware::CAMERA_INFO> createCameraInfo( int index )
 
 int MockCamera::GetCount()
 {
-    rootFileEntries = QDir( "", "*.u16.info" ).entryList( QDir::AllEntries );
+    if( QFileInfo::exists( "Debug.MockCamera.txt" ) ) {
+        QFile inputFile( "Debug.MockCamera.txt" );
+        if( inputFile.open( QIODevice::ReadOnly ) ) {
+           QTextStream in( &inputFile );
+           while( !in.atEnd() ) {
+              auto desc = in.readLine();
+              auto path = in.readLine();
+              if( desc == L"*" ) {
+                  auto entries = QDir( path, "*.u16.info" ).entryList( QDir::AllEntries );
+                  for( int i = 0; i < entries.size(); i++ ) {
+                      rootFileEntries.append( path + QDir::separator() + entries[i] );
+                      rootDescription.append( "" );
+                  }
+              } else if( QFileInfo::exists( path ) ) {
+                  rootDescription.append( desc );
+                  rootFileEntries.append( path );
+              }
+           }
+           inputFile.close();
+        }
+    }
     return rootFileEntries.size();
 }
 

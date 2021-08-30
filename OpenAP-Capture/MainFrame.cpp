@@ -56,8 +56,19 @@ MainFrame::MainFrame( QWidget *parent ) :
     // To fix it needs changing the combo to editable and the edit inside the combo to read-only
     ui->cameraSelectionCombo->lineEdit()->setReadOnly( true );
 
-    for( size_t i = 0; i < camerasInfo.size(); i++ ) {
-        ui->cameraSelectionCombo->addItem( camerasInfo[i]->Name, QVariant( i ) );
+    {
+        QSignalBlocker lock( ui->cameraSelectionCombo );
+        int selectedIndex = 0;
+        for( size_t i = 0; i < camerasInfo.size(); i++ ) {
+            auto name = camerasInfo[i]->Name;
+            ui->cameraSelectionCombo->addItem( name, QVariant( i ) );
+
+            static auto selectedCamera = settings.value( "SelectedCamera" ).toString();
+            if( name == selectedCamera ) {
+                selectedIndex = i;
+            }
+        }
+        ui->cameraSelectionCombo->setCurrentIndex( selectedIndex );
     }
 
     ui->objectNameEdit->setText( settings.value( "Name" ).toString() );
@@ -410,6 +421,8 @@ void MainFrame::on_cameraSelectionCombo_currentIndexChanged( int index )
     currentImage.reset();
     ui->imageView->clear();
     ui->imageView->setText( "No image" );
+
+    settings.setValue( "SelectedCamera", info->Name );
 }
 
 void MainFrame::on_cameraOpenCloseButton_clicked()
