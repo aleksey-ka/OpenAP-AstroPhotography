@@ -60,65 +60,65 @@ std::tuple<double, double, T, T> simple_pixel_statistics( const T* pixels, size_
 }
 
 template<typename T1, typename T2>
-void pixels_set_value( T1* dst, T2 value, size_t count )
+void pixels_set_value( T1* dst, T2 value, size_t count, int numberOfChannels = 1 )
 {
-    for( size_t i = 0; i < count; i++ ) {
+    for( size_t i = 0; i < count * numberOfChannels; i++ ) {
         dst[i] = value;
     }
 }
 
 template<typename T1, typename T2>
-void pixels_copy( T1* dst, const T2* src, size_t count )
+void pixels_copy( T1* dst, const T2* src, size_t count, int numberOfChannels = 1 )
 {
-    for( size_t i = 0; i < count; i++ ) {
+    for( size_t i = 0; i < count * numberOfChannels; i++ ) {
         dst[i] = src[i];
     }
 }
 
 template<typename T1, typename T2>
-void pixels_add( T1* dst, const T2* src, size_t count )
+void pixels_add( T1* dst, const T2* src, size_t count, int numberOfChannels = 1 )
 {
-    for( size_t i = 0; i < count; i++ ) {
+    for( size_t i = 0; i < count * numberOfChannels; i++ ) {
         dst[i] += src[i];
     }
 }
 
 template<typename T1, typename T2>
-void pixels_add_value( T1* dst, T2 value, size_t count )
+void pixels_add_value( T1* dst, T2 value, size_t count, int numberOfChannels = 1 )
 {
-    for( size_t i = 0; i < count; i++ ) {
+    for( size_t i = 0; i < count * numberOfChannels; i++ ) {
         dst[i] += value;
     }
 }
 
 template<typename T1, typename T2>
-void pixels_subtract( T1* dst, const T2* src, size_t count )
+void pixels_subtract( T1* dst, const T2* src, size_t count, int numberOfChannels = 1 )
 {
-    for( size_t i = 0; i < count; i++ ) {
+    for( size_t i = 0; i < count * numberOfChannels; i++ ) {
         dst[i] -= src[i];
     }
 }
 
 template<typename T1, typename T2>
-void pixels_subtract_value( T1* dst, T2 value, size_t count )
+void pixels_subtract_value( T1* dst, T2 value, size_t count, int numberOfChannels = 1 )
 {
-    for( size_t i = 0; i < count; i++ ) {
+    for( size_t i = 0; i < count * numberOfChannels; i++ ) {
         dst[i] -= value;
     }
 }
 
 template<typename T1, typename T2>
-void pixels_divide( T1* dst, T2 value, size_t count )
+void pixels_divide( T1* dst, T2 value, size_t count, int numberOfChannels = 1 )
 {
-    for( size_t i = 0; i < count; i++ ) {
+    for( size_t i = 0; i < count * numberOfChannels; i++ ) {
         dst[i] /= value;
     }
 }
 
 template<typename T1, typename T2, typename T3>
-void pixels_divide( T1* dst, const T2* src, T3 value, size_t count )
+void pixels_divide( T1* dst, const T2* src, T3 value, size_t count, int numberOfChannels = 1 )
 {
-    for( size_t i = 0; i < count; i++ ) {
+    for( size_t i = 0; i < count * numberOfChannels; i++ ) {
         dst[i] = src[i] / value;
     }
 }
@@ -190,9 +190,9 @@ public:
     std::shared_ptr<const CGrayImage> Mask;
     std::vector<std::pair<double,double>> Stars;
 
-    std::shared_ptr<CPixelBuffer<double>> Stack;
+    std::shared_ptr<CPixelBuffer<double, 3>> Stack;
     int StackSize;
-    std::shared_ptr<CGrayImage> GetStackedImage( bool stratch, int factor ) const;
+    std::shared_ptr<CRgbImage> GetStackedImage( bool stratch, int factor ) const;
     int MaxStackSize = 0;
     void SetStackSize( int stackSize ) { MaxStackSize = stackSize; };
 

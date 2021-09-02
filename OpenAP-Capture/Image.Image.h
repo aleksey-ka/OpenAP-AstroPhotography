@@ -29,7 +29,7 @@ public:
     const T& At( int x, int y, int ch = 0 ) const { return ( ScanLine( y ) + numOfChannels * x )[ch]; }
     T& At( int x, int y, int ch = 0 ) { return ( ScanLine( y ) + numOfChannels * x )[ch]; }
 
-    size_t Count() const { return buffer.size(); }
+    size_t Count() const { return width * height; }
 
 protected:
     int width;
