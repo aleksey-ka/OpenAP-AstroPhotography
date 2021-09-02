@@ -299,6 +299,9 @@ void MainFrame::showZoom( bool update )
                 if( ui->countourCheckBox->isChecked() ) {
                     // This mode is useful in many ways. Particularly it might be used over VNC to speed up drawing
                     pixmap = Qt::CreatePixmap( focusingHelper->Mask );
+                } if( ui->liveStackCheckBox->isChecked() ) {
+                    focusingHelper->SetStackSize( ui->stackSizeSpinBox->value() );
+                    pixmap = Qt::CreatePixmap( focusingHelper->GetStackedImage( ui->stretchCheckBox->isChecked(), ui->factorSpinBox->value() ) );
                 } else {
                     pixmap = focusingHelperPixmap( rendering, currentImage.get(), c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );
                 }

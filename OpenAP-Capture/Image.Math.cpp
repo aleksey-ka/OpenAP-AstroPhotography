@@ -732,8 +732,8 @@ void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int imageSize,
     rawU16.GradientAscentToLocalMaximum( cx, cy, imageSize );
     auto image = rawU16.GrayU16( cx - imageSize / 2, cy - imageSize / 2, imageSize, imageSize );
 
-    int height = image->Height();
     int width = image->Width();
+    int height = image->Height();
 
     const auto s = CRawU16::CalculateStatistics( image.get() ).stat( 0 );
     qDebug() << "Median:" << s.Median << "Sigma:" << s.Sigma;
@@ -893,6 +893,16 @@ void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int imageSize,
     CX = cx + dX;
     CY = cy + dY;
 
+    auto finalImage = rawU16.GrayU16( std::round( CX ) - imageSize / 2,  std::round( CY ) - imageSize / 2, imageSize, imageSize );
+    if( Stack == 0 || Stack->Height() != height || Stack->Width() != width || ( MaxStackSize > 0 && StackSize >= MaxStackSize ) ) {
+        Stack = std::make_shared<CPixelBuffer<double>>( width, height );
+        pixels_copy( Stack->Pixels(), finalImage->Pixels(), finalImage->Count() );
+        StackSize = 1;
+    } else {
+        pixels_add( Stack->Pixels(), finalImage->Pixels(), finalImage->Count() );
+        StackSize++;
+    }
+
     auto it = focuserStats.find( focuserPos );
     if( it == focuserStats.end() ) {
         currentSeries = std::make_shared<Data>();
@@ -1045,6 +1055,29 @@ void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int imageSize,
             }
         }
     }
+}
+
+std::shared_ptr<CGrayImage> CFocusingHelper::GetStackedImage( bool stratch, int factor ) const
+{
+    CPixelBuffer<double> tmp( Stack->Width(), Stack->Height() );
+    pixels_divide( tmp.Pixels(), Stack->Pixels(), StackSize, tmp.Count() );
+
+    auto result = std::make_shared<CGrayImage>( Stack->Width(), Stack->Height() );
+    if( stratch ) {
+        // TO_DO:
+        double mean, sigma, minv, maxv;
+        std::tie(mean, sigma, minv, maxv) = simple_pixel_statistics<double>( tmp.Pixels(), tmp.Count() );
+
+        auto dst = result->Pixels();
+        auto src = tmp.Pixels();
+        for( int i = 0; i < tmp.Count(); i++ ) {
+            double value = src[i] - mean + 15;
+            dst[i] = value > 0 ? round( value ) : 0;
+        }
+    } else {
+        pixels_divide( result->Pixels(), tmp.Pixels(), factor, tmp.Count() );
+    }
+    return result;
 }
 
 DetectionResults CRawU16::DetectStars( int x0, int y0, int W, int H ) const
