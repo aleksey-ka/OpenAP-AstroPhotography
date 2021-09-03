@@ -896,8 +896,9 @@ void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int imageSize,
     auto finalImage = rawU16.DebayerRect( std::round( CX ) - imageSize / 2,  std::round( CY ) - imageSize / 2, imageSize, imageSize );
     if( Stack == 0 || Stack->Height() != height || Stack->Width() != width || ( MaxStackSize > 0 && StackSize >= MaxStackSize ) ) {
         Stack = std::make_shared<CPixelBuffer<double, 3>>( width, height );
-        pixels_copy( Stack->Pixels(), finalImage->Pixels(), finalImage->Count(), 3 );
+        pixels_set( Stack->Pixels(), finalImage->Pixels(), finalImage->Count(), 3 );
         StackSize = 1;
+        BitDepth = currentImage->BitDepth();
     } else {
         pixels_add( Stack->Pixels(), finalImage->Pixels(), finalImage->Count(), 3 );
         StackSize++;
@@ -1057,33 +1058,46 @@ void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int imageSize,
     }
 }
 
-std::shared_ptr<CRgbImage> CFocusingHelper::GetStackedImage( bool stratch, int factor ) const
+std::shared_ptr<CRgbImage> CFocusingHelper::GetStackedImage( bool strach, int factor ) const
 {
-    CPixelBuffer<double, 3> tmp( Stack->Width(), Stack->Height() );
-    pixels_divide( tmp.Pixels(), Stack->Pixels(), StackSize, tmp.Count(), 3 );
-
     auto result = std::make_shared<CRgbImage>( Stack->Width(), Stack->Height() );
-    if( stratch ) {
-        // TO_DO:
-        double meanR, sigmaR, minvR, maxvR;
-        std::tie( meanR, sigmaR, minvR, maxvR ) = simple_pixel_statistics<double, 3>( tmp.Pixels(), tmp.Count(), 0 );
-        double meanG, sigmaG, minvG, maxvG;
-        std::tie( meanG, sigmaG, minvG, maxvG ) = simple_pixel_statistics<double, 3>( tmp.Pixels(), tmp.Count(), 1 );
-        double meanB, sigmaB, minvB, maxvB;
-        std::tie( meanB, sigmaB, minvB, maxvB ) = simple_pixel_statistics<double, 3>( tmp.Pixels(), tmp.Count(), 2 );
+    if( strach ) {
+        CPixelBuffer<unsigned int, 3> tmp( Stack->Width(), Stack->Height() );
+        pixels_divide_round( tmp.Pixels(), Stack->Pixels(), StackSize, tmp.Count(), 3 );
+        auto h = pixels_histogram( tmp.Pixels(), tmp.Count(), BitDepth, 3 );
+        size_t medianR = pixels_histogram_median( h, 0 );
+        size_t medianG = pixels_histogram_median( h, 1 );
+        size_t medianB = pixels_histogram_median( h, 2 );
 
-        auto dst = result->Pixels();
+        auto count = h.PixelsCount();
+        size_t sigmaR = std::max( (size_t)1, medianR - pixels_histogram_p( h, 0, count / 2 - count / 3 ) );
+        size_t sigmaG = std::max( (size_t)1, medianG - pixels_histogram_p( h, 1, count / 2 - count / 3 ) );
+        size_t sigmaB = std::max( (size_t)1, medianB - pixels_histogram_p( h, 2, count / 2 - count / 3 ) );
+
+        const int maxValue = ~(~0u << BitDepth) - 1;
+        const int k = 9 * factor;
+        const int k2 = k * sqrt( 2 );
+
         auto src = tmp.Pixels();
-        for( int i = 0; i < tmp.Count(); i++ ) {
-            double valueR = src[3 * i + 0] - meanR + 15;
-            double valueG = src[3 * i + 1] - meanG + 15;
-            double valueB = src[3 * i + 2] - meanB + 15;
-            dst[3 * i + 0] = valueR > 0 ? round( valueR ) : 0;
-            dst[3 * i + 1] = valueG > 0 ? round( valueG ) : 0;
-            dst[3 * i + 2] = valueB > 0 ? round( valueB ) : 0;
+        auto dst = result->Pixels();
+        for( size_t i = 0; i < tmp.Count(); i++ ) {
+            auto s = src + 3 * i;
+            uint16_t r = s[0];
+            uint16_t g = s[1];
+            uint16_t b = s[2];
+            auto d = dst + 3 * i;
+            if( r >= maxValue || g >= maxValue || b >= maxValue ) {
+                d[0] = 0xFF;
+                d[1] = 0x00;
+                d[2] = 0x80;
+            } else {
+                d[0] = r <= ( medianR + k * sigmaR ) ? ( r < medianR ? 0 : ( 255 * ( r - medianR ) / k / sigmaR ) ) : 255;
+                d[1] = g <= ( medianG + k2 * sigmaG ) ? ( g < medianG ? 0 : ( 255 * ( g - medianG ) / k2 / sigmaG ) ) : 255;
+                d[2] = b <= ( medianB + k * sigmaB ) ? ( b < medianB ? 0 : ( 255 * ( b - medianB ) / k / sigmaB ) ) : 255;
+            }
         }
     } else {
-        pixels_divide( result->Pixels(), tmp.Pixels(), factor, tmp.Count(), 3 );
+        pixels_divide_round( result->Pixels(), Stack->Pixels(), StackSize * factor, Stack->Count(), 3 );
     }
     return result;
 }

@@ -101,6 +101,7 @@ public:
 
     std::shared_ptr<CPixelBuffer<double, 3>> Stack;
     int StackSize;
+    int BitDepth;
     std::shared_ptr<CRgbImage> GetStackedImage( bool stratch, int factor ) const;
     int MaxStackSize = 0;
     void SetStackSize( int stackSize ) { MaxStackSize = stackSize; };
