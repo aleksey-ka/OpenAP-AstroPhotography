@@ -7,7 +7,7 @@
 #include <QMainWindow>
 #include <QPainter>
 
-#include <Image.Math.h>
+#include <Image.Math.Advanced.h>
 
 namespace Ui {
     class MainFrame;

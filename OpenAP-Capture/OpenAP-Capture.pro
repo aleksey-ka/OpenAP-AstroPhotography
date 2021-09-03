@@ -38,6 +38,7 @@ SOURCES += \
         Image.Debayer.HQLinear.cpp \
         Image.Formats.cpp \
         Image.Math.cpp \
+		Image.Math.Advanced.cpp \
         Image.RawImage.cpp \
         Image.Image.cpp \
         ImageView.cpp \
@@ -63,6 +64,7 @@ HEADERS += \
         Image.Debayer.HQLinear.h \
         Image.Formats.h \
         Image.Math.h \
+		Image.Math.Advanced.h \
         Image.RawImage.h \
         Image.Image.h \
         Image.Qt.h \
