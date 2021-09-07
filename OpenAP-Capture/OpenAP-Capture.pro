@@ -37,10 +37,11 @@ SOURCES += \
         Image.Debayer.HalfRes.cpp \
         Image.Debayer.HQLinear.cpp \
         Image.Formats.cpp \
+		Image.Image.cpp \
         Image.Math.cpp \
 		Image.Math.Advanced.cpp \
         Image.RawImage.cpp \
-        Image.Image.cpp \
+		Image.Stack.cpp \
         ImageView.cpp \
         Math.Geometry.cpp \
         Math.LinearAlgebra.cpp \
@@ -63,10 +64,11 @@ HEADERS += \
         Image.Debayer.HalfRes.h \
         Image.Debayer.HQLinear.h \
         Image.Formats.h \
+		Image.Image.h \
         Image.Math.h \
 		Image.Math.Advanced.h \
         Image.RawImage.h \
-        Image.Image.h \
+		Image.Stack.h \
         Image.Qt.h \
         ImageView.h \
         Math.Geometry.h \
