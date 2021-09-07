@@ -620,9 +620,9 @@ void MainFrame::startCapture()
     ImageInfo imageInfo;
     if( filterWheel != 0 ) {
         auto channel = ui->filterComboBox->currentText();
-        imageInfo.Channel = channel.toStdString().c_str();
+        imageInfo.Channel = channel.toLocal8Bit().constData();
         auto fullFilterDescription = ui->filterComboBox->currentData( Qt::ToolTipRole ).toString();
-        imageInfo.FilterDescription = fullFilterDescription.toStdString().c_str();
+        imageInfo.FilterDescription = fullFilterDescription.toLocal8Bit().constData();
     }
     imageInfo.SeriesId = seriesId;
     camera->SetImageInfoTemplate( imageInfo );
@@ -701,7 +701,7 @@ void MainFrame::imageReady()
                 auto name = nameTemplate.arg( QString::number( info.SeriesId, 16 ), QString::number( currentIndex ).rightJustified( 5, '0' ),
                     ( info.CFA.empty() ? "" : ".cfa" ), ( info.Channel.empty() ? "" : "." + info.Channel ).c_str(), ext );
 
-                result->SaveToFile( ( saveToPath + QDir::separator() + name ).toStdString().c_str(), format );
+                result->SaveToFile( ( saveToPath + QDir::separator() + name ).toLocal8Bit().constData(), format );
                 txt.append( namedValue.arg( "Saved As", name, "" ) );
             }
 

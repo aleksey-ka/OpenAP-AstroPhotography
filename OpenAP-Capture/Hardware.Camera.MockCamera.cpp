@@ -16,7 +16,7 @@ static QStringList rootDescription;
 
 static std::shared_ptr<const CRawU16Image> loadImage( QString filePath )
 {
-    return CRawU16Image::LoadFromFile( filePath.toStdString().c_str() );
+    return CRawU16Image::LoadFromFile( filePath.toLocal8Bit().constData()  );
 }
 
 static std::shared_ptr<const CRawU16Image> loadImage( int index, QStringList& frames )
@@ -37,7 +37,7 @@ static std::shared_ptr<Hardware::CAMERA_INFO> createCameraInfo( int index )
     QStringList frames;
     std::shared_ptr<const CRawU16Image> image = loadImage( index, frames );
     std::string name( image->Info().Camera );
-    name += rootDescription[index].toStdString();
+    name += rootDescription[index].toLocal8Bit().constData();
     strcpy( cameraInfo->Name, name.c_str() );
     cameraInfo->IsColorCamera = image->Info().CFA.empty();
     cameraInfo->Id = -( index + 1 );
@@ -127,7 +127,7 @@ std::shared_ptr<const CRawU16Image> MockCamera::DoExposure() const
 
     std::shared_ptr<const CRawU16Image> image;
     if( frames.size() > 0 ) {
-        image = CRawU16Image::LoadFromFile( ( rootFileEntries[index] + QDir::separator() + frames[nextFrame] ).toStdString().c_str() );
+        image = CRawU16Image::LoadFromFile( ( rootFileEntries[index] + QDir::separator() + frames[nextFrame] ).toLocal8Bit().constData() );
         nextFrame += forwardPass ? 1 : -1;
         if( nextFrame == frames.size() ) {
             forwardPass = false;

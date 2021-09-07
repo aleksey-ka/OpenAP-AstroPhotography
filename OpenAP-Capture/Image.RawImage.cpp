@@ -107,6 +107,7 @@ std::shared_ptr<CRawU16Image> CRawU16Image::LoadFromFileRW( const char* filePath
     std::map<std::wstring, std::wstring> map;
 
     std::wifstream info( infoFilePath );
+    assert( info.is_open() );
     std::wstring line;
     while( std::getline( info, line ) ) {
         size_t pos = line.find_first_of( L" \t" );
