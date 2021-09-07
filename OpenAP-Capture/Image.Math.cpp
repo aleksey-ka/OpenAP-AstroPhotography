@@ -4,7 +4,7 @@
 #include "Image.Math.h"
 
 CHistogram::CHistogram( size_t numberOfChannels, size_t bitsPerChannel ) :
-    channelSize( 2 << bitsPerChannel )
+    channelSize( maxValueForBitDepth( bitsPerChannel ) )
 {
     channels.resize( numberOfChannels );
     for( size_t i = 0; i < numberOfChannels; i++ ) {
