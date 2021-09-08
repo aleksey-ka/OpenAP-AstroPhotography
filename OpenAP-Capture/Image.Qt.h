@@ -22,6 +22,11 @@ inline QImage CreateImage( const CRgbImage* image )
     return CreateImage( image->RgbPixels(), image->Width(), image->Height(), image->ByteWidth() );
 }
 
+inline QImage CreateImage( std::shared_ptr<const CRgbImage> image )
+{
+    return CreateImage( image->RgbPixels(), image->Width(), image->Height(), image->ByteWidth() );
+}
+
 inline QPixmap CreatePixmap( const uchar* rgb, int width, int height, int byteWidth = -1 )
 {
     return QPixmap::fromImage( CreateImage( rgb, width, height, byteWidth ) );
