@@ -31,16 +31,16 @@ static std::tuple<size_t, size_t> patches_statistics( const T* pixels, size_t wi
 }
 
 template<typename T>
-static std::tuple<size_t, size_t> patches_statistics_float( const T* pixels, size_t width, size_t height, int bitDepth, int numverOfPatches )
+static std::tuple<size_t, size_t> patches_statistics_float( const T* pixels, size_t width, size_t height, int bitDepth, int numberOfPatches )
 {
     size_t minM = INT_MAX;
     size_t maxM = 0;
 
-    const size_t w = width / numverOfPatches;
-    const size_t h = height / numverOfPatches;
-    for( int i = 0; i < numverOfPatches; i++ ) {
+    const size_t w = width / numberOfPatches;
+    const size_t h = height / numberOfPatches;
+    for( int i = 0; i < numberOfPatches; i++ ) {
         int y0 = i * h;
-        for( int j = 0; j < numverOfPatches; j++ ) {
+        for( int j = 0; j < numberOfPatches; j++ ) {
             int x0 = j * w;
             CHistogram hi = pixels_patch_histogram_float( pixels, width, height, x0, y0, w, h, bitDepth );
             size_t m = pixels_histogram_median( hi, 0 );
@@ -276,9 +276,10 @@ std::shared_ptr<CPixelBuffer<double>> CLightsStacker::Process( const ImageSequen
 
     // Final lights frame
     auto final = std::make_shared<CPixelBuffer<double>>( stack1->Width(), stack1->Height() );
-    pixels_set( final->Pixels(), stack1->Pixels(), count );
-    pixels_add( final->Pixels(), stack2->Pixels(), count );
-    pixels_divide_by_value( final->Pixels(), 2, count );
+    pixels_set_multiply_by_value( final->Pixels(), stack1->Pixels(), ( 1.0 * count1 ) / ( count1 + count2 ), count );
+    pixels_add_multiply_by_value( final->Pixels(), stack2->Pixels(), ( 1.0 * count2 ) / ( count1 + count2 ), count );
+    // TO_DO: This helps fighting pasterization in low signal frames (Ha). But better remove the real cause
+    //pixels_multiply_by_value( final->Pixels(), 16.0, count );
 
     return final;
 }
