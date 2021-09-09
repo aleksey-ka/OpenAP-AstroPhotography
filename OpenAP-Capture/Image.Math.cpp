@@ -2,6 +2,7 @@
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
 #include "Image.Math.h"
+#include <limits.h>
 
 CHistogram::CHistogram( size_t numberOfChannels, size_t bitsPerChannel ) :
     channelSize( maxValueForBitDepth( bitsPerChannel ) )

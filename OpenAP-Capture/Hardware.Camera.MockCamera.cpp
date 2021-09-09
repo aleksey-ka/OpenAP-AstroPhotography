@@ -53,7 +53,7 @@ int MockCamera::GetCount()
            while( !in.atEnd() ) {
               auto desc = in.readLine();
               auto path = in.readLine();
-              if( desc == L"*" ) {
+              if( desc == "*" ) {
                   auto entries = QDir( path, "*.u16.info" ).entryList( QDir::AllEntries );
                   for( int i = 0; i < entries.size(); i++ ) {
                       rootFileEntries.append( path + QDir::separator() + entries[i] );
