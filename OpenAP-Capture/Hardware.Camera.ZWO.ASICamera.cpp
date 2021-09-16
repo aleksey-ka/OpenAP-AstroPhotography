@@ -52,6 +52,14 @@ std::shared_ptr<Hardware::CAMERA_INFO> ASICamera::GetInfo() const
     if( cameraInfo == 0 ) {
         ASI_CAMERA_INFO _cameraInfo;
         checkResult( ASIGetCameraPropertyByID( id, &_cameraInfo ) );
+
+        // BUG_FIX for ZWO ASI294MM Pro
+        if( strncmp( _cameraInfo.Name, "ZWO ASI294MM Pro", sizeof( _cameraInfo.Name ) ) == 0 ) {
+            if( bin == 2 ) {
+                _cameraInfo.BitDepth = 14;
+            }
+        }
+
         cameraInfo = createCameraInfo( _cameraInfo );
     }
     return cameraInfo;

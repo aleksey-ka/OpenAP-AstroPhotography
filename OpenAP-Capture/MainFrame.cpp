@@ -576,6 +576,12 @@ std::shared_ptr<Hardware::CAMERA_INFO> MainFrame::openCamera( int index )
     Hardware::IMAGE_TYPE imgType = Hardware::IT_NONE;
     camera->GetROIFormat( width, height, bin, imgType );
     imgType = Hardware::IT_RAW16;
+    // TO_DO: Quick fix for ZWO ASI294MM Pro in bin1
+    if( width * height > 4048 * 4048 ) {
+        bin = 2;
+        width /= 2;
+        height /= 2;
+    }
     camera->SetROIFormat( width, height, bin, imgType );
     camera->GetROIFormat( width, height, bin, imgType );
     qDebug() << width << "x" << height << " bin" << bin;
@@ -676,6 +682,7 @@ void MainFrame::imageReady()
             QString txt;
             const auto& info = result->Info();
             txt.append( namedValue.arg( "Size", QString::number( info.Width ) + "x" + QString::number( info.Height ), "" ) );
+            txt.append( namedValue.arg( "BitDepth", QString::number( info.BitDepth ), "" ) );
             txt.append( namedValue.arg( "Exposure", exposureToString( info.Exposure ), "" ) );
             txt.append( namedValue.arg( "Gain", QString::number( info.Gain ), "" ) );
             txt.append( namedValue.arg( "Offset", QString::number( info.Offset ), "" ) );
