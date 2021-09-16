@@ -48,13 +48,13 @@ public:
     virtual void GetWhiteBalanceBCaps( long& /*min*/, long& /*max*/, long& /*defaultVal*/ ) const override {}
 
     // Image format
-    virtual Hardware::IMG_TYPE GetFormat() const override { return Hardware::IT_RAW16; }
+    virtual Hardware::IMAGE_TYPE GetFormat() const override { return Hardware::IT_RAW16; }
     virtual int GetWidth() const override { return currentSettings.Width; }
     virtual int GetHeight() const override { return currentSettings.Height; }
     virtual int GetBinning() const override { return 1; }
     // Image format (all in one)
-    virtual void GetROIFormat( int& width, int& height, int& bin, Hardware::IMG_TYPE& imgType ) const override;
-    virtual void SetROIFormat( int /*width*/, int /*height*/, int /*bin*/, Hardware::IMG_TYPE /*imgType*/ ) override {}
+    virtual void GetROIFormat( int& width, int& height, int& bin, Hardware::IMAGE_TYPE& imgType ) const override;
+    virtual void SetROIFormat( int /*width*/, int /*height*/, int /*bin*/, Hardware::IMAGE_TYPE /*imgType*/ ) override {}
 
     // Do single exposure
     virtual std::shared_ptr<const CRawU16Image> DoExposure() const override;
@@ -71,8 +71,8 @@ public:
     virtual void SetTargetTemperature( double ) override {}
 
     // Guiding
-    virtual void GuideOn( Hardware::GUIDE_DIRECTION ) const override {}
-    virtual void GuideOff( Hardware::GUIDE_DIRECTION ) const override {}
+    virtual void GuideOn( Hardware::ST4_GUIDE_DIRECTION ) const override {}
+    virtual void GuideOff( Hardware::ST4_GUIDE_DIRECTION ) const override {}
 
     virtual void SetImageInfoTemplate( const ImageInfo& imageInfo ) override { templateImageInfo = imageInfo; };
 

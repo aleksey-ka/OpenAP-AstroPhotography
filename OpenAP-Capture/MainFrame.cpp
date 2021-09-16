@@ -493,10 +493,10 @@ void MainFrame::on_guideRight()
     guide( Hardware::GD_GUIDE_WEST );
 }
 
-void MainFrame::guide( Hardware::GUIDE_DIRECTION direction )
+void MainFrame::guide( Hardware::ST4_GUIDE_DIRECTION direction )
 {
     if( guiding != -1 ) {
-        camera->GuideOff( (Hardware::GUIDE_DIRECTION)guiding );
+        camera->GuideOff( (Hardware::ST4_GUIDE_DIRECTION)guiding );
     }
     if( guiding != direction ) {
         camera->GuideOn( direction );
@@ -509,7 +509,7 @@ void MainFrame::guide( Hardware::GUIDE_DIRECTION direction )
 void MainFrame::guideStop()
 {
     if( guiding != -1 ) {
-        camera->GuideOff( (Hardware::GUIDE_DIRECTION)guiding );
+        camera->GuideOff( (Hardware::ST4_GUIDE_DIRECTION)guiding );
         guiding = -1;
     }
 }
@@ -573,7 +573,7 @@ std::shared_ptr<Hardware::CAMERA_INFO> MainFrame::openCamera( int index )
     int width = 0;
     int height = 0;
     int bin = 0;
-    Hardware::IMG_TYPE imgType = Hardware::IT_NONE;
+    Hardware::IMAGE_TYPE imgType = Hardware::IT_NONE;
     camera->GetROIFormat( width, height, bin, imgType );
     imgType = Hardware::IT_RAW16;
     camera->SetROIFormat( width, height, bin, imgType );

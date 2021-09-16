@@ -50,13 +50,13 @@ public:
     void GetWhiteBalanceBCaps( long& min, long& max, long& defaultVal ) const override;
 
     // Image format
-    Hardware::IMG_TYPE GetFormat() const override { lazyROIFormat(); return convert( imgType ); }
+    Hardware::IMAGE_TYPE GetFormat() const override { lazyROIFormat(); return convert( imgType ); }
     int GetWidth() const override { lazyROIFormat(); return width; }
     int GetHeight() const override { lazyROIFormat(); return height; }
     int GetBinning() const override { lazyROIFormat(); return bin; }
     // Image format (all in one)
-    void GetROIFormat( int& width, int& height, int& bin, Hardware::IMG_TYPE& imgType ) const override;
-    void SetROIFormat( int width, int height, int bin, Hardware::IMG_TYPE imgType ) override;
+    void GetROIFormat( int& width, int& height, int& bin, Hardware::IMAGE_TYPE& imgType ) const override;
+    void SetROIFormat( int width, int height, int bin, Hardware::IMAGE_TYPE imgType ) override;
 
     // Do single exposure
     std::shared_ptr<const CRawU16Image> DoExposure() const override;
@@ -73,8 +73,8 @@ public:
     void SetTargetTemperature( double ) override;
 
     // Guiding
-    void GuideOn( Hardware::GUIDE_DIRECTION ) const override;
-    void GuideOff( Hardware::GUIDE_DIRECTION ) const override;
+    void GuideOn( Hardware::ST4_GUIDE_DIRECTION ) const override;
+    void GuideOff( Hardware::ST4_GUIDE_DIRECTION ) const override;
 
     virtual void SetImageInfoTemplate( const ImageInfo& imageInfo ) override { imageInfoTemplate = imageInfo; };
 
@@ -119,11 +119,11 @@ private:
     static void checkResult( ASI_ERROR_CODE );
 
     static std::shared_ptr<Hardware::CAMERA_INFO> createCameraInfo( const ASI_CAMERA_INFO& );
-    static Hardware::IMG_TYPE convert( ASI_IMG_TYPE );
-    static ASI_IMG_TYPE convert( Hardware::IMG_TYPE );
+    static Hardware::IMAGE_TYPE convert( ASI_IMG_TYPE );
+    static ASI_IMG_TYPE convert( Hardware::IMAGE_TYPE );
     static Hardware::BAYER_PATTERN convert( ASI_BAYER_PATTERN );
-    static Hardware::GUIDE_DIRECTION convert( ASI_GUIDE_DIRECTION );
-    static ASI_GUIDE_DIRECTION convert( Hardware::GUIDE_DIRECTION );
+    static Hardware::ST4_GUIDE_DIRECTION convert( ASI_GUIDE_DIRECTION );
+    static ASI_GUIDE_DIRECTION convert( Hardware::ST4_GUIDE_DIRECTION );
 };
 
 #endif // HARDWARE_CAMERA_ZWO_ASICAMERA_H

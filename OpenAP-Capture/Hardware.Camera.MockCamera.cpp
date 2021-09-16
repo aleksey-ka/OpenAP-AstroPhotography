@@ -97,7 +97,7 @@ std::shared_ptr<Hardware::CAMERA_INFO> MockCamera::GetInfo() const
     return createCameraInfo( index );
 }
 
-void MockCamera::GetROIFormat( int& width, int& height, int& bin, Hardware::IMG_TYPE& imgType ) const
+void MockCamera::GetROIFormat( int& width, int& height, int& bin, Hardware::IMAGE_TYPE& imgType ) const
 {
     width = currentSettings.Width;
     height = currentSettings.Height;

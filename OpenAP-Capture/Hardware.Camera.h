@@ -27,7 +27,7 @@ struct CAMERA_INFO {
     int BitDepth;
 };
 
-enum IMG_TYPE {
+enum IMAGE_TYPE {
     IT_RAW8 = 0,
     IT_RGB24,
     IT_RAW16,
@@ -35,7 +35,7 @@ enum IMG_TYPE {
     IT_NONE
 };
 
-enum GUIDE_DIRECTION {
+enum ST4_GUIDE_DIRECTION {
     GD_GUIDE_NORTH = 0,
     GD_GUIDE_SOUTH,
     GD_GUIDE_EAST,
@@ -81,13 +81,13 @@ public:
     virtual void GetWhiteBalanceBCaps( long& min, long& max, long& defaultVal ) const = 0;
 
     // Image format
-    virtual IMG_TYPE GetFormat() const = 0;
+    virtual IMAGE_TYPE GetFormat() const = 0;
     virtual int GetWidth() const = 0;
     virtual int GetHeight() const = 0;
     virtual int GetBinning() const = 0;
     // Image format (all in one)
-    virtual void GetROIFormat( int& width, int& height, int& bin, IMG_TYPE& imgType ) const = 0;
-    virtual void SetROIFormat( int width, int height, int bin, IMG_TYPE imgType ) = 0;
+    virtual void GetROIFormat( int& width, int& height, int& bin, IMAGE_TYPE& imgType ) const = 0;
+    virtual void SetROIFormat( int width, int height, int bin, IMAGE_TYPE imgType ) = 0;
 
     // Do single exposure
     virtual std::shared_ptr<const CRawU16Image> DoExposure() const = 0;
@@ -104,8 +104,8 @@ public:
     virtual void SetTargetTemperature( double ) = 0;
 
     // Guiding through ST4 port
-    virtual void GuideOn( GUIDE_DIRECTION ) const = 0;
-    virtual void GuideOff( GUIDE_DIRECTION ) const = 0;
+    virtual void GuideOn( ST4_GUIDE_DIRECTION ) const = 0;
+    virtual void GuideOff( ST4_GUIDE_DIRECTION ) const = 0;
 
     // Set image info to be used as a template for capture images
     virtual void SetImageInfoTemplate( const ImageInfo& ) = 0;

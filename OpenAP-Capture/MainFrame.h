@@ -103,7 +103,7 @@ private:
 
     // Manual guider controls
     int guiding = -1;
-    void guide( Hardware::GUIDE_DIRECTION );
+    void guide( Hardware::ST4_GUIDE_DIRECTION );
     void guideStop();
 
     // Focuser

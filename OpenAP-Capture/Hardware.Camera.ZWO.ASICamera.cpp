@@ -162,7 +162,7 @@ void ASICamera::GetWhiteBalanceBCaps( long& min, long& max, long& defaultVal ) c
     getControlCaps( ASI_WB_B, min, max, defaultVal );
 }
 
-void ASICamera::GetROIFormat( int& _width, int& _height, int& _bin, Hardware::IMG_TYPE& _imgType ) const
+void ASICamera::GetROIFormat( int& _width, int& _height, int& _bin, Hardware::IMAGE_TYPE& _imgType ) const
 {
     lazyROIFormat();
 
@@ -179,7 +179,7 @@ void ASICamera::lazyROIFormat() const
     }
 }
 
-void ASICamera::SetROIFormat( int width, int height, int bin, Hardware::IMG_TYPE imgType )
+void ASICamera::SetROIFormat( int width, int height, int bin, Hardware::IMAGE_TYPE imgType )
 {
     checkResult( ASISetROIFormat( id, width, height, bin, convert( imgType ) ) );
     this->imgType = ASI_IMG_END; cameraInfo = 0;
@@ -317,12 +317,12 @@ void ASICamera::SetTargetTemperature( double temperature )
     }
 }
 
-void ASICamera::GuideOn( Hardware::GUIDE_DIRECTION direction ) const
+void ASICamera::GuideOn( Hardware::ST4_GUIDE_DIRECTION direction ) const
 {
     checkResult( ASIPulseGuideOn( id, convert( direction ) ) );
 }
 
-void ASICamera::GuideOff( Hardware::GUIDE_DIRECTION direction ) const
+void ASICamera::GuideOff( Hardware::ST4_GUIDE_DIRECTION direction ) const
 {
     checkResult( ASIPulseGuideOff( id, convert( direction ) ) );
 }
@@ -379,7 +379,7 @@ void ASICamera::getControlCaps( ASI_CONTROL_TYPE controlType, long& min, long& m
     assert( false );
 }
 
-Hardware::IMG_TYPE ASICamera::convert( ASI_IMG_TYPE type )
+Hardware::IMAGE_TYPE ASICamera::convert( ASI_IMG_TYPE type )
 {
     switch( type ) {
         case ASI_IMG_RAW16: return Hardware::IT_RAW16;
@@ -392,7 +392,7 @@ Hardware::IMG_TYPE ASICamera::convert( ASI_IMG_TYPE type )
     return Hardware::IT_NONE;
 }
 
-ASI_IMG_TYPE ASICamera::convert( Hardware::IMG_TYPE type )
+ASI_IMG_TYPE ASICamera::convert( Hardware::IMAGE_TYPE type )
 {
     switch( type ) {
         case Hardware::IT_RAW8: return ASI_IMG_RAW8;
@@ -418,7 +418,7 @@ Hardware::BAYER_PATTERN ASICamera::convert( ASI_BAYER_PATTERN pattern )
     return Hardware::BP_BAYER_RG;
 }
 
-Hardware::GUIDE_DIRECTION ASICamera::convert( ASI_GUIDE_DIRECTION direction )
+Hardware::ST4_GUIDE_DIRECTION ASICamera::convert( ASI_GUIDE_DIRECTION direction )
 {
     switch( direction ) {
         case ASI_GUIDE_NORTH: return Hardware::GD_GUIDE_NORTH;
@@ -431,7 +431,7 @@ Hardware::GUIDE_DIRECTION ASICamera::convert( ASI_GUIDE_DIRECTION direction )
     return Hardware::GD_GUIDE_NORTH;
 }
 
-ASI_GUIDE_DIRECTION ASICamera::convert( Hardware::GUIDE_DIRECTION direction )
+ASI_GUIDE_DIRECTION ASICamera::convert( Hardware::ST4_GUIDE_DIRECTION direction )
 {
     switch( direction ) {
         case Hardware::GD_GUIDE_NORTH: return ASI_GUIDE_NORTH;
