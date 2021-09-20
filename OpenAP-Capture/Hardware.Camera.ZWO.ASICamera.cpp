@@ -52,14 +52,6 @@ std::shared_ptr<Hardware::CAMERA_INFO> ASICamera::GetInfo() const
     if( cameraInfo == 0 ) {
         ASI_CAMERA_INFO _cameraInfo;
         checkResult( ASIGetCameraPropertyByID( id, &_cameraInfo ) );
-
-        // BUG_FIX for ZWO ASI294MM Pro
-        if( strncmp( _cameraInfo.Name, "ZWO ASI294MM Pro", sizeof( _cameraInfo.Name ) ) == 0 ) {
-            if( bin == 2 ) {
-                _cameraInfo.BitDepth = 14;
-            }
-        }
-
         cameraInfo = createCameraInfo( _cameraInfo );
     }
     return cameraInfo;
@@ -214,7 +206,15 @@ std::shared_ptr<const CRawU16Image> ASICamera::DoExposure() const
 
     imageInfo.Width = width;
     imageInfo.Height = height;
+
+    // With binning (ie summing up the pixel values) the bit depth effectively increases
     imageInfo.BitDepth = cameraInfo->BitDepth;
+    switch( bin ) {
+        case 1: break;
+        case 2: imageInfo.BitDepth += 2; break;
+        case 4: imageInfo.BitDepth += 4; break;
+    }
+    imageInfo.BitDepth = std::min( 16, imageInfo.BitDepth );
 
     bool isAuto;
     imageInfo.Exposure = exposure != -1 ? exposure : GetExposure( isAuto );
@@ -249,14 +249,29 @@ std::shared_ptr<const CRawU16Image> ASICamera::DoExposure() const
                 } else {
                     checkResult( ASIGetDataAfterExp( id, result->Buffer(), result->BufferSize() ) );
                     auto pixels = result->RawPixels();
-                    int count = result->Count();
-                    switch( cameraInfo->BitDepth ) {
+                    size_t count = result->Count();
+                    switch( imageInfo.BitDepth ) {
                         case 16: break;
-                        case 14: for( int i = 0; i < count; i++ ) pixels[i] >>= 2; break;
-                        case 12: for( int i = 0; i < count; i++ ) pixels[i] >>= 4; break;
+                        case 14: for( size_t i = 0; i < count; i++ ) pixels[i] >>= 2; break;
+                        case 12: for( size_t i = 0; i < count; i++ ) pixels[i] >>= 4; break;
                         default:
                             assert( false );
                     }
+
+                    // Mini histogram to evaluate the effective bit depth of the result
+                    /*const size_t lengthOfH = 16;
+                    uint64_t h[lengthOfH];
+                    for( size_t i = 0; i < lengthOfH; i++ ) {
+                        h[i] = 0;
+                    }
+                    for( size_t i = 0; i < count; i++ ) {
+                        auto val = pixels[i];
+                        h[ val % lengthOfH]++;
+                    }
+                    for( size_t i = 0; i < lengthOfH; i++ ) {
+                        qDebug() << h[i];
+                    }*/
+
                     isExposure = false;
                     return result;
                 }
