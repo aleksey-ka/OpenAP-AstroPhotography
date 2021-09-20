@@ -64,6 +64,15 @@ ASICamera::ASICamera( int _id ) : id( _id )
     checkResult( ASIOpenCamera( id ) );
     checkResult( ASIInitCamera( id ) );
     checkResult( ASIDisableDarkSubtract( id ) );
+    checkResult( ASISetControlValue( id, ASI_BANDWIDTHOVERLOAD, 95, ASI_FALSE ) );
+
+    /*int numOfControls = 0;
+    checkResult( ASIGetNumOfControls( id, &numOfControls ) );
+    for( int i = 0; i < numOfControls; i++ ) {
+        ASI_CONTROL_CAPS controlCaps;
+        checkResult( ASIGetControlCaps( id, i, &controlCaps) );
+        qDebug() << controlCaps.Name;
+    }*/
 }
 
 ASICamera::~ASICamera()
