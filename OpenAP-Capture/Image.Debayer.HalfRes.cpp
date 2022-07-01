@@ -18,14 +18,14 @@ void CDebayer_RawU16_HalfRes::ToRgbU8( unsigned char* rgb, int stride, int x0, i
                 continue;
             }
             const auto* src = srcLine + X;
-            unsigned char r = addToStatistics( src[0] ) >> scaleTo8bits;
-            unsigned char g1 = addToStatistics( src[1] ) >> scaleTo8bits;
-            unsigned char g2 = addToStatistics( src[width] ) >> scaleTo8bits;
-            unsigned char b = addToStatistics( src[width + 1] ) >> scaleTo8bits;
+            unsigned char r = addToStatistics( src[width] ) >> scaleTo8bits;
+            unsigned char g1 = addToStatistics( src[0] ) >> scaleTo8bits;
+            unsigned char g2 = addToStatistics( src[width + 1] ) >> scaleTo8bits;
+            unsigned char b = addToStatistics( src[1] ) >> scaleTo8bits;
 
             unsigned char* dst = dstLine + 3 * x;
-            dst[0] = r;
-            dst[1] = g1;
+            dst[0] = (255 * r) / 300;
+            dst[1] = (200 * g1) / 300;
             dst[2] = b;
 
             hr[r]++;

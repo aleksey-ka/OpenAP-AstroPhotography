@@ -19,12 +19,15 @@ enum BAYER_PATTERN {
 
 struct CAMERA_INFO {
     int Id = -1;
+    char GUID[32];
     char Name[64];
     bool IsColorCamera;
     BAYER_PATTERN BayerPattern;
     double PixelSize;
     float ElectronsPerADU;
     int BitDepth;
+
+    CAMERA_INFO() { GUID[0] = 0; }
 };
 
 enum IMAGE_TYPE {

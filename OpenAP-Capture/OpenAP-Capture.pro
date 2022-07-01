@@ -28,6 +28,7 @@ SOURCES += \
         Hardware.Camera.cpp \
         Hardware.Camera.MockCamera.cpp \
         Hardware.Camera.ZWO.ASICamera.cpp \
+        Hardware.Camera.QHY.QHYCamera.cpp \
         Hardware.FilterWheel.cpp \
         Hardware.FilterWheel.ZWO.EFWheel.cpp \
         Hardware.Focuser.cpp \
@@ -54,6 +55,7 @@ HEADERS += \
         Hardware.Camera.h \
         Hardware.Camera.MockCamera.h \
         Hardware.Camera.ZWO.ASICamera.h \
+        Hardware.Camera.QHY.QHYCamera.h \
         Hardware.FilterWheel.h \
         Hardware.FilterWheel.ZWO.EFWheel.h \
         Hardware.Focuser.h \
@@ -83,7 +85,9 @@ FORMS += \
 
 win32: {
     INCLUDEPATH += "..\..\ASI SDK\include"
-	LIBS += -lASICamera2 -lEFW_filter -lEAF_focuser
+    LIBS += -lASICamera2 -lEFW_filter -lEAF_focuser
+    INCLUDEPATH += "..\..\QHY SDK\include"
+    LIBS += -lqhyccd
     RC_ICONS += MainFrame.ico
 } else: unix: {
     INCLUDEPATH += /usr/include/libasi
@@ -92,8 +96,10 @@ win32: {
 
 win32:contains(QMAKE_HOST.arch, x86_64) {  
     LIBS += -L"..\..\ASI SDK\lib\x64"
+    LIBS += -L"..\..\QHY SDK\x64"
 } else {
     LIBS += -L"..\..\ASI SDK\lib\x86"
+    LIBS += -L"..\..\QHY SDK\x86"
 }
 
 RESOURCES += Resources.qrc
