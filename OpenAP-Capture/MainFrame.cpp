@@ -568,7 +568,7 @@ std::shared_ptr<Hardware::CAMERA_INFO> MainFrame::openCamera( int index )
     auto start = std::chrono::steady_clock::now();
 
     auto cameraInfo = camerasInfo[index];
-    camera = Hardware::Camera::Open( cameraInfo->Id );
+    camera = Hardware::Camera::Open( *cameraInfo );
 
     int width = 0;
     int height = 0;

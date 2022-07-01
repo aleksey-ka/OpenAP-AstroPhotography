@@ -18,7 +18,7 @@ enum BAYER_PATTERN {
 };
 
 struct CAMERA_INFO {
-    int Id;
+    int Id = -1;
     char Name[64];
     bool IsColorCamera;
     BAYER_PATTERN BayerPattern;
@@ -50,7 +50,7 @@ public:
     static std::shared_ptr<CAMERA_INFO> GetInfo( int index );
 
     // Open camera
-    static std::shared_ptr<Camera> Open( int id );
+    static std::shared_ptr<Camera> Open( const CAMERA_INFO& );
     // Close camera
     virtual void Close() = 0;
 

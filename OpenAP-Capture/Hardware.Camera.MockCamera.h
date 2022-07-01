@@ -17,8 +17,8 @@ public:
     // Get mock camera info by index
     static std::shared_ptr<Hardware::CAMERA_INFO> GetInfo( int index );
 
-    // Open and initialize the camera by id (see camera info)
-    static std::shared_ptr<MockCamera> Open( int id );
+    // Open and initialize the camera info
+    static std::shared_ptr<MockCamera> Open( const Hardware::CAMERA_INFO& );
     virtual void Close() override;
 
     // Get camera info

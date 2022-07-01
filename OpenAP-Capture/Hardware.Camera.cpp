@@ -23,10 +23,10 @@ std::shared_ptr<Hardware::CAMERA_INFO> Camera::GetInfo( int index )
     return MockCamera::GetInfo( index );
 }
 
-std::shared_ptr<Camera> Camera::Open( int id )
+std::shared_ptr<Camera> Camera::Open( const Hardware::CAMERA_INFO& cameraInfo )
 {
-    if( id >= 0 ) {
-        return ASICamera::Open( id );
+    if( cameraInfo.Id >= 0 ) {
+        return ASICamera::Open( cameraInfo );
     }
-    return MockCamera::Open( id );
+    return MockCamera::Open( cameraInfo );
 }

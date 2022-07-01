@@ -81,9 +81,9 @@ MockCamera::MockCamera( int id )
     currentSettings = loadImage( index, frames )->Info();
 }
 
-std::shared_ptr<MockCamera> MockCamera::Open( int id )
+std::shared_ptr<MockCamera> MockCamera::Open( const Hardware::CAMERA_INFO& cameraInfo )
 {
-    return std::make_shared<MockCamera>( id );
+    return std::make_shared<MockCamera>( cameraInfo.Id );
 }
 
 void MockCamera::Close()

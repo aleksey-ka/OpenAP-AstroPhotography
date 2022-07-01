@@ -19,7 +19,7 @@ public:
     static std::shared_ptr<Hardware::CAMERA_INFO> GetInfo( int index );
 
     // Open and initialize the camera by id (see camera info)
-    static std::shared_ptr<ASICamera> Open( int id );
+    static std::shared_ptr<ASICamera> Open( const Hardware::CAMERA_INFO& );
     // Close the camera
     void Close() override;
 

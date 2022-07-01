@@ -32,9 +32,9 @@ std::shared_ptr<Hardware::CAMERA_INFO> ASICamera::GetInfo( int index )
     return createCameraInfo( cameraInfo );
 }
 
-std::shared_ptr<ASICamera> ASICamera::Open( int id )
+std::shared_ptr<ASICamera> ASICamera::Open( const Hardware::CAMERA_INFO& cameraInfo )
 {
-    return std::make_shared<ASICamera>( id );
+    return std::make_shared<ASICamera>( cameraInfo.Id );
 }
 
 void ASICamera::Close()
