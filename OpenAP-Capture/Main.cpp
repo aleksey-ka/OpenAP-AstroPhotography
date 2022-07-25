@@ -3,11 +3,20 @@
 
 #include <QApplication>
 #include <QScreen>
+#include <QTest>
 
 #include "MainFrame.h"
 
+bool run( int argc, char* argv[] );
+
 int main( int argc, char *argv[] )
 {
+    for( int i = 0; i < argc; i++ ) {
+        if( strcmp( argv[i], "-xml" ) == 0 ) {
+            return run( argc, argv );
+        }
+    }
+
     QApplication a( argc, argv );
 
     QCoreApplication::setOrganizationName( "aleksey-ka" );

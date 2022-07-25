@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT += core gui serialport
+QT += testlib
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -49,6 +50,7 @@ SOURCES += \
         MainFrame.cpp \
         MainFrame.Tools.cpp \
         Renderer.cpp \
+        Tests.FirstTest.cpp
 
 HEADERS += \
         Hardware.Camera.h \
@@ -76,7 +78,8 @@ HEADERS += \
         Math.Matrix.h \
         MainFrame.h \
         MainFrame.Tools.h \
-        Renderer.h
+		Renderer.h \
+		Tests.FirstTest.h
 
 FORMS += \
         MainFrame.ui
