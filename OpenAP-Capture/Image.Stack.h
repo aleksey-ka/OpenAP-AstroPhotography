@@ -1,8 +1,7 @@
 // Copyright (C) 2021 Aleksey Kalyuzhny. Released under the terms of the
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
-#ifndef IMAGE_SEQUENCE_H
-#define IMAGE_SEQUENCE_H
+#pragma once
 
 #include <Image.Math.h>
 #include <Image.RawImage.h>
@@ -74,5 +73,3 @@ private:
     double offset = 0.0;
     virtual std::shared_ptr<const CPixelBuffer<double>> calibrateImage( std::shared_ptr<const CRawU16Image> rawImage );
 };
-
-#endif // IMAGE_SEQUENCE_H

@@ -1,8 +1,7 @@
 // Copyright (C) 2020 Aleksey Kalyuzhny. Released under the terms of the
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
-#ifndef HARDWARE_FOCUSER_ZWO_EAFOCUSER_H
-#define HARDWARE_FOCUSER_ZWO_EAFOCUSER_H
+#pragma once
 
 #include <limits.h>
 
@@ -35,5 +34,3 @@ private:
 
     bool connect( int id );
 };
-
-#endif // HARDWARE_FOCUSER_ZWO_EAFOCUSER_H

@@ -1,8 +1,7 @@
 // Copyright (C) 2020 Aleksey Kalyuzhny. Released under the terms of the
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
-#ifndef IMAGE_FORMATS_H
-#define IMAGE_FORMATS_H
+#pragma once
 
 #include "Image.RawImage.h"
 
@@ -11,5 +10,3 @@ public:
     virtual std::shared_ptr<CRawU16Image> Load( const char* filePath, const ImageInfo& ) const override;
     virtual void Save( const char* filePath, const CRawU16Image* ) const override;
 };
-
-#endif // IMAGE_FORMATS_H

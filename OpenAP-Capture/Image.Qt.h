@@ -1,8 +1,7 @@
 // Copyright (C) 2020 Aleksey Kalyuzhny. Released under the terms of the
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
-#ifndef IMAGE_QT_H
-#define IMAGE_QT_H
+#pragma once
 
 #include <QImage>
 #include <QPixmap>
@@ -67,5 +66,3 @@ inline QImage CreateImage( const CRawU16Image* image )
 }
 
 } // namespace Qt
-
-#endif // IMAGE_QT_H

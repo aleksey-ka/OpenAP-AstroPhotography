@@ -1,8 +1,7 @@
 // Copyright (C) 2021 Aleksey Kalyuzhny. Released under the terms of the
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
-#ifndef IMAGE_DEBAYER_H
-#define IMAGE_DEBAYER_H
+#pragma once
 
 #include <limits.h>
 #include <vector>
@@ -50,5 +49,3 @@ inline unsigned short CDebayer_RawU16::addToStatistics( unsigned short value )
 }
 
 #define CFA_CHANNEL_AT( x, y ) ( x % 2 | y % 2 << 1 )
-
-#endif // IMAGE_DEBAYER_H

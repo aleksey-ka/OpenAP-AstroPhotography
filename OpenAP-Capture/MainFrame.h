@@ -1,8 +1,7 @@
 // Copyright (C) 2020 Aleksey Kalyuzhny. Released under the terms of the
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
-#ifndef MAINFRAME_H
-#define MAINFRAME_H
+#pragma once
 
 #include <QMainWindow>
 
@@ -130,5 +129,3 @@ private:
 
     bool debugMode = false;
 };
-
-#endif // MAINFRAME_H

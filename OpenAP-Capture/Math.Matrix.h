@@ -1,8 +1,7 @@
 ﻿// Copyright (C) 2020 Aleksey Kalyuzhny. Released under the terms of the
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
-#ifndef MATH_MATRIX_H
-#define MATH_MATRIX_H
+#pragma once
 
 #include <vector>
 
@@ -100,5 +99,3 @@ inline CMatrix<T> CMatrix<T>::operator * ( const CMatrix<T>& m )
 	CMatrix<T> result;
 	return result;
 }
-
-#endif // MATH_MATRIX_H

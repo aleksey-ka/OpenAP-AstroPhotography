@@ -1,8 +1,7 @@
 ﻿// Copyright (C) 2020 Aleksey Kalyuzhny. Released under the terms of the
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
-#ifndef MATH_LINEAR_ALGEBRA_H
-#define MATH_LINEAR_ALGEBRA_H
+#pragma once
 
 #include <Math.Matrix.h>
 
@@ -47,5 +46,3 @@ struct CSolveLeastSquaresCache {
 	CMatrix<double> MT; // M^T
 };
 bool SolveLeastSquares( CMatrix<double>& x, CSolveLeastSquaresCache& cache, const CMatrix<double>& M, const CMatrix<double>& y );
-
-#endif // MATH_LINEAR_ALGEBRA_H

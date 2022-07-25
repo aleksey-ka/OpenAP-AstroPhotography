@@ -1,8 +1,7 @@
 // Copyright (C) 2020 Aleksey Kalyuzhny. Released under the terms of the
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
-#ifndef HARDWARE_CAMERA_MOCKCAMERA_H
-#define HARDWARE_CAMERA_MOCKCAMERA_H
+#pragma once
 
 #include "Hardware.Camera.h"
 
@@ -90,5 +89,3 @@ private:
     mutable std::atomic<bool> isClosing{ false };
     mutable std::atomic<bool> isExposure{ false };
 };
-
-#endif // HARDWARE_CAMERA_MOCKCAMERA_H

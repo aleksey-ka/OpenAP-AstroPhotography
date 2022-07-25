@@ -1,8 +1,7 @@
 // Copyright (C) 2020 Aleksey Kalyuzhny. Released under the terms of the
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
-#ifndef IMAGE_RAWU16IMAGE_H
-#define IMAGE_RAWU16IMAGE_H
+#pragma once
 
 #include <Image.Image.h>
 
@@ -61,5 +60,3 @@ public:
 
     virtual ~ImageFileFormat() {}
 };
-
-#endif // IMAGE_RAWU16IMAGE_H

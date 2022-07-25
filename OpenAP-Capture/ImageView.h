@@ -1,8 +1,7 @@
 // Copyright (C) 2020 Aleksey Kalyuzhny. Released under the terms of the
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
-#ifndef IMAGEVIEW_H
-#define IMAGEVIEW_H
+#pragma once
 
 #include <QLabel>
 #include <QMouseEvent>
@@ -19,5 +18,3 @@ protected:
 signals:
     void imagePressed( int x, int y, Qt::MouseButton, Qt::KeyboardModifiers );
 };
-
-#endif // IMAGEVIEW_H

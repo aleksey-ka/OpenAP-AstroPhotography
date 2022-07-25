@@ -1,8 +1,7 @@
 // Copyright (C) 2021 Aleksey Kalyuzhny. Released under the terms of the
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
-#ifndef IMAGE_MATH_H
-#define IMAGE_MATH_H
+#pragma once
 
 #include <Image.Image.h>
 
@@ -290,5 +289,3 @@ inline size_t pixels_histogram_median( const CHistogram& h, size_t channel )
 {
     return pixels_histogram_p( h, channel, h.PixelsCount() / 2 );
 }
-
-#endif // IMAGE_MATH_H

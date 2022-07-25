@@ -1,8 +1,7 @@
 // Copyright (C) 2021 Aleksey Kalyuzhny. Released under the terms of the
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
-#ifndef IMAGE_MATH_ADVANCED_H
-#define IMAGE_MATH_ADVANCED_H
+#pragma once
 
 #include <Image.Math.h>
 #include <Image.RawImage.h>
@@ -173,5 +172,3 @@ public:
     bool isGlobalPolarAlign = false;
     void toggleGlobalPolarAllign() { isGlobalPolarAlign = !isGlobalPolarAlign; }
 };
-
-#endif // IMAGE_MATH_ADVANCED_H

@@ -1,8 +1,7 @@
 // Copyright (C) 2020 Aleksey Kalyuzhny. Released under the terms of the
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
-#ifndef RENDERER_H
-#define RENDERER_H
+#pragma once
 
 #include <QImage>
 #include <QPixmap>
@@ -37,5 +36,3 @@ private:
     ushort minValue = USHRT_MAX;
     uint minCount = 0;
 };
-
-#endif // RENDERER_H
