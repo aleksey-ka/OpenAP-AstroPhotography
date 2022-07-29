@@ -7,8 +7,8 @@
 #include <Image.RawImage.h>
 
 struct CChannelStat {
-    int Median;
-    int Sigma;
+    unsigned int Median;
+    unsigned int Sigma;
 };
 
 class CPixelStatistics {

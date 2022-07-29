@@ -29,8 +29,8 @@ CChannelStat CPixelStatistics::stat( int channel, int n ) const
     int count = n * this->count;
     stat.Median = p( channel, count / 2 );
     stat.Sigma = stat.Median - p( channel, count / 2 - count / 3 );
-    int dR2 = p( channel, count / 2 + count / 3 ) - stat.Median;
-    int mR = maxP( channel, stat.Median - stat.Sigma, stat.Median + dR2 );
+    //int dR2 = p( channel, count / 2 + count / 3 ) - stat.Median;
+    //int mR = maxP( channel, stat.Median - stat.Sigma, stat.Median + dR2 );
     return stat;
 }
 
@@ -38,7 +38,7 @@ size_t CPixelStatistics::p( int channel, int target ) const
 {
     auto& hist = channels[channel];
     uint sum = 0;
-    for( int i = 0; i < channelSize; i++ ) {
+    for( uint i = 0; i < channelSize; i++ ) {
         uint delta = target - sum;
         uint v = hist[i];
         if( delta <= v ) {
@@ -110,13 +110,13 @@ CPixelStatistics CRawU16::CalculateStatistics( int x0, int y0, int W, int H ) co
     x0 += x0 % 2;
     y0 += y0 % 2;
 
-    for( size_t y = 0; y < H; y++ ) {
+    for( int y = 0; y < H; y++ ) {
         int Y = 2 * y + y0;
         if( Y < 0 || Y >= height ) {
             continue;
         }
         const ushort* srcLine = raw + width * Y;
-        for( size_t x = 0; x < W; x++ ) {
+        for( int x = 0; x < W; x++ ) {
             int X = 2 * x + x0;
             if( X < 0 || X >= width ) {
                 continue;
@@ -145,23 +145,23 @@ std::shared_ptr<CRgbImage> CRawU16::Stretch( int x0, int y0, int W, int H ) cons
 {
     CPixelStatistics stats = CalculateStatistics( x0, y0, W, H );
 
-    const int maxValue = ~(~0u << bitDepth) - 1;
+    const uint maxValue = ~(~0u << bitDepth) - 1;
 
     CChannelStat sR = stats.stat( 0 );
     CChannelStat sG = stats.stat( 1, 2);
     CChannelStat sB = stats.stat( 2 );
 
-    sR.Sigma = std::max( 1, sR.Sigma );
-    sG.Sigma = std::max( 1, sG.Sigma );
-    sB.Sigma = std::max( 1, sB.Sigma );
+    sR.Sigma = std::max( 1u, sR.Sigma );
+    sG.Sigma = std::max( 1u, sG.Sigma );
+    sB.Sigma = std::max( 1u, sB.Sigma );
 
     auto rgb16 = DebayerRect( x0, y0, W, H );
 
     auto result = std::make_shared<CRgbImage>( W, H );
-    for( size_t y = 0; y < H; y++ ) {
+    for( int y = 0; y < H; y++ ) {
         const ushort* srcLine = rgb16->ScanLine( y );
         uchar* dstLine = result->ScanLine( y );
-        for( size_t x = 0; x < W; x++ ) {
+        for( int x = 0; x < W; x++ ) {
             const ushort* src = srcLine + 3 * x;
             uchar* dst = dstLine + 3 * x;
 
@@ -189,28 +189,28 @@ std::shared_ptr<CRgbImage> CRawU16::StretchHalfRes( int x0, int y0, int W, int H
 {
     CPixelStatistics stats = CalculateStatistics( x0, y0, W, H );
 
-    const int maxValue = ~(~0u << bitDepth) - 1;
+    const uint maxValue = ~(~0u << bitDepth) - 1;
 
     CChannelStat sR = stats.stat( 0 );
     CChannelStat sG = stats.stat( 1, 2);
     CChannelStat sB = stats.stat( 2 );
 
-    sR.Sigma = std::max( 1, sR.Sigma );
-    sG.Sigma = std::max( 1, sG.Sigma );
-    sB.Sigma = std::max( 1, sB.Sigma );
+    sR.Sigma = std::max( 1u, sR.Sigma );
+    sG.Sigma = std::max( 1u, sG.Sigma );
+    sB.Sigma = std::max( 1u, sB.Sigma );
 
     W /= 2;
     H /= 2;
 
     auto result = std::make_shared<CRgbImage>( W, H );
-    for( size_t y = 0; y < H; y++ ) {
+    for( int y = 0; y < H; y++ ) {
             int Y = 2 * y + y0;
             if( Y < 0 || Y >= height ) {
                 continue;
             }
             const ushort* srcLine = raw + width * Y;
             uchar* dstLine = result->RgbPixels() + result->ByteWidth() * y;
-            for( size_t x = 0; x < W; x++ ) {
+            for( int x = 0; x < W; x++ ) {
                 int X = 2 * x + x0;
                 if( X < 0 || X >= width ) {
                     continue;
@@ -425,7 +425,7 @@ static std::tuple<int, int, int, int, int, unsigned> starMaskWithMax( const CGra
     return std::make_tuple( vmax, xmax, ymax, cmax, count, sum );
 }
 
-static void erase( int x, int y, int width, int height, std::shared_ptr<CGrayImage> result )
+/*static void erase( int x, int y, int width, int height, std::shared_ptr<CGrayImage> result )
 {
     std::stack<std::tuple<int, int>> s;
     s.emplace( x, y );
@@ -448,7 +448,7 @@ static void erase( int x, int y, int width, int height, std::shared_ptr<CGrayIma
             }
         }
     }
-}
+}*/
 
 static void enumerate(const CGrayU16Image* image, int x, int y, int width, int height, int th, std::shared_ptr<CGrayImage> mask, std::function<void(int, int, ushort)> f )
 {
@@ -1148,5 +1148,5 @@ DetectionResults CRawU16::DetectStars( int x0, int y0, int W, int H ) const
     }
     results.Mask = mask;
     results.Image = image;
-    return std::move( results );
+    return results;
 }

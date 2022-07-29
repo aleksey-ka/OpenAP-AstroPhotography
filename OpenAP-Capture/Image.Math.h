@@ -205,6 +205,8 @@ inline CHistogram pixels_histogram( const T* pixels, size_t count, size_t bitsPe
         return result;
     } else {
         assert( false );
+        CHistogram result( 0, 0 );
+        return result;
     }
 }
 
@@ -236,6 +238,8 @@ inline CHistogram pixels_histogram_float( const T* pixels, size_t count, size_t 
         return result;
     } else {
         assert( false );
+        CHistogram result( 0, 0 );
+        return result;
     }
 }
 
@@ -258,6 +262,8 @@ inline CHistogram pixels_patch_histogram( const T* pixels, size_t width, size_t 
         return result;
     } else {
         assert( false );
+        CHistogram result( 0, 0 );
+        return result;
     }
 }
 
@@ -280,6 +286,8 @@ inline CHistogram pixels_patch_histogram_float( const T* pixels, size_t width, s
         return result;
     } else {
         assert( false );
+        CHistogram result( 0, 0 );
+        return result;
     }
 }
 

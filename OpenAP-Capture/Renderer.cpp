@@ -27,8 +27,8 @@ QPixmap Renderer::Render( TRenderingMethod method, int x, int y, int W, int H )
     if( method == RM_HalfResolution || method == RM_QuarterResolution) {
         x -= W / 2;
         y -= H / 2;
-        size_t w = W > 0 ? W : width / 2;
-        size_t h = H > 0 ? H : height / 2;
+        int w = W > 0 ? W : width / 2;
+        int h = H > 0 ? H : height / 2;
         size_t byteWidth = 3 * w;
         std::vector<uchar> pixels( byteWidth * h );   
         uchar* rgb = pixels.data();
@@ -44,7 +44,7 @@ QPixmap Renderer::Render( TRenderingMethod method, int x, int y, int W, int H )
             return Qt::CreatePixmap( rgb, w, h, byteWidth );
         } else {
             // Downscale twice
-            size_t byteWidth2= byteWidth / 2;
+            size_t byteWidth2 = byteWidth / 2;
             std::vector<uchar> pixels2( byteWidth2 * h / 2);
             uchar* rgb2 = pixels.data();
             for( int i = 0; i < h / 2; i++ ) {

@@ -126,7 +126,7 @@ MainFrame::MainFrame( QWidget *parent ) :
        if( filterWheelDefs.size() > 0 ) {
            QSignalBlocker lock( ui->filterWheelComboBox );
            int index = 0;
-            for( size_t i = 0; i < filterWheelDefs.size(); i++ ) {
+            for( int i = 0; i < filterWheelDefs.size(); i++ ) {
                 auto name = QFileInfo( filterWheelDefs[i] ).baseName();
                 ui->filterWheelComboBox->addItem( name );
                 if( name == settings.value( "FilterWheel" ) ) {
@@ -892,7 +892,7 @@ void MainFrame::on_filterWheelComboBox_currentIndexChanged( int index )
 
     QSignalBlocker lock( ui->filterComboBox );
     ui->filterComboBox->clear();
-    for( size_t i = 0; i < filterWheel->GetSlotsCount(); i++ ) {
+    for( int i = 0; i < filterWheel->GetSlotsCount(); i++ ) {
         QString name;
         QString description;
         if( i < slotNames.size() ) {
@@ -909,7 +909,7 @@ void MainFrame::on_filterWheelComboBox_currentIndexChanged( int index )
     ui->filterComboBox->setCurrentIndex( filterWheel->GetPosition() );
 }
 
-void MainFrame::on_imageView_imagePressed( int cx, int cy, Qt::MouseButton button, Qt::KeyboardModifiers modifiers )
+void MainFrame::on_imageView_imagePressed( int cx, int cy, Qt::MouseButton, Qt::KeyboardModifiers modifiers )
 {
     int scale = 2;
     if( ui->showFullResolution->isChecked() ) {
