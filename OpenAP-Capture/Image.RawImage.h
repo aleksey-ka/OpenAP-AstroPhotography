@@ -29,8 +29,8 @@ class ImageFileFormat;
 class CRawU16Image : public CPixelBuffer<unsigned short> {
 public:
     CRawU16Image( const ImageInfo& _imageInfo ) :
-        imageInfo( _imageInfo ),
-        CPixelBuffer( _imageInfo.Width, _imageInfo.Height )
+        CPixelBuffer( _imageInfo.Width, _imageInfo.Height ),
+        imageInfo( _imageInfo )
     {
     }
 
