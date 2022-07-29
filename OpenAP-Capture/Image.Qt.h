@@ -61,6 +61,7 @@ inline QImage CreateImage( const CRawU16Image* image )
 #if QT_VERSION >= QT_VERSION_CHECK( 5, 13, 0 )
     return QImage( image->Buffer(), image->Width(), image->Height(), sizeof( ushort ) * image->Width(), QImage::Format_Grayscale16 );
 #else
+    (void)image; // unreferenced parameter
     assert( false );
 #endif
 }
