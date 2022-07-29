@@ -61,7 +61,7 @@ static void fwprintf_no_trailing_zeroes( FILE* file, const wchar_t* name, float 
 static void fwprintf_normalize_spaces( FILE* file, const wchar_t* name, long long value )
 {
     char buf[100];
-    sprintf( buf, "%I64d", value );
+    sprintf( buf, "%lld", value );
     size_t len = strlen( buf );
 
     bool isSpace = false;
@@ -137,8 +137,8 @@ std::shared_ptr<CRawU16Image> CRawU16Image::LoadFromFileRW( const char* filePath
     imageInfo.Exposure = (int)( 1000000 * exposure );
     swscanf( map[L"CAMERA_TEMPERATURE"].c_str(), L"%lf", &imageInfo.Temperature );
     imageInfo.Exposure = (int)( 1000000 * exposure );
-    swscanf( map[L"TIMESTAMP"].c_str(), L"%I64d", &imageInfo.Timestamp );
-    swscanf( map[L"SERIES_ID"].c_str(), L"%I64d", &imageInfo.SeriesId );
+    swscanf( map[L"TIMESTAMP"].c_str(), L"%lld", &imageInfo.Timestamp );
+    swscanf( map[L"SERIES_ID"].c_str(), L"%lld", &imageInfo.SeriesId );
     imageInfo.Camera = toString( map[L"CAMERA"] );
     imageInfo.Channel = toString( map[L"CHANNEL"] );
     imageInfo.FilterDescription = toString( map[L"FILTER"] );
