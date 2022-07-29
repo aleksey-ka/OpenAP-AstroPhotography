@@ -9,15 +9,15 @@
 #include <vector>
 
 struct ImageInfo {
-    int Width;
-    int Height;
-    int Offset;
-    int Gain;
-    int Exposure;
-    int BitDepth;
-    int64_t Timestamp;
-    int64_t SeriesId;
-    double Temperature;
+    int Width = 0;
+    int Height = 0;
+    int Offset = 0;
+    int Gain = 0;
+    int Exposure = 0;
+    int BitDepth = 0;
+    int64_t Timestamp = 0;
+    int64_t SeriesId = 0;
+    double Temperature = 0.0;
     std::string Camera;
     std::string CFA;
     std::string Channel;
