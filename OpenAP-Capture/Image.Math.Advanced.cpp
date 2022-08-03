@@ -391,8 +391,7 @@ static std::tuple<int, int, int, int, int, unsigned> starMaskWithMax( const CGra
     std::stack<std::tuple<int, int>> s;
     s.emplace( x, y );
     while( not s.empty() ) {
-        int x, y;
-        std::tie( x, y ) = s.top();
+        auto [x, y] = s.top();
         s.pop();
         if( x >= 0 && x < width && y > 0 && y < height ) {
             auto& dst = result->At( x, y );
@@ -430,8 +429,7 @@ static std::tuple<int, int, int, int, int, unsigned> starMaskWithMax( const CGra
     std::stack<std::tuple<int, int>> s;
     s.emplace( x, y );
     while( not s.empty() ) {
-        int x, y;
-        std::tie( x, y ) = s.top();
+        auto [x, y] = s.top();
         s.pop();
         if( x >= 0 && x < width && y > 0 && y < height ) {
             auto& dst = result->At( x, y );
@@ -456,8 +454,7 @@ static void enumerate(const CGrayU16Image* image, int x, int y, int width, int h
     std::stack<std::tuple<int, int>> s;
     s.emplace( x, y );
     while( not s.empty() ) {
-        int x, y;
-        std::tie( x, y ) = s.top();
+        auto [x, y] = s.top();
         s.pop();
         if( x >= 0 && x < width && y > 0 && y < height ) {
             auto& dst = mask->At( x, y );
@@ -477,8 +474,7 @@ static void enumerate(const CGrayU16Image* image, int x, int y, int width, int h
         }
     }
     while( not undo.empty() ) {
-        int x, y, v;
-        std::tie( x, y, v ) = undo.top();
+        auto [x, y, v] = undo.top();
         undo.pop();
         mask->At( x, y ) = v;
     }
@@ -489,8 +485,7 @@ static std::shared_ptr<CGrayImage> starMask( const CGrayU16Image* image, int x, 
     std::stack<std::tuple<int, int>> s;
     s.emplace( x, y );
     while( not s.empty() ) {
-        int x, y;
-        std::tie( x, y ) = s.top();
+        auto [x, y] = s.top();
         s.pop();
         if( x >= 0 && x < width && y > 0 && y < height ) {
             auto& dst = result->At( x, y );
@@ -1125,9 +1120,7 @@ DetectionResults CRawU16::DetectStars( int x0, int y0, int W, int H ) const
 
             if( dst[0] == 0 && src[0] >= th ) {
                 auto region = std::make_shared<DetectionRegion>();
-                int vmax, xmax, ymax, cmax, count;
-                unsigned sum;
-                std::tie( vmax, xmax, ymax, cmax, count, sum ) = starMaskWithMax( image.get(), x, y, halfTh, image->Width(), image->Height(), mask, 32 );
+                auto [vmax, xmax, ymax, cmax, count, sum] = starMaskWithMax( image.get(), x, y, halfTh, image->Width(), image->Height(), mask, 32 );
                 region->Vmax = vmax;
                 region->Xmax = xmax;
                 region->Ymax = ymax;

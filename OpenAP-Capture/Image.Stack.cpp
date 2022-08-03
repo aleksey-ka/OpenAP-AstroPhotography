@@ -138,13 +138,11 @@ void CStacker::prepareTwoStacks( const ImageSequence& images, CStacker::Callback
 
 void CStacker::analyzePixels( const CPixelBuffer<double>& buffer )
 {
-    double mean, sigma, minv, maxv;
-    std::tie( mean, sigma, minv, maxv ) = simple_pixel_statistics( buffer.Pixels(), count );
+    auto [mean, sigma, minv, maxv] = simple_pixel_statistics( buffer.Pixels(), count );
     qDebug() << "Mean" << mean << "Sigma" << sigma << "Min" << minv << "Max" << maxv;
     CHistogram h1 = pixels_histogram_float( buffer.Pixels(), buffer.Count(), bitDepth );
     qDebug() << "Median" << pixels_histogram_median( h1, 0 );
-    size_t minM, maxM;
-    std::tie( minM, maxM ) = patches_statistics_float( buffer.Pixels(), buffer.Width(), buffer.Height(), bitDepth, 3 );
+    auto [minM, maxM] = patches_statistics_float( buffer.Pixels(), buffer.Width(), buffer.Height(), bitDepth, 3 );
     qDebug() << "Median3x3" << minM << maxM << ( 1.0 * ( maxM - minM ) ) / ( maxM + minM );
     std::tie( minM, maxM ) = patches_statistics_float( buffer.Pixels(), buffer.Width(), buffer.Height(), bitDepth, 32 );
     qDebug() << "Median32x32" << minM << maxM << ( 1.0 * ( maxM - minM ) ) / ( maxM + minM );
