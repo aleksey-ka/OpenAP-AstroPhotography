@@ -157,9 +157,9 @@ void CDebayer_RawU16_HQLinear::ToRgbU16( unsigned short* rgb, int stride, int x0
 
             unsigned short* dst = dstLine + 3 * x;
 
-            dst[0] = R > USHRT_MAX ? USHRT_MAX : R;
-            dst[1] = G > USHRT_MAX ? USHRT_MAX : G;
-            dst[2] = B > USHRT_MAX ? USHRT_MAX : B;
+            dst[0] = R > U16_MAX ? U16_MAX : R;
+            dst[1] = G > U16_MAX ? U16_MAX : G;
+            dst[2] = B > U16_MAX ? U16_MAX : B;
         }
     }
 }
@@ -323,9 +323,9 @@ void CDebayer_RawU16_HQLinear::ToRgbU8( unsigned char* rgb, int stride, int x0, 
 
             auto* dst = dstLine + 3 * x;
 
-            dst[0] = R > UCHAR_MAX ? UCHAR_MAX : R;
-            dst[1] = G > UCHAR_MAX ? UCHAR_MAX : G;
-            dst[2] = B > UCHAR_MAX ? UCHAR_MAX : B;
+            dst[0] = R > U8_MAX ? U8_MAX : R;
+            dst[1] = G > U8_MAX ? U8_MAX : G;
+            dst[2] = B > U8_MAX ? U8_MAX : B;
         }
     }
 }

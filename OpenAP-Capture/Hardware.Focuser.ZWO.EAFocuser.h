@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include <limits.h>
-
 #include "Hardware.Focuser.h"
 
 class ZWOFocuser : public Hardware::Focuser {

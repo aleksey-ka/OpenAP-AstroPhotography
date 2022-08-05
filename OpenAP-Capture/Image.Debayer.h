@@ -3,8 +3,11 @@
 
 #pragma once
 
-#include <limits.h>
 #include <vector>
+#include <limits>
+
+const auto U8_MAX = std::numeric_limits<unsigned char>::max();
+const auto U16_MAX = std::numeric_limits<unsigned short>::max();
 
 class CDebayer_RawU16 {
 public:
@@ -15,7 +18,7 @@ public:
 
     unsigned short MaxValue = 0;
     unsigned MaxCount = 0;
-    unsigned short MinValue = USHRT_MAX;
+    unsigned short MinValue = U16_MAX;
     unsigned MinCount = 0;
 
 protected:
