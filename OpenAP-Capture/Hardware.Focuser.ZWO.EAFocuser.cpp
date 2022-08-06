@@ -5,8 +5,7 @@
 
 #include "EAF_focuser.h"
 
-#include <QThread>
-#include <QDebug>
+#include <thread>
 
 class EAFException : public std::exception {
 public:
@@ -112,7 +111,8 @@ void ZWOFocuser::syncMoveTo( int newPos )
     focuserPos = INT_MIN;
     checkResult( EAFMove( id, newPos ) );
     while( isInsideMoveTo() ) {
-        QThread::msleep( 100 );
+        using namespace std::chrono_literals;
+        std::this_thread::sleep_for( 100ms );
     }
     checkResult( EAFGetPosition( id, &focuserPos ) );
 }

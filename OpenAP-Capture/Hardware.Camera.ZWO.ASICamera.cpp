@@ -3,8 +3,10 @@
 
 #include "Hardware.Camera.ZWO.ASICamera.h"
 
-#include <QDebug>
-#include <QThread>
+#include <cassert>
+#include <cstring>
+#include <iostream>
+#include <thread>
 
 int ASICamera::GetCount()
 {
@@ -65,14 +67,6 @@ ASICamera::ASICamera( int _id ) : id( _id )
     checkResult( ASIInitCamera( id ) );
     checkResult( ASIDisableDarkSubtract( id ) );
     checkResult( ASISetControlValue( id, ASI_BANDWIDTHOVERLOAD, 95, ASI_FALSE ) );
-
-    /*int numOfControls = 0;
-    checkResult( ASIGetNumOfControls( id, &numOfControls ) );
-    for( int i = 0; i < numOfControls; i++ ) {
-        ASI_CONTROL_CAPS controlCaps;
-        checkResult( ASIGetControlCaps( id, i, &controlCaps) );
-        qDebug() << controlCaps.Name;
-    }*/
 }
 
 ASICamera::~ASICamera()
@@ -80,7 +74,7 @@ ASICamera::~ASICamera()
     try {
         ASICamera::Close();
     } catch( std::exception& e ) {
-       qDebug() << "Error: " << e.what();
+        std::cerr << e.what() << std::endl;
     }
 }
 
@@ -243,7 +237,8 @@ std::shared_ptr<const CRawU16Image> ASICamera::DoExposure() const
     do {
         // This delay will significantly reduce the load on CPU, and has no effect
         // on FPS in this mode, as the status is still updated 1000 times/s
-        QThread::usleep( 1000 );
+        using namespace std::chrono_literals;
+        std::this_thread::sleep_for( 1000us );
         checkResult( ASIGetExpStatus( id, &status ) );
         switch( status ) {
             case ASI_EXP_WORKING:
@@ -357,19 +352,6 @@ void ASICamera::GuideOn( Hardware::ST4_GUIDE_DIRECTION direction ) const
 void ASICamera::GuideOff( Hardware::ST4_GUIDE_DIRECTION direction ) const
 {
     checkResult( ASIPulseGuideOff( id, convert( direction ) ) );
-}
-
-void ASICamera::PrintDebugInfo()
-{
-    qDebug() << "ASI SDK" << ASIGetSDKVersion();
-
-    lazyControlCaps();
-
-    for( auto cap : controlCaps ) {
-        qDebug() << cap.Name << cap.Description;
-        qDebug() << "[" << cap.MinValue << cap.MaxValue << cap.DefaultValue <<
-            ( cap.IsAutoSupported ? "auto" : "" ) << ( cap.IsWritable ? "rw" : "r" ) << "]";
-    }
 }
 
 void ASICamera::lazyControlCaps() const

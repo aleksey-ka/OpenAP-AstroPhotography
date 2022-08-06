@@ -5,8 +5,6 @@
 
 #include "EFW_filter.h"
 
-#include <QDebug>
-
 class EFWException : public std::exception {
 public:
     EFWException( EFW_ERROR_CODE _errorCode ) :

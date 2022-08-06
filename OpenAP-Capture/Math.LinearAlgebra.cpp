@@ -3,7 +3,7 @@
 
 #include <Math.LinearAlgebra.h>
 
-#include <assert.h>
+#include <cassert>
 #include <cstring>
 
 bool AnalyticalInvertMatrix( CMatrix<double>& I, const CMatrix<double>& A )
@@ -11,7 +11,7 @@ bool AnalyticalInvertMatrix( CMatrix<double>& I, const CMatrix<double>& A )
 	switch( A.Rows() ) {
 		case 0 : return false;
 		case 1 :
-			if( fabs( A[0][0] ) < DBL_EPSILON ) {
+			if( fabs( A[0][0] ) < std::numeric_limits<double>::epsilon() ) {
 				return false;
 			}
 			I.SetSize( 1, 1 );
@@ -19,7 +19,7 @@ bool AnalyticalInvertMatrix( CMatrix<double>& I, const CMatrix<double>& A )
 			break;
 		case 2 : {
 				auto det = A[0][0] * A[1][1] - A[0][1] * A[1][0];
-				if( fabs( det ) < DBL_EPSILON ) {
+				if( fabs( det ) < std::numeric_limits<double>::epsilon() ) {
 					return false;
 				}
 				I.SetSize( 2, 2 );
@@ -33,7 +33,7 @@ bool AnalyticalInvertMatrix( CMatrix<double>& I, const CMatrix<double>& A )
 				auto det = A[0][0] * A[1][1] * A[2][2] + A[1][0] * A[2][1] * A[0][2] +
 					A[2][0] * A[0][1] * A[1][2] - A[0][0] * A[2][1] * A[1][2] -
 					A[2][0] * A[1][1] * A[0][2] - A[1][0] * A[0][1] * A[2][2];
-				if( fabs( det ) < DBL_EPSILON ) {
+				if( fabs( det ) < std::numeric_limits<double>::epsilon() ) {
 					return false;
 				}
 				I.SetSize( 3, 3 );
@@ -174,7 +174,7 @@ static bool solveSystemOfLinearEquations( CMatrix<double>& x, const CSolveSystem
 		}
 
 		double Uii = U[i][i];
-		if( fabs( Uii ) < DBL_EPSILON ) {
+		if( fabs( Uii ) < std::numeric_limits<double>::epsilon() ) {
 			x.SetSize( 0, 0 );
 			return false;
 		}

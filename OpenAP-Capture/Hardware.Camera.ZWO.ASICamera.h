@@ -77,8 +77,6 @@ public:
 
     virtual void SetImageInfoTemplate( const ImageInfo& imageInfo ) override { imageInfoTemplate = imageInfo; };
 
-    void PrintDebugInfo() override;
-
     ASICamera( int id );
     ~ASICamera();
 

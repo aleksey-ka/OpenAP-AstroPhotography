@@ -75,8 +75,6 @@ public:
 
     virtual void SetImageInfoTemplate( const ImageInfo& imageInfo ) override { templateImageInfo = imageInfo; };
 
-    virtual void PrintDebugInfo() override {}
-
     MockCamera( int id );
 
 private:

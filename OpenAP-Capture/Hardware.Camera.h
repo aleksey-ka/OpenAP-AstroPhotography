@@ -109,8 +109,6 @@ public:
     // Set image info to be used as a template for capture images
     virtual void SetImageInfoTemplate( const ImageInfo& ) = 0;
 
-    virtual void PrintDebugInfo() = 0;
-
     virtual ~Camera() {}
 };
 

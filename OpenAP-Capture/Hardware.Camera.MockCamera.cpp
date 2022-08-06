@@ -7,7 +7,6 @@
 #include <QDir>
 #include <QTextStream>
 
-#include <string.h>
 #include <iostream>
 #include <fstream>
 

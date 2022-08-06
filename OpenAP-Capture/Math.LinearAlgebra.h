@@ -5,14 +5,13 @@
 
 #include <Math.Matrix.h>
 
-#include <math.h>
-#include <float.h>
+#include <cmath>
 
 // Analytical solution of a system of two linear equation (lines intersection)
 inline bool SolveSystemOfTwoLinearEquations( double* p, double a1, double b1, double c1, double a2, double b2, double c2 )
 {
 	const double det = a1 * b2 - a2 * b1;
-	if( fabs( det ) < DBL_EPSILON ) {
+	if( fabs( det ) < std::numeric_limits<double>::epsilon() ) {
 		return false;
 	}
 	p[0] = ( b1 * c2 - b2 * c1 ) / det;

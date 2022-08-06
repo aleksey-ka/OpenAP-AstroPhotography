@@ -3,7 +3,7 @@
 
 #include <Math.LinearAlgebra.h>
 
-#include <assert.h>
+#include <cassert>
 
 bool LeastSquaresAffineTransform( CMatrix<double>& Ax, CMatrix<double>& Ay,
 	const std::vector<double>& x1, const std::vector<double>& y1, const std::vector<double>& x2, const std::vector<double>& y2 )
@@ -43,7 +43,7 @@ bool InverseAffineTransform( CMatrix<double>& invAx, CMatrix<double>& invAy, con
 	double a22 = Ay[1];
 	double a23 = Ay[2];
 	double det = a11 * a22  - a21 * a12;
-	if( fabs( det ) < DBL_EPSILON ) {
+	if( fabs( det ) < std::numeric_limits<double>::epsilon() ) {
 		return false;
 	}
 	invAx[0][0] = a22 / det;

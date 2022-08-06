@@ -10,9 +10,9 @@
 #include <locale>
 #include <codecvt>
 
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
+#include <cstdio>
+#include <cstring>
+#include <cassert>
 
 #include "Image.RawImage.h"
 
