@@ -3,22 +3,22 @@
 
 #include "Image.Debayer.HQLinear.h"
 
-void CDebayer_RawU16_HQLinear::ToRgbU16( unsigned short* rgb, int stride, int x0, int y0, int w, int h )
+void CDebayer_RawU16_HQLinear::ToRgbU16( std::uint16_t* rgb, int stride, int x0, int y0, int w, int h )
 {
     for( int y = 0; y < h; y++ ) {
         int Y = y + y0;
         if( Y < 0 || Y >= height ) {
             continue;
         }
-        const unsigned short* srcLine = raw +  width * Y;
-        unsigned short* dstLine = rgb + stride * y;
+        const auto* srcLine = raw +  width * Y;
+        auto* dstLine = rgb + stride * y;
         for( int x = 0; x < w; x++ ) {
             int X = x + x0;
             if( X < 0 || X >= width ) {
                 continue;
             }
 
-            const unsigned short* src = srcLine + X ;
+            const auto* src = srcLine + X ;
             int R = 0;
             int G = 0;
             int B = 0;
@@ -155,16 +155,16 @@ void CDebayer_RawU16_HQLinear::ToRgbU16( unsigned short* rgb, int stride, int x0
                 }
             }
 
-            unsigned short* dst = dstLine + 3 * x;
-
-            dst[0] = R > U16_MAX ? U16_MAX : R;
-            dst[1] = G > U16_MAX ? U16_MAX : G;
-            dst[2] = B > U16_MAX ? U16_MAX : B;
+            auto* dst = dstLine + 3 * x;
+            // Actual raw image data sometimes contain pixel values exceeding expected camera bitDepth
+            dst[0] = R > UINT16_MAX ? UINT16_MAX : R;
+            dst[1] = G > UINT16_MAX ? UINT16_MAX : G;
+            dst[2] = B > UINT16_MAX ? UINT16_MAX : B;
         }
     }
 }
 
-void CDebayer_RawU16_HQLinear::ToRgbU8( unsigned char* rgb, int stride, int x0, int y0, int w, int h, unsigned int* hr, unsigned int* hg, unsigned int* hb )
+void CDebayer_RawU16_HQLinear::ToRgbU8( std::uint8_t* rgb, int stride, int x0, int y0, int w, int h, unsigned int* hr, unsigned int* hg, unsigned int* hb )
 {
     for( int y = 0; y < h; y++ ) {
         int Y = y + y0;
@@ -184,13 +184,13 @@ void CDebayer_RawU16_HQLinear::ToRgbU8( unsigned char* rgb, int stride, int x0, 
             int G = 0;
             int B = 0;
 
-            int channel = Y % 2 << 1 | X % 2;
+            int channel = CFA_CHANNEL_AT(X, Y);
             if( Y < 2 || Y >= height - 2 || X < 2 || X >= width - 2 ) {
                 switch( channel ) {
-                    case 0: R = addToStatistics( src[0] ); break;
-                    case 1: G = addToStatistics( src[0] ); break;
-                    case 2: G = addToStatistics( src[0] ); break;
-                    case 3: B = addToStatistics( src[0] ); break;
+                    case 0: R = addToStatistics( src[0] ) >> scaleTo8bits; break;
+                    case 1: G = addToStatistics( src[0] ) >> scaleTo8bits; break;
+                    case 2: G = addToStatistics( src[0] ) >> scaleTo8bits; break;
+                    case 3: B = addToStatistics( src[0] ) >> scaleTo8bits; break;
                 }
             } else {
                 switch( channel ) {
@@ -322,10 +322,10 @@ void CDebayer_RawU16_HQLinear::ToRgbU8( unsigned char* rgb, int stride, int x0, 
             }
 
             auto* dst = dstLine + 3 * x;
-
-            dst[0] = R > U8_MAX ? U8_MAX : R;
-            dst[1] = G > U8_MAX ? U8_MAX : G;
-            dst[2] = B > U8_MAX ? U8_MAX : B;
+            // Actual raw image data sometimes contain pixel values exceeding expected camera bitDepth
+            dst[0] = R > UINT8_MAX ? UINT8_MAX : R;
+            dst[1] = G > UINT8_MAX ? UINT8_MAX : G;
+            dst[2] = B > UINT8_MAX ? UINT8_MAX : B;
         }
     }
 }

@@ -3,35 +3,31 @@
 
 #pragma once
 
-#include <vector>
-#include <limits>
-
-const auto U8_MAX = std::numeric_limits<unsigned char>::max();
-const auto U16_MAX = std::numeric_limits<unsigned short>::max();
+#include <cstdint>
 
 class CDebayer_RawU16 {
 public:
-    CDebayer_RawU16( const unsigned short* _raw, int _width, int _height, int bitDepth ) :
+    CDebayer_RawU16( const std::uint16_t* _raw, int _width, int _height, int bitDepth ) :
         raw( _raw ), width( _width ), height( _height ), scaleTo8bits( bitDepth - 8 )
     {
     }
 
-    unsigned short MaxValue = 0;
-    unsigned MaxCount = 0;
-    unsigned short MinValue = U16_MAX;
-    unsigned MinCount = 0;
+    std::uint16_t MaxValue = 0;
+    unsigned int MaxCount = 0;
+    std::uint16_t MinValue = UINT16_MAX;
+    unsigned int MinCount = 0;
 
 protected:
-    const unsigned short* raw;
+    const std::uint16_t* raw;
     const int width;
     const int height;
     const int scaleTo8bits;
 
     // Fast statistics (calculated for each pixel on each frame)
-    unsigned short addToStatistics( unsigned short value );
+    std::uint16_t addToStatistics( std::uint16_t value );
 };
 
-inline unsigned short CDebayer_RawU16::addToStatistics( unsigned short value )
+inline std::uint16_t CDebayer_RawU16::addToStatistics( std::uint16_t value )
 {
     if( value >= MaxValue ) {
         if( value == MaxValue ) {

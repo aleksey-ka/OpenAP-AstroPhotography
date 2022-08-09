@@ -3,7 +3,7 @@
 
 #include "Image.Debayer.HalfRes.h"
 
-void CDebayer_RawU16_HalfRes::ToRgbU8( unsigned char* rgb, int stride, int x0, int y0, int w, int h, unsigned int* hr, unsigned int* hg, unsigned int* hb )
+void CDebayer_RawU16_HalfRes::ToRgbU8( std::uint8_t* rgb, int stride, int x0, int y0, int w, int h, unsigned int* hr, unsigned int* hg, unsigned int* hb )
 {
     for( int y = 0; y < h; y++ ) {
         int Y = 2 * y + y0;
@@ -18,15 +18,16 @@ void CDebayer_RawU16_HalfRes::ToRgbU8( unsigned char* rgb, int stride, int x0, i
                 continue;
             }
             const auto* src = srcLine + X;
-            unsigned char r = addToStatistics( src[0] ) >> scaleTo8bits;
-            unsigned char g1 = addToStatistics( src[1] ) >> scaleTo8bits;
-            unsigned char g2 = addToStatistics( src[width] ) >> scaleTo8bits;
-            unsigned char b = addToStatistics( src[width + 1] ) >> scaleTo8bits;
+            auto r = addToStatistics( src[0] ) >> scaleTo8bits;
+            auto g1 = addToStatistics( src[1] ) >> scaleTo8bits;
+            auto g2 = addToStatistics( src[width] ) >> scaleTo8bits;
+            auto b = addToStatistics( src[width + 1] ) >> scaleTo8bits;
 
-            unsigned char* dst = dstLine + 3 * x;
-            dst[0] = r;
-            dst[1] = g1;
-            dst[2] = b;
+            auto* dst = dstLine + 3 * x;
+            // Actual raw image data sometimes contain pixel values exceeding expected camera bitDepth
+            dst[0] = r > UINT8_MAX ? UINT8_MAX : r;
+            dst[1] = g1 > UINT8_MAX ? UINT8_MAX : g1;
+            dst[2] = b > UINT8_MAX ? UINT8_MAX : b;
 
             hr[r]++;
             hg[g1]++;
