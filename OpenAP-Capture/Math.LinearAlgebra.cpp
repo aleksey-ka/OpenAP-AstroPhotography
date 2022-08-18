@@ -80,12 +80,12 @@ static bool findLUDecomposeOrInverse( CSolveSystemOfLinearEquationsCache& result
 
 	// U is a copy of A
 	U.SetSize( rows, cols );
-	memcpy( U.Ptr(), A.Ptr(), A.Size() * sizeof( double ) );
+	memcpy( U.Ptr(), A.Ptr(), static_cast<size_t>( A.Size() ) * sizeof( double ) );
 
 	// Permutations matrix
-	permutations.resize( rows );
+	permutations.resize( static_cast<size_t>( rows ) );
 	for( int i = 0; i < rows; i++ ) {
-		permutations[i] = i;
+		permutations[static_cast<size_t>( i )] = i;
 	}
 
 	for( int n = 0; n < cols - 1; n++ ) {
@@ -93,7 +93,7 @@ static bool findLUDecomposeOrInverse( CSolveSystemOfLinearEquationsCache& result
 		double max = 0.0;
 		int maxn = -1;
 		for( int i = n; i < rows; i++ ) {
-			double value = abs( U[i][n] );
+			double value = fabs( U[i][n] );
 			if( value > max ) {
 				max = value;
 				maxn = i;
@@ -106,7 +106,7 @@ static bool findLUDecomposeOrInverse( CSolveSystemOfLinearEquationsCache& result
 
 		if( n != maxn ) {
 			// Swapping raws
-			std::swap( permutations[n], permutations[maxn] );
+			std::swap( permutations[static_cast<size_t>( n )], permutations[static_cast<size_t>( maxn )] );
 			for( int i = 0; i < n; i++ ) {
 				// Swapping raws in L
 				std::swap( L[n][i], L[maxn][i] );
@@ -152,7 +152,7 @@ static bool solveSystemOfLinearEquations( CMatrix<double>& x, const CSolveSystem
 	// Selecting raws in y according to permutations matrix
 	CMatrix<double> _y( rows, 1 );
 	for( int i = 0; i < rows; i++ ) {
-		_y[i][0] = y[permutations[i]][0];
+		_y[i][0] = y[permutations[static_cast<size_t>( i )]][0];
 	}
 
 	// Solving Lz = _y where L is the lower triangular matrix
