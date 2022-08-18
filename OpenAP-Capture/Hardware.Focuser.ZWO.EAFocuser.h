@@ -5,6 +5,8 @@
 
 #include "Hardware.Focuser.h"
 
+#include <climits>
+
 class ZWOFocuser : public Hardware::Focuser {
 public:
     static std::shared_ptr<ZWOFocuser> Open();

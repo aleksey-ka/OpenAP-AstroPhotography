@@ -78,7 +78,8 @@ win32: {
 unix: {
     INCLUDEPATH += /usr/include/libasi
     LIBS += -lASICamera2 -lEFWFilter -lEAFFocuser
-    QMAKE_CXXFLAGS += -Wno-psabi #suppress GCC7.1 warnings
+    QMAKE_CXXFLAGS += -std=c++17 #CONFIG alone does not work with neither gcc nor clang
+    #        -Wno-psabi #suppress GCC7.1 warnings
 }
 
 win32:contains(QMAKE_HOST.arch, x86_64) {  
