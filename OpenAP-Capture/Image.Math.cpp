@@ -3,6 +3,8 @@
 
 #include "Image.Math.h"
 
+#include <climits>
+
 CHistogram::CHistogram( size_t numberOfChannels, size_t bitsPerChannel ) :
     channelSize( maxValueForBitDepth( bitsPerChannel ) )
 {

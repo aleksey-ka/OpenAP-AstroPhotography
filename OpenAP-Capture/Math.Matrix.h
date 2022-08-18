@@ -92,10 +92,3 @@ inline void CMatrix<T>::Multiply( const CMatrix<T>& m )
 	CMatrix<T> temp( *this );
 	Multiply( *this, temp, m );
 }
-
-template<typename T>
-inline CMatrix<T> CMatrix<T>::operator * ( const CMatrix<T>& m )
-{
-	CMatrix<T> result;
-	return result;
-}
