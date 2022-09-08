@@ -72,7 +72,7 @@ MainFrame::MainFrame( QWidget *parent ) :
     }
 
     ui->objectNameEdit->setText( settings.value( "Name" ).toString() );
-    ui->formatComboBox->setCurrentText( settings.value( "FileFormat", ".png" ).toString() );
+    ui->formatComboBox->setCurrentText( settings.value( "FileFormat", ".pixels" ).toString() );
 
     auto defaultPath = QStandardPaths::writableLocation( QStandardPaths::DocumentsLocation ) + QDir::separator() +
             QApplication::applicationName() + QDir::separator() + "{TIME}{NAME}{FILTER}";
@@ -176,6 +176,13 @@ MainFrame::MainFrame( QWidget *parent ) :
        if( camera == 0 ) {
             on_cameraOpenCloseButton_clicked();
        }
+       on_captureButton_clicked();
+   } );
+   connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_R ), this ), &QShortcut::activated, [=]() {
+       if( camera == 0 ) {
+            on_cameraOpenCloseButton_clicked();
+       }
+       ui->continuousCaptureCheckBox->setChecked( true );
        on_captureButton_clicked();
    } );
 
@@ -769,7 +776,7 @@ ulong MainFrame::render( const ushort* raw, int width, int height, int bitDepth 
             ui->histogramView->setPixmap( renderer.RenderHistogram() );
         }
         tools.Draw( pixmap );
-        ui->imageView->setPixmap( pixmap );    
+        ui->imageView->setPixmap( pixmap );
     } else {
         ui->imageView->clear();
     }
