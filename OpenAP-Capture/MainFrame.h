@@ -64,6 +64,8 @@ private slots:
 
     void on_imageView_imagePressed( int x, int y, Qt::MouseButton, Qt::KeyboardModifiers );
 
+    void on_graphCheckBox_toggled( bool checked );
+
 protected:
     void resizeEvent( QResizeEvent* ) override;
 
@@ -73,6 +75,7 @@ private:
     void updateUI();
 
     void showZoom( bool update = true );
+    void zoomRecalcLayout();
 
     QSettings settings;
 
@@ -114,6 +117,24 @@ private:
 
     // Rendering
     ulong render( const ushort* raw, int width, int height, int bitDepth );
+    QString formatImageInfo( const ImageInfo& );
+
+    // Series Graphs
+    struct GraphData {
+        QString Name;
+        QPen Pen;
+        std::vector<double> Values;
+        std::shared_ptr<void> Data;
+        GraphData( const QColor& color, int width ) : Pen( color ) { Pen.setWidth( width ); }
+    };
+    QMap<QString, GraphData> graphs;
+    int selectionStart = -1;
+    int selectionEnd = -1;
+    QList<ImageInfo> graphImageInfo;
+    int scrollX = 0;
+    int graphScaleX = 5;
+    int graphScaleY = 3;
+    void resetGraph();
 
     // Exposure controls and scaling
     void setExposureInSpinBox( int exposure );

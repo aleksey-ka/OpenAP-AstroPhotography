@@ -116,6 +116,61 @@ QSlider::handle:horizontal {
         </widget>
        </item>
        <item>
+        <widget class="PaintView" name="imageSeriesView" native="true">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>200</height>
+          </size>
+         </property>
+         <property name="cursor">
+          <cursorShape>CrossCursor</cursorShape>
+         </property>
+         <widget class="QComboBox" name="graphsTypeComboBox">
+          <property name="geometry">
+           <rect>
+            <x>1</x>
+            <y>175</y>
+            <width>180</width>
+            <height>24</height>
+           </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="font">
+           <font>
+            <family>Consolas</family>
+            <pointsize>-1</pointsize>
+           </font>
+          </property>
+          <item>
+           <property name="text">
+            <string>DEFAULT</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>LIGHTS</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>DARKS</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>FLATS</string>
+           </property>
+          </item>
+         </widget>
+        </widget>
+       </item>
+       <item>
         <widget class="QFrame" name="imageControlsFrame">
          <property name="maximumSize">
           <size>
@@ -208,6 +263,16 @@ QFrame {
               <widget class="QCheckBox" name="stretchCheckBox">
                <property name="text">
                 <string>Stretch</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="graphCheckBox">
+               <property name="text">
+                <string>Graph</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
@@ -1089,14 +1154,17 @@ QFrame {
                <property name="editable">
                 <bool>true</bool>
                </property>
+               <property name="currentText">
+                <string>.pixels</string>
+               </property>
                <item>
                 <property name="text">
-                 <string>.png</string>
+                 <string>.pixels</string>
                 </property>
                </item>
                <item>
                 <property name="text">
-                 <string>.pixels</string>
+                 <string>.png</string>
                 </property>
                </item>
               </widget>
@@ -1196,6 +1264,12 @@ border-radius: 10px;</string>
    <class>ImageView</class>
    <extends>QLabel</extends>
    <header>ImageView.h</header>
+  </customwidget>
+  <customwidget>
+   <class>PaintView</class>
+   <extends>QWidget</extends>
+   <header>PaintView.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>
