@@ -142,6 +142,7 @@ std::shared_ptr<CRawU16Image> CRawU16Image::LoadFromFileRW( const char* filePath
     imageInfo.Camera = toString( map[L"CAMERA"] );
     imageInfo.Channel = toString( map[L"CHANNEL"] );
     imageInfo.FilterDescription = toString( map[L"FILTER"] );
+    imageInfo.FilePath = filePath;
 
     Pixels16BitUncompressed uncompressed;
     return uncompressed.Load( filePath, imageInfo );
@@ -181,6 +182,8 @@ void CRawU16Image::SaveToFile( const char* filePath, const ImageFileFormat* file
     }
 
     fileFormat->Save( filePath, this );
+
+    const_cast<CRawU16Image*>( this )->imageInfo.FilePath = filePath;
 
     // Check saved file
     /*auto saved = fileFormat->Load( filePath, imageInfo );

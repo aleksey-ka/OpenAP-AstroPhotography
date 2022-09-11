@@ -30,3 +30,8 @@ std::shared_ptr<Camera> Camera::Open( const Hardware::CAMERA_INFO& cameraInfo )
     }
     return MockCamera::Open( cameraInfo );
 }
+
+std::shared_ptr<Camera> Camera::OpenFolder( const char* path )
+{
+    return MockCamera::Open( path );
+}

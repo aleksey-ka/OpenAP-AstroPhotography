@@ -15,9 +15,11 @@ public:
     static int GetCount();
     // Get mock camera info by index
     static std::shared_ptr<Hardware::CAMERA_INFO> GetInfo( int index );
+    std::shared_ptr<Hardware::CAMERA_INFO> GetInfo() override { return cameraInfo; }
 
     // Open and initialize the camera info
     static std::shared_ptr<MockCamera> Open( const Hardware::CAMERA_INFO& );
+    static std::shared_ptr<MockCamera> Open( const char* path );
     virtual void Close() override;
 
     // Get camera info
@@ -76,9 +78,12 @@ public:
     virtual void SetImageInfoTemplate( const ImageInfo& imageInfo ) override { templateImageInfo = imageInfo; };
 
     MockCamera( int id );
+    MockCamera( const char* path );
 
 private:
     int index;
+    QString path;
+    std::shared_ptr<Hardware::CAMERA_INFO> cameraInfo;
     QStringList frames;
     mutable int nextFrame = 0;
     mutable bool forwardPass = true;

@@ -47,9 +47,11 @@ public:
     static int GetCount();
     // Camera info for a camera by index
     static std::shared_ptr<CAMERA_INFO> GetInfo( int index );
+    virtual std::shared_ptr<CAMERA_INFO> GetInfo() = 0;
 
     // Open camera
     static std::shared_ptr<Camera> Open( const CAMERA_INFO& );
+    static std::shared_ptr<Camera> OpenFolder( const char* path );
     // Close camera
     virtual void Close() = 0;
 

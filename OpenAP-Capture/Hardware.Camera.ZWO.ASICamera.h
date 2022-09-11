@@ -16,6 +16,7 @@ public:
     static int GetCount();
     // Get attached camera info by index
     static std::shared_ptr<Hardware::CAMERA_INFO> GetInfo( int index );
+    std::shared_ptr<Hardware::CAMERA_INFO> GetInfo() override { return cameraInfo; }
 
     // Open and initialize the camera by id (see camera info)
     static std::shared_ptr<ASICamera> Open( const Hardware::CAMERA_INFO& );

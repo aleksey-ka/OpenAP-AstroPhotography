@@ -8,6 +8,11 @@
 #include <memory>
 #include <vector>
 
+enum IMAGE_FLAGS {
+    IF_SERIES_START = 0x1,
+    IF_SERIES_END = 0x2
+};
+
 struct ImageInfo {
     int Width = 0;
     int Height = 0;
@@ -18,10 +23,12 @@ struct ImageInfo {
     int64_t Timestamp = 0;
     int64_t SeriesId = 0;
     double Temperature = 0.0;
+    uint32_t Flags = 0;
     std::string Camera;
     std::string CFA;
     std::string Channel;
     std::string FilterDescription;
+    std::string FilePath;
 };
 
 class ImageFileFormat;

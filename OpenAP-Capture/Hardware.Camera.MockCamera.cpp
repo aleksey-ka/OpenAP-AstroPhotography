@@ -6,6 +6,7 @@
 #include <QThread>
 #include <QDir>
 #include <QTextStream>
+#include <QFileInfo>
 
 #include <iostream>
 #include <fstream>
@@ -18,9 +19,8 @@ static std::shared_ptr<const CRawU16Image> loadImage( QString filePath )
     return CRawU16Image::LoadFromFile( filePath.toLocal8Bit().constData()  );
 }
 
-static std::shared_ptr<const CRawU16Image> loadImage( int index, QStringList& frames )
+static std::shared_ptr<const CRawU16Image> loadImage( QString filePath, QStringList& frames )
 {
-    auto filePath = rootFileEntries[index];
     QFileInfo fileInfo( filePath );
     if( fileInfo.isDir() ) {
         frames = QDir( filePath, "*.u16.pixels" ).entryList( QDir::Files );
@@ -30,17 +30,28 @@ static std::shared_ptr<const CRawU16Image> loadImage( int index, QStringList& fr
     }
 }
 
+static std::shared_ptr<const CRawU16Image> loadImage( int index, QStringList& frames )
+{
+    return loadImage( rootFileEntries[index], frames );
+}
+
+static std::shared_ptr<Hardware::CAMERA_INFO> createCameraInfo( const CRawU16Image* image, std::string name, int id )
+{
+    auto cameraInfo = std::make_shared<Hardware::CAMERA_INFO>();
+    strcpy( cameraInfo->Name, name.c_str() );
+    cameraInfo->IsColorCamera = image->Info().CFA.empty();
+    cameraInfo->Id = id;
+    return cameraInfo;
+}
+
 static std::shared_ptr<Hardware::CAMERA_INFO> createCameraInfo( int index )
 {
     auto cameraInfo = std::make_shared<Hardware::CAMERA_INFO>();
     QStringList frames;
     std::shared_ptr<const CRawU16Image> image = loadImage( index, frames );
     std::string name( image->Info().Camera );
-    name += rootDescription[index].toLocal8Bit().constData();
-    strcpy( cameraInfo->Name, name.c_str() );
-    cameraInfo->IsColorCamera = image->Info().CFA.empty();
-    cameraInfo->Id = -( index + 1 );
-    return cameraInfo;
+    name += rootDescription[index].toUtf8().constData();
+    return createCameraInfo( image.get(), name, -( index + 1 ) );
 }
 
 int MockCamera::GetCount()
@@ -77,12 +88,30 @@ std::shared_ptr<Hardware::CAMERA_INFO> MockCamera::GetInfo( int index )
 MockCamera::MockCamera( int id )
 {
     index = -id - 1;
+    path = rootFileEntries[index].toUtf8().constData();
     currentSettings = loadImage( index, frames )->Info();
+    cameraInfo = createCameraInfo( index );
 }
+
+MockCamera::MockCamera( const char* _path )
+{
+    index = INT_MAX;
+    path = QString::fromUtf8( _path );
+    std::shared_ptr<const CRawU16Image> image = loadImage( _path, frames );
+    currentSettings = image->Info();
+    cameraInfo = createCameraInfo( image.get(),
+        QFileInfo( path ).fileName().toStdString(), index );
+}
+
 
 std::shared_ptr<MockCamera> MockCamera::Open( const Hardware::CAMERA_INFO& cameraInfo )
 {
     return std::make_shared<MockCamera>( cameraInfo.Id );
+}
+
+std::shared_ptr<MockCamera> MockCamera::Open( const char* path )
+{
+    return std::make_shared<MockCamera>( path );
 }
 
 void MockCamera::Close()
@@ -126,11 +155,19 @@ std::shared_ptr<const CRawU16Image> MockCamera::DoExposure() const
 
     std::shared_ptr<const CRawU16Image> image;
     if( frames.size() > 0 ) {
-        image = CRawU16Image::LoadFromFile( ( rootFileEntries[index] + QDir::separator() + frames[nextFrame] ).toLocal8Bit().constData() );
+        image = CRawU16Image::LoadFromFile( ( path + QDir::separator() + frames[nextFrame] ).toLocal8Bit().constData() );
+        if( nextFrame == 0 ) {
+            const_cast<ImageInfo&>( image->Info() ).Flags |= IF_SERIES_START;
+        }
         nextFrame += forwardPass ? 1 : -1;
         if( nextFrame == frames.size() ) {
             forwardPass = false;
             nextFrame = frames.size() - 2;
+            if( index == INT_MAX ) {
+                const_cast<ImageInfo&>( image->Info() ).Flags |= IF_SERIES_END;
+                forwardPass = true;
+                nextFrame = 0;
+            }
         } else if ( nextFrame == -1 ) {
             forwardPass = true;
             nextFrame = 1;
@@ -140,15 +177,19 @@ std::shared_ptr<const CRawU16Image> MockCamera::DoExposure() const
         image = loadImage( index, empty );
     }
 
-    auto& imageInfo = const_cast<ImageInfo&>( image->Info() );
-    imageInfo = currentSettings;
-	imageInfo.SeriesId = templateImageInfo.SeriesId;
-    imageInfo.Channel = templateImageInfo.Channel;
-    imageInfo.FilterDescription = templateImageInfo.FilterDescription;
+    if( index != INT_MAX ) {
+        auto& imageInfo = const_cast<ImageInfo&>( image->Info() );
+        std::string filePath = imageInfo.FilePath;
+        imageInfo = currentSettings;
+        imageInfo.FilePath = filePath;
+        imageInfo.SeriesId = templateImageInfo.SeriesId;
+        imageInfo.Channel = templateImageInfo.Channel;
+        imageInfo.FilterDescription = templateImageInfo.FilterDescription;
 
-    auto now = std::chrono::system_clock::now();
-    auto timestamp = std::chrono::system_clock::to_time_t( now );
-    imageInfo.Timestamp = timestamp;
+        auto now = std::chrono::system_clock::now();
+        auto timestamp = std::chrono::system_clock::to_time_t( now );
+        imageInfo.Timestamp = timestamp;
+    }
 
     return image;
 }
