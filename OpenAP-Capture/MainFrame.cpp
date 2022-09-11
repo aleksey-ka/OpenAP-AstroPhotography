@@ -769,7 +769,10 @@ void MainFrame::imageReady()
                 auto ext = ui->formatComboBox->currentText();
                 settings.setValue( "FileFormat", ext );
                 const ImageFileFormat* format = 0;
-                if( ext == ".png") {
+                if( ext == ".fits") {
+                    const static FitsU16 fitsU16;
+                    format = &fitsU16;
+                } else if( ext == ".png") {
                     const static Png16BitGrayscale png16BitGrayscale;
                     format = &png16BitGrayscale;
                 } else {

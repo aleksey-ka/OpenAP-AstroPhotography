@@ -1167,6 +1167,11 @@ QFrame {
                  <string>.png</string>
                 </property>
                </item>
+               <item>
+                <property name="text">
+                 <string>.fits</string>
+                </property>
+               </item>
               </widget>
              </item>
             </layout>

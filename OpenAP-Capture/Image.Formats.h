@@ -10,3 +10,10 @@ public:
     virtual std::shared_ptr<CRawU16Image> Load( const char* filePath, const ImageInfo& ) const override;
     virtual void Save( const char* filePath, const CRawU16Image* ) const override;
 };
+
+class FitsU16 : public ImageFileFormat {
+public:
+    virtual std::shared_ptr<CRawU16Image> Load( const char* filePath, const ImageInfo& ) const override;
+    virtual void Save( const char* filePath, const CRawU16Image* ) const override;
+};
+
