@@ -37,6 +37,7 @@ SOURCES += \
         Main.cpp \
         MainFrame.cpp \
         MainFrame.Tools.cpp \
+        PaintView.cpp \
         Renderer.cpp \
 
 HEADERS += \
@@ -65,6 +66,7 @@ HEADERS += \
         Math.Matrix.h \
         MainFrame.h \
         MainFrame.Tools.h \
+        PaintView.h \
         Renderer.h
 
 FORMS += \
