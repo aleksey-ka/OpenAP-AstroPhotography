@@ -125,7 +125,7 @@ private:
         QPen Pen;
         std::vector<double> Values;
         std::shared_ptr<void> Data;
-        GraphData( const QColor& color, int width ) : Pen( color ) { Pen.setWidth( width ); }
+        GraphData( const QString& name, const QColor& color, int width ) : Name( name ), Pen( color ) { Pen.setWidth( width ); }
     };
     QMap<QString, GraphData> graphs;
     int selectionStart = -1;

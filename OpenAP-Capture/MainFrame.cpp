@@ -17,6 +17,7 @@
 #include "Image.Qt.h"
 
 #include <chrono>
+#include <limits>
 
 MainFrame::MainFrame( QWidget *parent ) :
     QMainWindow( parent ),
@@ -482,6 +483,7 @@ void MainFrame::on_cameraSelectionCombo_currentIndexChanged( int index )
     ui->imageView->clear();
     ui->imageView->setText( "No image" );
 
+    resetGraph();
 }
 
 void MainFrame::on_cameraOpenCloseButton_clicked()
@@ -805,14 +807,13 @@ void MainFrame::imageReady()
         if( ui->graphCheckBox->isChecked() ) {
 
             if( graphs.isEmpty() ) {
-                graphs.insert( "temp", GraphData( QColor::fromRgb( 0xA0, 0xA0, 0xA0 ), 2 ) );
-                graphs.insert( "delta", GraphData( QColor::fromRgb( 0xA0, 0, 0xA0 ), 2 ) );
-                graphs.insert( "sigma", GraphData( QColor::fromRgb( 0xA0, 0, 0 ), 2 ) );
-                graphs.insert( "mean", GraphData( QColor::fromRgb( 0, 0xA0, 0 ), 2 ) );
+                graphs.insert( "1:MEAN", GraphData( "mean", QColor::fromRgb( 0, 0xA0, 0 ), 2 ) );
+                graphs.insert( "2:SIGMA", GraphData( u8"σ", QColor::fromRgb( 0xA0, 0, 0 ), 2 ) );
+                graphs.insert( "3:T", GraphData( "T", QColor::fromRgb( 0xA0, 0xA0, 0xA0 ), 2 ) );
                 if( ui->graphsTypeComboBox->currentText() == "DARKS" ) {
-                    graphs.insert( "calibrated_mean", GraphData( QColor::fromRgb( 0, 0, 0xA0 ), 2 ) );
-                    graphs.insert( "calibrated_sigma", GraphData( QColor::fromRgb( 0, 0xA0, 0xA0 ), 2 ) );
-                    graphs.insert( "calibrated_delta", GraphData( QColor::fromRgb( 0xA0, 0xA0, 0 ), 2 ) );
+                    graphs.insert( "calibrated_mean", GraphData( "CMEAN", QColor::fromRgb( 0, 0, 0xA0 ), 2 ) );
+                    graphs.insert( "calibrated_sigma", GraphData( "CSIGMA", QColor::fromRgb( 0, 0xA0, 0xA0 ), 2 ) );
+                    graphs.insert( "calibrated_delta", GraphData( "CDELTA", QColor::fromRgb( 0xA0, 0xA0, 0 ), 2 ) );
                 }
             }
             graphImageInfo.append( currentImage->Info() );
@@ -828,12 +829,10 @@ void MainFrame::imageReady()
                 flux += detection->FluxAtHalfDetectionThreshold;
             }*/
 
-            graphs.find( "temp" )->Values.emplace_back( result->Info().Temperature );
-
             auto [mean, sigma, min, max] = simple_pixel_statistics( result->RawPixels(), result->Count() );
-            graphs.find( "mean" )->Values.emplace_back( mean );
-            graphs.find( "sigma" )->Values.emplace_back( sigma );
-            graphs.find( "delta" )->Values.emplace_back( abs( max - min ) );
+            graphs.find( "1:MEAN" )->Values.emplace_back( mean );
+            graphs.find( "2:SIGMA" )->Values.emplace_back( sigma );
+            graphs.find( "3:T" )->Values.emplace_back( result->Info().Temperature );
 
             if( ui->graphsTypeComboBox->currentText() == "DARKS" ) {
                 std::shared_ptr<void> data = graphs.find( "calibrated_mean" )->Data;
@@ -915,29 +914,44 @@ void MainFrame::imageReady()
                 if( length > 0 ) {
 
                     QFont font( "Consolas" );
-                    font.setPointSizeF( 7 );
+                    font.setPointSizeF( 6.5 );
                     font.setBold( true );
                     painter.setFont( font );
 
+                    QPen pen4( QColor::fromRgb( 0xA0, 0xA0, 0xA) );
+                    painter.setPen( pen4 );
+
+                    painter.drawText( 5, 10, QString::number( selectionStart >= 0 ? selectionStart + 1 : length ) );
+
                     painter.setRenderHint( QPainter::Antialiasing );
 
+                    int n = 0;
                     for( const auto& graph : graphs ) {
                         const auto& data = graph.Values;
 
-                        int count = std::min( 32, length );
-                        std::vector<double> values( count );
-                        for( int i = 0; i < count; i++ ) {
+                        std::vector<double> values( length );
+                        for( int i = 0; i < length; i++ ) {
                             values[i] = data[i];
                         }
                         std::sort( values.begin(), values.end() );
-                        double median = values[count / 2];
-                        for( int i = 0; i < count; i++ ) {
+                        double median = values[length / 2];
+                        for( int i = 0; i < length; i++ ) {
                             values[i] = fabs( median - data[i] );
                         }
                         std::sort( values.begin(), values.end() );
-                        double MAE = values[count / 2];
+                        double MAE = values[length / 2];
                         if( MAE == 0 ) {
                             MAE = 1;
+                        }
+                        double min = std::numeric_limits<double>().max();
+                        double max = std::numeric_limits<double>().min();
+                        for( auto val: graph.Values ) {
+                            if( val < min ) {
+                                min = val;
+                            }
+                            if( val > max ) {
+                                max = val;
+                            }
                         }
 
                         for( int i = scrollX; i < length; i++ ) {
@@ -951,11 +965,10 @@ void MainFrame::imageReady()
                             }
                         }
 
-                        QPen fontPen( QColor::fromRgb( 0x0, 0xA0, 0x0 ) );
-                        painter.setPen( fontPen );
-
-                        painter.drawText( 5, 10, QString::number( selectionStart >= 0 ? selectionStart + 1 : length ) );
-                        painter.drawText( 5, 20, QString::number( graphs.first().Values.back() ) );
+                        double val = selectionStart != -1 ? graph.Values[selectionStart] : graph.Values.back();
+                        painter.drawText( 5, 20 + 10 * n, QString( "%1 %2 (%3 %4)" )
+                            .arg( graph.Name ).arg( val, 0, 'f', 1 ).arg( min, 0, 'f', 1 ).arg( max, 0, 'f', 1 ) );
+                        n++;
                     }
                 }
             } );
