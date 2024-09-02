@@ -260,6 +260,13 @@ QFrame {
               </widget>
              </item>
              <item>
+              <widget class="QCheckBox" name="showUnbinnedCenter">
+               <property name="text">
+                <string>Unbinned center</string>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QCheckBox" name="stretchCheckBox">
                <property name="text">
                 <string>Stretch</string>

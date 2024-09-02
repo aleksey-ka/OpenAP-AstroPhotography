@@ -113,6 +113,16 @@ MainFrame::MainFrame( QWidget *parent ) :
                 }
             }
        );
+       connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_V ), this ),
+            &QShortcut::activated, [=]() {
+                bool ok = false;
+                int pos = QInputDialog::getInt( this, "Focuser", "MoveZeroTo:", 0, INT_MIN, INT_MAX, 1, &ok );
+                if( ok ) {
+                    focuser->MoveZero( pos );
+                }
+            }
+       );
+       qDebug() << "Focuser initialized";
    }
    connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::SHIFT + Qt::Key_F ), this ), &QShortcut::activated, [=]() {
        if( zoomView->isHidden() ) {
@@ -645,10 +655,10 @@ std::shared_ptr<Hardware::CAMERA_INFO> MainFrame::openCamera( int index )
     camera->GetROIFormat( width, height, bin, imgType );
     imgType = Hardware::IT_RAW16;
     // TO_DO: Quick fix for ZWO ASI294MM Pro in bin1
-    if( width * height > 4048 * 4048 ) {
-        bin = 2;
-        width /= 2;
-        height /= 2;
+    if( width * height > 4048 * 4048  ) {
+       bin = 2;
+       width /= 2;
+       height /= 2;
     }
     camera->SetROIFormat( width, height, bin, imgType );
     camera->GetROIFormat( width, height, bin, imgType );
@@ -690,6 +700,42 @@ void MainFrame::startCapture()
     camera->SetWhiteBalanceR( useCameraWhiteBalance ? 52 : 50 );
     camera->SetWhiteBalanceB( useCameraWhiteBalance ? 95 : 50 );
     camera->SetOffset( offset );
+
+    static int width = 0;
+    static int height = 0;
+    static int bin = 0;
+    static bool unbinnedCenter = false;
+    static Hardware::IMAGE_TYPE imgType = Hardware::IT_NONE;
+    if( bin == 0 ) {
+         camera->GetROIFormat( width, height, bin, imgType );
+    }
+
+    if( ui->showUnbinnedCenter->isChecked() ) {
+        if( !unbinnedCenter ) {
+            camera->SetROIFormat( 640, 640, 1, imgType );
+            unbinnedCenter = true;
+        }
+    } else {
+        if( unbinnedCenter ) {
+            camera->SetROIFormat( width, height, bin, imgType );
+            unbinnedCenter = false;
+        }
+        if( ui->showFullResolution->isChecked() ) {
+            if( bin == 2 ) {
+                width *= 2;
+                height *= 2;
+                bin = 1;
+                camera->SetROIFormat( width, height, bin, imgType );
+            }
+        } else {
+            if( bin == 1 ) {
+                width /= 2;
+                height /= 2;
+                bin = 2;
+                camera->SetROIFormat( width, height, bin, imgType );
+            }
+        }
+    }
 
     ImageInfo imageInfo;
     if( filterWheel != 0 ) {
