@@ -20,6 +20,7 @@ public:
     virtual int StepsPerMove() const override { return stepsToGo; }
 
     virtual void MarkZero() override;
+    virtual void MoveZero( int ) override;
     virtual void GoToPos( int ) override;
     virtual int GetPos() const override { return focuserPos; }
 

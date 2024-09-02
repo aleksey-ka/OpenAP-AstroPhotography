@@ -99,6 +99,12 @@ void ZWOFocuser::MarkZero()
     checkResult( EAFResetPostion( id, 0 ) );
 }
 
+void ZWOFocuser::MoveZero( int steps )
+{
+    cancelMoveTo();
+    checkResult( EAFResetPostion( id, steps ) );
+}
+
 void ZWOFocuser::GoToPos( int pos )
 {
    focuserPos = INT_MIN;

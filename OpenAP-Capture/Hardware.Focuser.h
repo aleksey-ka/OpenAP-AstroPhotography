@@ -21,6 +21,7 @@ public:
     virtual int StepsPerMove() const = 0;
 
     virtual void MarkZero() = 0;
+    virtual void MoveZero( int ) = 0;
     virtual void GoToPos( int ) = 0;
     virtual int GetPos() const = 0;
 
