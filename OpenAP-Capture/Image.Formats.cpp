@@ -56,9 +56,9 @@ void FitsU16::Save( const char* filePath, const CRawU16Image* image ) const
     card += "BITPIX  =                   16                                                  ";linesCount++;
     card += "NAXIS   =                    2                                                  ";linesCount++;
     card += QString( "NAXIS1  =%1                                                  " )
-            .arg( image->Width(), 21 );linesCount++;
+        .arg( image->Width(), 21 );linesCount++;
     card += QString( "NAXIS2  =%1                                                  " )
-            .arg( image->Height(), 21 );linesCount++;
+        .arg( image->Height(), 21 );linesCount++;
     card += "BZERO   =              32768.0                                                  ";linesCount++;
     card += "BSCALE  =                  1.0                                                  ";linesCount++;
     if( image->Info().CFA.length() > 0 ) {
@@ -67,10 +67,16 @@ void FitsU16::Save( const char* filePath, const CRawU16Image* image ) const
             .arg( image->Info().CFA.c_str() );linesCount++;
     }
     card += QString( "EXPTIME =%1                                                  " )
-            .arg( image->Info().Exposure / 1000000.0, 21, 'f', -1 );linesCount++;
+        .arg( image->Info().Exposure / 1000000.0, 21, 'f', -1 );linesCount++;
     card += QString( "GAIN    =%1                                                  " )
-            .arg( image->Info().Gain, 21 );linesCount++;
+        .arg( image->Info().Gain, 21 );linesCount++;
+    card += QString( "CCD-TEMP=%1                                                  " )
+        .arg( image->Info().Temperature, 21, 'f', 1 );linesCount++;
+    auto camera = QString( "\'%1\'" ).arg( image->Info().Camera.c_str() );
+    card += QString( "INSTRUME=%1                                                  " )
+        .arg( camera, 21 );linesCount++;
     card += "END                                                                             ";linesCount++;
+    assert( card.length() % 80 == 0 );
 
     for( int i = linesCount; i < 36; i++ ) {
         card += QString( 80, ' ' );
