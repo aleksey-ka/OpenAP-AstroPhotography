@@ -49,7 +49,7 @@ void ASICamera::Close()
     }
 }
 
-std::shared_ptr<Hardware::CAMERA_INFO> ASICamera::GetInfo() const
+std::shared_ptr<Hardware::CAMERA_INFO> ASICamera::getInfo() const
 {
     if( cameraInfo == 0 ) {
         ASI_CAMERA_INFO _cameraInfo;

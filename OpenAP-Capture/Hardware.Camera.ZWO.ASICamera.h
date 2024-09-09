@@ -16,7 +16,7 @@ public:
     static int GetCount();
     // Get attached camera info by index
     static std::shared_ptr<Hardware::CAMERA_INFO> GetInfo( int index );
-    std::shared_ptr<Hardware::CAMERA_INFO> GetInfo() override { return cameraInfo; }
+    std::shared_ptr<Hardware::CAMERA_INFO> GetInfo() override { return getInfo(); }
 
     // Open and initialize the camera by id (see camera info)
     static std::shared_ptr<ASICamera> Open( const Hardware::CAMERA_INFO& );
@@ -24,7 +24,7 @@ public:
     void Close() override;
 
     // Get camera info
-    std::shared_ptr<Hardware::CAMERA_INFO> GetInfo() const override;
+    std::shared_ptr<Hardware::CAMERA_INFO> GetInfo() const override { return getInfo(); }
 
     // Exposure in microsectods
     long GetExposure( bool& isAuto ) const override;
@@ -109,6 +109,8 @@ private:
     mutable std::atomic<bool> isExposure{ false };
 
     ImageInfo imageInfoTemplate;
+
+    std::shared_ptr<Hardware::CAMERA_INFO> getInfo() const;
 
     void lazyROIFormat() const;
     void lazyControlCaps() const;
