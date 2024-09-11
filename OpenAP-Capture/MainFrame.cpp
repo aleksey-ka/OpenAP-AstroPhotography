@@ -216,6 +216,8 @@ MainFrame::MainFrame( QWidget *parent ) :
        }
    } );
 
+   ui->graphCheckBox->setChecked( settings.value( "ShowGraph", false ).toBool() );
+
    updateUI();
 }
 
@@ -630,6 +632,7 @@ void MainFrame::on_captureButton_clicked()
     settings.setValue( "Gain", ui->gainSpinBox->value() );
     settings.setValue( "Offset", ui->offsetSpinBox->value() );
     settings.setValue( "UseCameraWhiteBalance", ui->useCameraWhiteBalanceCheckBox->isChecked() );
+    settings.setValue( "ShowGraph", ui->graphCheckBox->isChecked() );
 
     startCapture();
 }
@@ -859,6 +862,7 @@ void MainFrame::imageReady()
             resetGraph();
         }
 
+        settings.setValue( "ShowGraph", ui->graphCheckBox->isChecked() );
         if( ui->graphCheckBox->isChecked() ) {
 
             if( graphs.isEmpty() ) {
