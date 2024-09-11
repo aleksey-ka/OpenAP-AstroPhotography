@@ -814,6 +814,15 @@ void MainFrame::imageReady()
         imageSavedWatcher.setFuture( QtConcurrent::run( [=]() {
             const auto& info = result->Info();
             if( saveToPath.length() > 0 ) {
+
+                // Saving to the directory of the original image during session playback
+                static const QString EXISTING( "{*}" );
+                if( saveToPath.contains( EXISTING ) ) {
+                    auto folderName = QFileInfo( QString::fromLocal8Bit( result->Info().FilePath.c_str() ) ).absolutePath();
+                    assert( folderName.length() > 0 );
+                    saveToPath.replace( EXISTING, QFileInfo( folderName ).fileName() );
+                }
+
                 auto ext = ui->formatComboBox->currentText();
                 settings.setValue( "FileFormat", ext );
                 const ImageFileFormat* format = 0;
@@ -856,6 +865,11 @@ void MainFrame::imageReady()
                 graphs.insert( "1:MEAN", GraphData( "mean", QColor::fromRgb( 0, 0xA0, 0 ), 2 ) );
                 graphs.insert( "2:SIGMA", GraphData( u8"σ", QColor::fromRgb( 0xA0, 0, 0 ), 2 ) );
                 graphs.insert( "3:T", GraphData( "T", QColor::fromRgb( 0xA0, 0xA0, 0xA0 ), 2 ) );
+                graphs.insert( "4:DRIFT", GraphData( "drift", QColor::fromRgb( 0xA0, 0xA0, 0 ), 2 ) );
+                graphs.insert( "5:HFD", GraphData( "HFD", QColor::fromRgb( 0, 0xA0, 0xA0 ), 2 ) );
+                graphs.insert( "6:FLUX", GraphData( "Flux", QColor::fromRgb( 0x5, 0x5, 0x5 ), 2 ) );
+                graphs.insert( "7:NSTARS", GraphData( "N Stars", QColor::fromRgb( 0xFF, 0xFF, 0 ), 2 ) );
+                graphs.insert( "8:AREA", GraphData( "Area", QColor::fromRgb( 0, 0xFF, 0xFF ), 2 ) );
                 if( ui->graphsTypeComboBox->currentText() == "DARKS" ) {
                     graphs.insert( "calibrated_mean", GraphData( "CMEAN", QColor::fromRgb( 0, 0, 0xA0 ), 2 ) );
                     graphs.insert( "calibrated_sigma", GraphData( "CSIGMA", QColor::fromRgb( 0, 0xA0, 0xA0 ), 2 ) );
@@ -864,21 +878,45 @@ void MainFrame::imageReady()
             }
             graphImageInfo.append( currentImage->Info() );
 
+            auto focusingHelperTool = tools.TryGet<Tools::FocusingHelper>();
+            if( focusingHelperTool ) {
+                auto focusingHelper = focusingHelperTool->getFocusingHelper();
+                double HFD = focusingHelper->HFD;
+                graphs.find( "5:HFD" )->Values.emplace_back( HFD );
+                if( HFD > 0 ) {
+                    double dx = focusingHelper->dCX;
+                    double dy = focusingHelper->dCY;
+                    double drift = std::sqrt( dx * dx + dy * dy );
+                    graphs.find( "4:DRIFT" )->Values.emplace_back( drift );
+                }
+
+            } else {
+                graphs.find( "4:DRIFT" )->Values.emplace_back( 0 );
+                graphs.find( "5:HFD" )->Values.emplace_back( 0 );
+            }
+
             //auto h = pixels_histogram( result->RawPixels(), result->Count(), result->BitDepth() );
             //auto value = pixels_histogram_median( h, 0 );
 
-            /*CRawU16 raw16( result->RawPixels(), result->Width(), result->Height(), result->BitDepth() );
-            auto stars = raw16.DetectStars( 0, 0, result->Width(), result->Height() );
+            //CRawU16 raw16( result->RawPixels(), result->Width(), result->Height(), result->BitDepth() );
+            //auto stars = raw16.DetectStars( 0, 0, result->Width(), result->Height() );
 
-            double flux = 1.0;
-            for( auto detection : stars.DetectionRegions ) {
+            double flux = 0.0;
+            int nstars = 0;
+            int area = 0;
+            /*for( auto detection : stars.DetectionRegions ) {
                 flux += detection->FluxAtHalfDetectionThreshold;
+                nstars++;
+                area += detection->AreaAtHalfDetectionThreshold;
             }*/
 
             auto [mean, sigma, min, max] = simple_pixel_statistics( result->RawPixels(), result->Count() );
             graphs.find( "1:MEAN" )->Values.emplace_back( mean );
             graphs.find( "2:SIGMA" )->Values.emplace_back( sigma );
             graphs.find( "3:T" )->Values.emplace_back( result->Info().Temperature );
+            graphs.find( "6:FLUX" )->Values.emplace_back( flux );
+            graphs.find( "7:NSTARS" )->Values.emplace_back( nstars );
+            graphs.find( "8:AREA" )->Values.emplace_back( nstars > 0 ? ( 1.0 * area ) / nstars : 0 );
 
             if( ui->graphsTypeComboBox->currentText() == "DARKS" ) {
                 std::shared_ptr<void> data = graphs.find( "calibrated_mean" )->Data;
@@ -909,7 +947,7 @@ void MainFrame::imageReady()
             ui->imageSeriesView->setVisible( true );
             ui->imageSeriesView->setOnPaint( [this]( PaintView* view, QPainter& painter ) {
 
-                QPen pen1( QColor::fromRgb( 0x30, 0x30, 0x30 ) );
+                QPen pen1( QColor::fromRgb( 0x20, 0x20, 0x20 ) );
                 pen1.setWidth( 1 );
 
                 painter.setPen( pen1 );
@@ -992,11 +1030,13 @@ void MainFrame::imageReady()
                         double min = std::numeric_limits<double>().max();
                         double max = std::numeric_limits<double>().min();
                         for( auto val: graph.Values ) {
-                            if( val < min ) {
-                                min = val;
-                            }
-                            if( val > max ) {
-                                max = val;
+                            if( val != std::numeric_limits<double>().max() ) {
+                                if( val < min ) {
+                                    min = val;
+                                }
+                                if( val > max ) {
+                                    max = val;
+                                }
                             }
                         }
 
@@ -1165,6 +1205,7 @@ void MainFrame::imageReady()
 
     if( result->Info().Flags & IF_SERIES_END ) {
         ui->continuousCaptureCheckBox->setChecked( false );
+        ui->saveToCheckBox->setChecked( false );
     }
 
     if( ui->continuousCaptureCheckBox->isChecked() ) {
