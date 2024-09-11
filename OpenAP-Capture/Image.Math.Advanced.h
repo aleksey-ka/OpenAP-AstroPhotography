@@ -57,11 +57,13 @@ public:
     CRawU16( const unsigned short* raw, int width, int height, int bitDepth );
 
     std::shared_ptr<CRgbU16Image> DebayerRect( int x, int y, int width, int height ) const;
+    std::shared_ptr<CRgbU16Image> DebayerRectCFA( int x, int y, int width, int height ) const;
     std::shared_ptr<CGrayU16Image> GrayU16( int x, int y, int width, int height ) const;
 
     CPixelStatistics CalculateStatistics( int x, int y, int width, int height ) const;
 
     std::shared_ptr<CRgbImage> Stretch( int scale, int x, int y, int w, int h ) const;
+    std::shared_ptr<CRgbImage> StretchCFA( int x, int y, int w, int h ) const;
 
     DetectionResults DetectStars( int x, int y, int w, int h ) const;
 

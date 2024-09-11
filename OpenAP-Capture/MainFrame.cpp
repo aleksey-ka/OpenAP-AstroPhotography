@@ -285,7 +285,11 @@ static QPixmap focusingHelperPixmap( int scale, bool stretch, bool renderCFA, co
         h *= 2;
     }
     if( stretch ) {
-        return Qt::CreatePixmap( CRawU16( image ).Stretch( scale, x0, y0, w, h ) );
+        if( renderCFA ) {
+            return Qt::CreatePixmap( CRawU16( image ).StretchCFA( x0, y0, w, h ) );
+        } else {
+            return Qt::CreatePixmap( CRawU16( image ).Stretch( scale, x0, y0, w, h ) );
+        }
     } else {
         Renderer renderer( image->Pixels(), image->Width(), image->Height(), image->BitDepth() );
         if( renderCFA ) {

@@ -10,4 +10,5 @@ public:
     using CDebayer_RawU16::CDebayer_RawU16;
 
     void ToRgbU8( std::uint8_t* rgb, int stride, int x0, int y0, int w, int h, unsigned int* hr, unsigned int* hg, unsigned int* hb );
+    void ToRgbU16( std::uint16_t* rgb, int stride, int x0, int y0, int w, int h );
 };

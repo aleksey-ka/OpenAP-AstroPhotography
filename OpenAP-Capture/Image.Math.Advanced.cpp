@@ -4,6 +4,7 @@
 #include "Image.Math.Advanced.h"
 
 #include <Image.Debayer.HQLinear.h>
+#include <Image.Debayer.CFA.h>
 
 #include <Math.Geometry.h>
 #include <Math.LinearAlgebra.h>
@@ -88,6 +89,14 @@ std::shared_ptr<CRgbU16Image> CRawU16::DebayerRect( int x, int y, int w, int h )
     return result;
 }
 
+std::shared_ptr<CRgbU16Image> CRawU16::DebayerRectCFA( int x, int y, int w, int h ) const
+{
+    auto result = std::make_shared<CRgbU16Image>( w, h );
+    CDebayer_RawU16_CFA debayer( raw, width, height, bitDepth );
+    debayer.ToRgbU16( result->RgbPixels(), result->Stride(), x, y, w, h );
+    return result;
+}
+
 std::shared_ptr<CGrayU16Image> CRawU16::GrayU16( int x, int y, int width, int height ) const
 {
     return ToGrayU16( DebayerRect( x, y, width, height ).get() );
@@ -151,6 +160,50 @@ std::shared_ptr<CRgbImage> CRawU16::Stretch( int scale, int x0, int y0, int W, i
     }
     assert( false );
     return 0;
+}
+
+std::shared_ptr<CRgbImage> CRawU16::StretchCFA( int x0, int y0, int W, int H ) const
+{
+    CPixelStatistics stats = CalculateStatistics( x0, y0, W, H );
+
+    const uint maxValue = ~(~0u << bitDepth) - 1;
+
+    CChannelStat sR = stats.stat( 0 );
+    CChannelStat sG = stats.stat( 1, 2);
+    CChannelStat sB = stats.stat( 2 );
+
+    sR.Sigma = std::max( 1u, sR.Sigma );
+    sG.Sigma = std::max( 1u, sG.Sigma );
+    sB.Sigma = std::max( 1u, sB.Sigma );
+
+    auto rgb16 = DebayerRectCFA( x0, y0, W, H );
+
+    auto result = std::make_shared<CRgbImage>( W, H );
+    for( int y = 0; y < H; y++ ) {
+        const ushort* srcLine = rgb16->ScanLine( y );
+        uchar* dstLine = result->ScanLine( y );
+        for( int x = 0; x < W; x++ ) {
+            const ushort* src = srcLine + 3 * x;
+            uchar* dst = dstLine + 3 * x;
+
+            uint r = src[0];
+            uint g = src[1];
+            uint b = src[2];
+
+            if( r >= maxValue || g >= maxValue || b >= maxValue ) {
+                dst[0] = 0xFF;
+                dst[1] = 0x00;
+                dst[2] = 0x80;
+            } else {
+                const int k = 12;
+                dst[0] = r <= ( sR.Median + k * sR.Sigma ) ? ( r < sR.Median ? 0 : ( 255 * ( r - sR.Median ) / k / sR.Sigma ) ) : 255;
+                dst[1] = g <= ( sG.Median + k * sG.Sigma ) ? ( g < sG.Median ? 0 : ( 255 * ( g - sG.Median ) / k / sG.Sigma ) ) : 255;
+                dst[2] = b <= ( sB.Median + k * sB.Sigma ) ? ( b < sB.Median ? 0 : ( 255 * ( b - sB.Median ) / k / sB.Sigma ) ) : 255;
+            }
+        }
+    }
+
+    return result;
 }
 
 std::shared_ptr<CRgbImage> CRawU16::stretchFullRes( int x0, int y0, int W, int H ) const
@@ -996,7 +1049,7 @@ void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int imageSize,
         int countC = 1;
 
         CFocusingHelper* prev = this;
-        double d = 0; 
+        double d = 0;
         for( auto helper : extra ) {
             double prevCX = helper->CX;
             double prevCY = helper->CY;
@@ -1014,7 +1067,7 @@ void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int imageSize,
             double dy = prev->CY - helper->CY;
             d += sqrt( dx * dx + dy * dy );
             prev = helper.get();
-        }      
+        }
         sumD += d;
         sumDD += d * d;
         countL++;
