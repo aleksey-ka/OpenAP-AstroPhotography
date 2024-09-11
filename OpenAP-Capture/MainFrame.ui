@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1359</width>
-    <height>819</height>
+    <width>1706</width>
+    <height>1030</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -227,20 +227,7 @@ QFrame {
               <number>0</number>
              </property>
              <item>
-              <widget class="QCheckBox" name="renderOffCheckBox">
-               <property name="maximumSize">
-                <size>
-                 <width>40</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Off</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="showFullResolution">
+              <widget class="QCheckBox" name="captureFullResolution">
                <property name="maximumSize">
                 <size>
                  <width>90</width>
@@ -253,9 +240,9 @@ QFrame {
               </widget>
              </item>
              <item>
-              <widget class="QCheckBox" name="showQuarterResolution">
-               <property name="text">
-                <string>1/4</string>
+              <widget class="QComboBox" name="viewScaleComboBox">
+               <property name="editable">
+                <bool>true</bool>
                </property>
               </widget>
              </item>

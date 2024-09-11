@@ -6,18 +6,12 @@
 #include <QImage>
 #include <QPixmap>
 
-enum TRenderingMethod {
-    RM_QuarterResolution,
-    RM_HalfResolution,
-    RM_FullResolution,
-    RM_CFA
-};
-
 class Renderer {
 public:
     Renderer( const ushort* raw, int width, int height, int bitDepth );
 
-    QPixmap Render( TRenderingMethod, int x = 0, int y = 0, int w = 0, int h = 0 );
+    QPixmap Render( int scale, int x = 0, int y = 0, int w = 0, int h = 0 );
+    QPixmap RenderCFA( int x = 0, int y = 0, int w = 0, int h = 0 );
     QPixmap RenderHistogram();
 
 private:

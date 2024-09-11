@@ -89,6 +89,7 @@ private:
     QFutureWatcher<std::shared_ptr<const CRawU16Image>> imageReadyWatcher;
     QFutureWatcher<QString> imageSavedWatcher;
     std::shared_ptr<const CRawU16Image> currentImage;
+    int viewScale = 0;
     int zoom = 0;
     QPoint zoomCenter;
     int exposureRemainingTime;

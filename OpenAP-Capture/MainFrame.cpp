@@ -219,6 +219,22 @@ MainFrame::MainFrame( QWidget *parent ) :
 
    ui->graphCheckBox->setChecked( settings.value( "ShowGraph", false ).toBool() );
 
+   ui->viewScaleComboBox->lineEdit()->setReadOnly( true );
+   ui->viewScaleComboBox->addItem( "Off" );
+   ui->viewScaleComboBox->addItem( "1:1" );
+   ui->viewScaleComboBox->addItem( "1:2" );
+   ui->viewScaleComboBox->addItem( "1:4" );
+   ui->viewScaleComboBox->addItem( "1:8" );
+   connect( ui->viewScaleComboBox, QOverload<int>::of( &QComboBox::currentIndexChanged ), [this]( int index )
+   {
+       switch( index ) {
+            case 0: case 1: case 2: viewScale = index; break;
+            case 3: viewScale = 4; break;
+            case 4: viewScale = 8; break;
+       }
+   } );
+   ui->viewScaleComboBox->setCurrentIndex( 2 );
+
    updateUI();
 }
 
@@ -256,9 +272,9 @@ void MainFrame::resizeEvent( QResizeEvent* event )
     }
 }
 
-static QPixmap focusingHelperPixmap( TRenderingMethod rendering, bool stretch, const CRawU16Image* image, int x0, int y0, int w, int h )
+static QPixmap focusingHelperPixmap( int scale, bool stretch, bool renderCFA, const CRawU16Image* image, int x0, int y0, int w, int h )
 {
-    if( rendering == RM_HalfResolution ) {
+    if( scale == 2 ) {
         int cx = x0 + w / 2;
         int cy = y0 + h / 2;
         x0 = cx - w;
@@ -267,18 +283,15 @@ static QPixmap focusingHelperPixmap( TRenderingMethod rendering, bool stretch, c
         y0 += y0 % 2;
         w *= 2;
         h *= 2;
-        if( stretch ) {
-            return Qt::CreatePixmap( CRawU16( image ).StretchHalfRes( x0, y0, w, h ) );
-        } else {
-            Renderer renderer( image->Pixels(), image->Width(), image->Height(), image->BitDepth() );
-            return renderer.Render( rendering, x0, y0, w, h );
-        }
+    }
+    if( stretch ) {
+        return Qt::CreatePixmap( CRawU16( image ).Stretch( scale, x0, y0, w, h ) );
     } else {
-        if( stretch ) {
-            return Qt::CreatePixmap( CRawU16( image ).Stretch( x0, y0, w, h ) );
+        Renderer renderer( image->Pixels(), image->Width(), image->Height(), image->BitDepth() );
+        if( renderCFA ) {
+            return renderer.RenderCFA( x0, y0, w, h );
         } else {
-            Renderer renderer( image->Pixels(), image->Width(), image->Height(), image->BitDepth() );
-            return renderer.Render( rendering, x0, y0, w, h );
+            return renderer.Render( scale, x0, y0, w, h );
         }
     }
 }
@@ -303,11 +316,12 @@ void MainFrame::showZoom( bool update )
         QSignalBlocker lock( ui->zoom1xRadioButton );
         ui->zoom1xRadioButton->setChecked( true );
     }
-    TRenderingMethod rendering = RM_FullResolution;
     int scale = -1;
+    int renderingScale = 1;
+    bool renderCFA = false;
     if( ui->zoomHalfRadioButton->isChecked() ) {
         scale = 1;
-        rendering = RM_HalfResolution;
+        renderingScale = 2;
     } else if( ui->zoom1xRadioButton->isChecked() ) {
         scale = 1;
     } else if( ui->zoom2xRadioButton->isChecked() ) {
@@ -316,7 +330,7 @@ void MainFrame::showZoom( bool update )
         scale = 4;
     } else if( ui->zoomCfaRadioButton->isChecked() ) {
         scale = 4;
-        rendering = RM_CFA;
+        renderCFA = true;
     }
     if( zoom == 0 ) {
         zoom = 1;
@@ -345,7 +359,7 @@ void MainFrame::showZoom( bool update )
                     focusingHelper->SetStackSize( ui->stackSizeSpinBox->value() );
                     pixmap = Qt::CreatePixmap( focusingHelper->GetStackedImage( ui->stretchCheckBox->isChecked(), ui->factorSpinBox->value() ) );
                 } else {
-                    pixmap = focusingHelperPixmap( rendering, ui->stretchCheckBox->isChecked(), currentImage.get(),
+                    pixmap = focusingHelperPixmap( renderingScale, ui->stretchCheckBox->isChecked(), renderCFA, currentImage.get(),
                         c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );
                 }
 
@@ -413,7 +427,7 @@ void MainFrame::showZoom( bool update )
 
             } else {
                 // Not in focusing mode
-                pixmap = focusingHelperPixmap( rendering, ui->stretchCheckBox->isChecked(), currentImage.get(), c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );
+                pixmap = focusingHelperPixmap( renderingScale, ui->stretchCheckBox->isChecked(), renderCFA, currentImage.get(), c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );
             }
             if( scale > 1 ) {
                 pixmap = pixmap.scaled( imageSize * scale, imageSize * scale, Qt::IgnoreAspectRatio );
@@ -733,7 +747,7 @@ void MainFrame::startCapture()
             camera->SetROIFormat( width, height, bin, imgType );
             unbinnedCenter = false;
         }
-        if( ui->showFullResolution->isChecked() ) {
+        if( ui->captureFullResolution->isChecked() ) {
             if( bin == 2 ) {
                 width *= 2;
                 height *= 2;
@@ -1253,26 +1267,14 @@ ulong MainFrame::render( const ushort* raw, int width, int height, int bitDepth 
     if( zoom > 0 ) {
         showZoom();
     }
-    if( !ui->renderOffCheckBox->isChecked() ) {
+    if( viewScale > 0 ) {
         QPixmap pixmap;
         if( ui->stretchCheckBox->isChecked() ) {
             CRawU16 rawU16( raw, width, height, bitDepth );
-            if( ui->showQuarterResolution->isChecked() ) {
-                pixmap = Qt::CreatePixmap( rawU16.StretchQuarterRes( 0, 0, width, height ) );
-            } else if( ui->showFullResolution->isChecked() ) {
-                pixmap = Qt::CreatePixmap( rawU16.Stretch( 0, 0, width, height ) );
-            } else {
-                pixmap = Qt::CreatePixmap( rawU16.StretchHalfRes( 0, 0, width, height ) );
-            }
+            pixmap = Qt::CreatePixmap( rawU16.Stretch( viewScale, 0, 0, width, height ) );
         } else {
             Renderer renderer( raw, width, height, bitDepth );
-            if( ui->showQuarterResolution->isChecked() ) {
-                pixmap = renderer.Render( RM_QuarterResolution );
-            } else if( ui->showFullResolution->isChecked() ) {
-                pixmap = renderer.Render(  RM_FullResolution );
-            } else {
-                pixmap = renderer.Render( RM_HalfResolution );
-            }
+            pixmap = renderer.Render( viewScale );
             ui->histogramView->setPixmap( renderer.RenderHistogram() );
         }
         tools.Draw( pixmap );
@@ -1418,16 +1420,8 @@ void MainFrame::on_filterWheelComboBox_currentIndexChanged( int index )
 
 void MainFrame::on_imageView_imagePressed( int cx, int cy, Qt::MouseButton, Qt::KeyboardModifiers modifiers )
 {
-    int scale;
-    if( ui->showQuarterResolution->isChecked() ) {
-        scale = 4;
-    } else if( ui->showFullResolution->isChecked() ) {
-        scale = 1;
-    } else {
-        scale = 2;
-    }
-    zoomCenter.setX( cx * scale );
-    zoomCenter.setY( cy * scale );
+    zoomCenter.setX( cx * viewScale );
+    zoomCenter.setY( cy * viewScale );
 
     if( modifiers.testFlag( Qt::ControlModifier ) ) {
         auto focusingHelperTool = tools.TryGet<Tools::FocusingHelper>();

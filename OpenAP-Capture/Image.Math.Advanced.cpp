@@ -141,7 +141,19 @@ CPixelStatistics CRawU16::CalculateStatistics( int x0, int y0, int W, int H ) co
     return stats;
 }
 
-std::shared_ptr<CRgbImage> CRawU16::Stretch( int x0, int y0, int W, int H ) const
+std::shared_ptr<CRgbImage> CRawU16::Stretch( int scale, int x0, int y0, int W, int H ) const
+{
+    switch( scale ) {
+        case 1: return stretchFullRes( x0, y0, W, H );
+        case 2: return stretchHalfRes( x0, y0, W, H );
+        case 4: return stretchQuarterRes( x0, y0, W, H );
+        case 8: return stretchEighthRes( x0, y0, W, H );
+    }
+    assert( false );
+    return 0;
+}
+
+std::shared_ptr<CRgbImage> CRawU16::stretchFullRes( int x0, int y0, int W, int H ) const
 {
     CPixelStatistics stats = CalculateStatistics( x0, y0, W, H );
 
@@ -185,7 +197,7 @@ std::shared_ptr<CRgbImage> CRawU16::Stretch( int x0, int y0, int W, int H ) cons
     return result;
 }
 
-std::shared_ptr<CRgbImage> CRawU16::StretchHalfRes( int x0, int y0, int W, int H ) const
+std::shared_ptr<CRgbImage> CRawU16::stretchHalfRes( int x0, int y0, int W, int H ) const
 {
     CPixelStatistics stats = CalculateStatistics( x0, y0, W, H );
 
@@ -240,12 +252,38 @@ std::shared_ptr<CRgbImage> CRawU16::StretchHalfRes( int x0, int y0, int W, int H
     return result;
 }
 
-std::shared_ptr<CRgbImage> CRawU16::StretchQuarterRes( int x, int y, int w, int h ) const
+std::shared_ptr<CRgbImage> CRawU16::stretchQuarterRes( int x, int y, int w, int h ) const
 {
-    auto rgbImage = StretchHalfRes( x, y, w, h );
+    auto rgbImage = stretchHalfRes( x, y, w, h );
     int byteWidth = rgbImage->ByteWidth();
     w /= 2;
     h /= 2;
+
+    auto result = std::make_shared<CRgbImage>( w / 2, h / 2 );
+    for( int i = 0; i < h / 2; i++ ) {
+        const uchar* ptr = rgbImage->ScanLine( 2 * i );
+        uchar* ptr2 = result->ScanLine( i );
+        for( int j = 0; j < w / 2; j++ ) {
+            const uchar* src0 = ptr + 2 * 3 * j;
+            const uchar* src1 = src0 + 3;
+            const uchar* src2 = src0 + byteWidth;
+            const uchar* src3 = src0 + byteWidth + 3;
+
+            uchar* dst = ptr2 + 3 * j;
+            dst[0] = ( src0[0] + src1[0] + src2[0] + src3[0] ) / 4;
+            dst[1] = ( src0[1] + src1[1] + src2[1] + src3[1] ) / 4;
+            dst[2] = ( src0[2] + src1[2] + src2[2] + src3[2] ) / 4;
+        }
+    }
+    return result;
+}
+
+std::shared_ptr<CRgbImage> CRawU16::stretchEighthRes( int x, int y, int w, int h ) const
+{
+    auto rgbImage = stretchQuarterRes( x, y, w, h );
+    int byteWidth = rgbImage->ByteWidth();
+    w /= 4;
+    h /= 4;
 
     auto result = std::make_shared<CRgbImage>( w / 2, h / 2 );
     for( int i = 0; i < h / 2; i++ ) {

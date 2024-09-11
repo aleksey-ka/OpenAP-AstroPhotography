@@ -61,9 +61,7 @@ public:
 
     CPixelStatistics CalculateStatistics( int x, int y, int width, int height ) const;
 
-    std::shared_ptr<CRgbImage> Stretch( int x, int y, int w, int h ) const;
-    std::shared_ptr<CRgbImage> StretchHalfRes( int x, int y, int w, int h ) const;
-    std::shared_ptr<CRgbImage> StretchQuarterRes( int x, int y, int w, int h ) const;
+    std::shared_ptr<CRgbImage> Stretch( int scale, int x, int y, int w, int h ) const;
 
     DetectionResults DetectStars( int x, int y, int w, int h ) const;
 
@@ -80,6 +78,11 @@ private:
     int width;
     int height;
     int bitDepth;
+
+    std::shared_ptr<CRgbImage> stretchFullRes( int x, int y, int w, int h ) const;
+    std::shared_ptr<CRgbImage> stretchHalfRes( int x, int y, int w, int h ) const;
+    std::shared_ptr<CRgbImage> stretchQuarterRes( int x, int y, int w, int h ) const;
+    std::shared_ptr<CRgbImage> stretchEighthRes( int x, int y, int w, int h ) const;
 };
 
 class CFocusingHelper {
