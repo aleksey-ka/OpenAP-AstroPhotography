@@ -193,6 +193,7 @@ MainFrame::MainFrame( QWidget *parent ) :
    connect( ui->zoom2xRadioButton, &QRadioButton::toggled, [=](bool checked ) { if( checked ) showZoom(); } );
    connect( ui->zoom4xRadioButton, &QRadioButton::toggled, [=](bool checked ) { if( checked ) showZoom(); } );
    connect( ui->zoomCfaRadioButton, &QRadioButton::toggled, [=](bool checked ) { if( checked ) showZoom(); } );
+   connect( ui->stretchCheckBox, &QRadioButton::toggled, [=](bool checked ) { if( zoomView->isVisible() ) showZoom(); } );
 
    connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_R ), this ), &QShortcut::activated, [=]() {
        if( camera == 0 ) {
@@ -255,7 +256,7 @@ void MainFrame::resizeEvent( QResizeEvent* event )
     }
 }
 
-static QPixmap focusingHelperPixmap( TRenderingMethod rendering, const CRawU16Image* image, int x0, int y0, int w, int h )
+static QPixmap focusingHelperPixmap( TRenderingMethod rendering, bool stretch, const CRawU16Image* image, int x0, int y0, int w, int h )
 {
     if( rendering == RM_HalfResolution ) {
         int cx = x0 + w / 2;
@@ -266,9 +267,19 @@ static QPixmap focusingHelperPixmap( TRenderingMethod rendering, const CRawU16Im
         y0 += y0 % 2;
         w *= 2;
         h *= 2;
-        return Qt::CreatePixmap( CRawU16( image ).StretchHalfRes( x0, y0, w, h ) );
+        if( stretch ) {
+            return Qt::CreatePixmap( CRawU16( image ).StretchHalfRes( x0, y0, w, h ) );
+        } else {
+            Renderer renderer( image->Pixels(), image->Width(), image->Height(), image->BitDepth() );
+            return renderer.Render( rendering, x0, y0, w, h );
+        }
     } else {
-        return Qt::CreatePixmap( CRawU16( image ).Stretch( x0, y0, w, h ) );
+        if( stretch ) {
+            return Qt::CreatePixmap( CRawU16( image ).Stretch( x0, y0, w, h ) );
+        } else {
+            Renderer renderer( image->Pixels(), image->Width(), image->Height(), image->BitDepth() );
+            return renderer.Render( rendering, x0, y0, w, h );
+        }
     }
 }
 
@@ -334,7 +345,8 @@ void MainFrame::showZoom( bool update )
                     focusingHelper->SetStackSize( ui->stackSizeSpinBox->value() );
                     pixmap = Qt::CreatePixmap( focusingHelper->GetStackedImage( ui->stretchCheckBox->isChecked(), ui->factorSpinBox->value() ) );
                 } else {
-                    pixmap = focusingHelperPixmap( rendering, currentImage.get(), c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );
+                    pixmap = focusingHelperPixmap( rendering, ui->stretchCheckBox->isChecked(), currentImage.get(),
+                        c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );
                 }
 
                 QPainter painter( &pixmap );
@@ -401,12 +413,7 @@ void MainFrame::showZoom( bool update )
 
             } else {
                 // Not in focusing mode
-                if( ui->stretchCheckBox->isChecked() ) {
-                    pixmap = focusingHelperPixmap( rendering, currentImage.get(), c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );
-                } else {
-                    Renderer renderer( currentImage->RawPixels(), currentImage->Width(), currentImage->Height(), currentImage->BitDepth() );
-                    pixmap = renderer.Render( rendering, c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );
-                }
+                pixmap = focusingHelperPixmap( rendering, true, currentImage.get(), c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );
             }
             if( scale > 1 ) {
                 pixmap = pixmap.scaled( imageSize * scale, imageSize * scale, Qt::IgnoreAspectRatio );
