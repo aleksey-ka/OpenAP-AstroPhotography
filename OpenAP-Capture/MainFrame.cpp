@@ -347,6 +347,7 @@ void MainFrame::showZoom( bool update )
                 auto focusingHelper = focusingHelperTool->getFocusingHelper();
                 // Lock on the star (center on local maximum) and measure its params
                 int focuserPos = focuser != 0 ? focuser->GetPos() : INT_MIN;
+                int focuserPrevPos = focuser != 0 ? focuser->PrevPos() : INT_MIN;
                 focusingHelper->AddFrame( currentImage.get(), imageSize, focuserPos );
                 c.setX( focusingHelper->cx );
                 c.setY( focusingHelper->cy );
@@ -374,7 +375,9 @@ void MainFrame::showZoom( bool update )
                 painter.setFont( font );
                 int pos = 0;
                 if( focuser != 0 && focuserPos != INT_MIN ) {
-                    painter.drawText( 5, pos += 15, QString( "FOCUSER %1 (%2)" ).arg( QString::number( focuserPos ), QString::number( focuser->StepsPerMove() ) ) );
+                    painter.drawText( 5, pos += 15, QString( "FOCUSER %1 (%2)%3" ).arg( QString::number( focuserPos ),
+                        QString::number( focuser->StepsPerMove() ),
+                        focuserPrevPos < focuserPos ? QString(u8"\u2191") : focuserPrevPos > focuserPos ? QString(u8"\u2193") : QString("") ) );
                 }
                 if( focusingHelper->StarLocked ) {
                     painter.drawEllipse( pixmap.width() / 2 - focusingHelper->R, pixmap.height() / 2 - focusingHelper->R, 2 * focusingHelper->R, 2 * focusingHelper->R );
@@ -420,8 +423,39 @@ void MainFrame::showZoom( bool update )
                         if( stat.Pos > INT_MIN ) {
                             int x = ( 8 * ( stat.Pos - focuserPos ) ) / focuser->StepsPerMove() + imageSize / 2;
                             int y = (int)round( -15 * stat.HFD ) + imageSize;
-                            painter.drawLine( x - 3, y, x + 3, y );
+                            painter.drawLine( x - 2, y, x + 2, y );
+                            int minY = (int)round( -15 * stat.MinHFD ) + imageSize;
+                            painter.drawLine( x - 2, minY, x + 2, minY );
                         }
+                    }
+                    double maxValue = std::numeric_limits<double>::min();
+                    double minValue = std::numeric_limits<double>::max();
+                    for( size_t i = 0; i < focusingHelper->focuserPositions.size(); i++ ) {
+                        auto v = focusingHelper->getFocuserStatsByIndex( i ).MaxPeakValue;
+                        if( v > maxValue ) maxValue = v;
+                        if( v < minValue ) minValue = v;
+                        v = focusingHelper->getFocuserStatsByIndex( i ).PeakValue;
+                        if( v > maxValue ) maxValue = v;
+                        if( v < minValue ) minValue = v;
+                    }
+                    pen.setColor( QColor::fromRgb( 0xFF, 0xFF, 0 ) );
+                    painter.setPen( pen );
+                    for( size_t i = 0; i < focusingHelper->focuserPositions.size(); i++ ) {
+                        auto stat = focusingHelper->getFocuserStatsByIndex( i );
+                        int x = ( 8 * ( stat.Pos - focuserPos ) ) / focuser->StepsPerMove() + imageSize / 2;
+                        double scaledValue = 0;
+                        if( maxValue - minValue > 0 ) {
+                            scaledValue = ( stat.MaxPeakValue - minValue ) / ( maxValue - minValue );
+                        }
+                        int y = (int)round( -15 * scaledValue ) + imageSize - 20;
+                        painter.drawLine( x - 2, y, x + 2, y );
+
+                        scaledValue = 0;
+                        if( maxValue - minValue > 0 ) {
+                            scaledValue = ( stat.PeakValue - minValue ) / ( maxValue - minValue );
+                        }
+                        y = (int)round( -15 * scaledValue ) + imageSize - 20;
+                        painter.drawLine( x - 2, y, x + 2, y );
                     }
                 }
 

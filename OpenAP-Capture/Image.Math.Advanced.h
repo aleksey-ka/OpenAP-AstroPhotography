@@ -127,19 +127,38 @@ public:
     struct FocuserPosStats {
         int Pos;
         double HFD;
+        double MinHFD;
+        double PeakValue;
+        double MaxPeakValue;
 
-        FocuserPosStats( int pos, double hfd ) : Pos( pos ), HFD( hfd ) {}
+        FocuserPosStats( int pos, double hfd, double minHfd, double peakValue, double maxPeakValue ) :
+            Pos( pos ), HFD( hfd ), MinHFD( minHfd ), PeakValue( peakValue ), MaxPeakValue( maxPeakValue ) {}
     };
 
     FocuserPosStats getFocuserStats( int focuserPosition )
     {
-        double sumV = 0;
+        double sumHFD = 0;
+        double minHFD = std::numeric_limits<double>::max();
         int count = 0;
         for( auto v : focuserStats[focuserPosition]->HFD ) {
-            sumV += v;
+            sumHFD += v;
+            if( v < minHFD ) {
+                minHFD = v;
+            }
             count++;
         }
-        return FocuserPosStats( focuserPosition, sumV / count );
+        double avgHfd = sumHFD / count;
+
+        double sumPeak = 0;
+        double maxPeakValue = std::numeric_limits<double>::min();
+        for( auto v : focuserStats[focuserPosition]->Max ) {
+            sumPeak += v;
+            if( v > maxPeakValue ) {
+                maxPeakValue = v;
+            }
+        }
+        double avgPeakValue = sumPeak / count;
+        return FocuserPosStats( focuserPosition, avgHfd, minHFD, avgPeakValue, maxPeakValue );
     }
 
     FocuserPosStats getFocuserStatsByIndex( size_t index )

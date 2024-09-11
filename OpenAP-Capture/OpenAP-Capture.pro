@@ -19,6 +19,7 @@ SOURCES += \
         Hardware.Camera.ZWO.ASICamera.cpp \
         Hardware.FilterWheel.cpp \
         Hardware.FilterWheel.ZWO.EFWheel.cpp \
+        Hardware.Focuser.Mock.Focuser.cpp \
         Hardware.Focuser.cpp \
         Hardware.Focuser.DIYFocuser.cpp \
         Hardware.Focuser.ZWO.EAFocuser.cpp \
@@ -46,6 +47,7 @@ HEADERS += \
         Hardware.Camera.ZWO.ASICamera.h \
         Hardware.FilterWheel.h \
         Hardware.FilterWheel.ZWO.EFWheel.h \
+        Hardware.Focuser.Mock.Focuser.h \
         Hardware.Focuser.h \
         Hardware.Focuser.DIYFocuser.h \
         Hardware.Focuser.ZWO.EAFocuser.h \

@@ -4,12 +4,13 @@
 #pragma once
 
 #include "Hardware.Focuser.h"
-#include <QtSerialPort/QSerialPort>
 
-class DIYFocuser : public QObject, public Hardware::Focuser {
+#include <climits>
+
+class MockFocuser : public Hardware::Focuser {
 public:
-    static std::shared_ptr<DIYFocuser> Open();
-    virtual void Close() override;
+    static std::shared_ptr<MockFocuser> Open();
+    virtual void Close() override {}
 
     virtual void Forward() override;
     virtual void Backward() override;
@@ -19,23 +20,14 @@ public:
     virtual int StepsPerMove() const override { return stepsToGo; }
 
     virtual void MarkZero() override;
-    virtual void MoveZero( int ) override {}
+    virtual void MoveZero( int ) override;
     virtual void GoToPos( int ) override;
     virtual int GetPos() const override { return focuserPos; }
 
-    virtual int PrevPos() const { return prevPos; }
+    virtual int PrevPos() const override { return prevPos; }
 
 private:
-    // Focuser (arduino)
-    QSerialPort* serial = nullptr;
     int stepsToGo = 128;
-    mutable int targetPos = INT_MIN;
-    mutable int focuserPos = INT_MIN;
-    mutable int prevPos = INT_MIN;
-    bool isInsideMoveTo() const { return targetPos != INT_MIN; }
-    void cancelMoveTo() const { targetPos = INT_MIN; }
-    void writeToSerial( const QString& ) const;
-    void readSerial() const;
-
-    bool connect( const QString& portName );
+    mutable int focuserPos = 0;
+    mutable int prevPos = 0;
 };

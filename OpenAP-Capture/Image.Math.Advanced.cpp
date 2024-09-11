@@ -957,16 +957,18 @@ void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int imageSize,
         currentSeries = it->second;
     }
 
-    currentSeries->HFD.push_back( HFD );
-    currentSeries->FWHM.push_back( 2 * sqrt ( count / M_PI ) );
-    currentSeries->Max.push_back( maxVal );
-    currentSeries->CX.push_back( CX );
-    currentSeries->CY.push_back( CY );
+    if( StarLocked ) {
+        currentSeries->HFD.push_back( HFD );
+        currentSeries->FWHM.push_back( 2 * sqrt ( count / M_PI ) );
+        currentSeries->Max.push_back( maxVal );
+        currentSeries->CX.push_back( CX );
+        currentSeries->CY.push_back( CY );
 
-    if( isGlobalPolarAlign ) {
-        currentSeries->theDetectionResults.push_back( rawU16.DetectStars( 0, 0, currentImage->Width(), currentImage->Height() ) );
-    } else {
-        currentSeries->theDetectionResults.push_back( DetectionResults() );
+        if( isGlobalPolarAlign ) {
+            currentSeries->theDetectionResults.push_back( rawU16.DetectStars( 0, 0, currentImage->Width(), currentImage->Height() ) );
+        } else {
+            currentSeries->theDetectionResults.push_back( DetectionResults() );
+        }
     }
 
     double sumdCX = 0;

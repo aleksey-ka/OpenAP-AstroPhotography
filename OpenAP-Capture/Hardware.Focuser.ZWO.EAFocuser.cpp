@@ -60,6 +60,7 @@ bool ZWOFocuser::connect( int _id )
     id = _id;
     if( EAFOpen( id ) == EAF_SUCCESS ) {
         EAFGetPosition( id, &focuserPos );
+        prevPos = focuserPos;
         return true;
     }
     return false;
@@ -71,6 +72,7 @@ void ZWOFocuser::Close()
         cancelMoveTo();
         checkResult( EAFClose( id ) );
         focuserPos = INT_MIN;
+        prevPos = INT_MIN;
         id = -1;
     }
 }
@@ -107,13 +109,15 @@ void ZWOFocuser::MoveZero( int steps )
 
 void ZWOFocuser::GoToPos( int pos )
 {
-   focuserPos = INT_MIN;
-   checkResult( EAFMove( id, pos ) );
-   targetPos = pos;
+    prevPos = focuserPos;
+    focuserPos = INT_MIN;
+    checkResult( EAFMove( id, pos ) );
+    targetPos = pos;
 }
 
 void ZWOFocuser::syncMoveTo( int newPos )
 {
+    prevPos = focuserPos;
     focuserPos = INT_MIN;
     checkResult( EAFMove( id, newPos ) );
     while( isInsideMoveTo() ) {

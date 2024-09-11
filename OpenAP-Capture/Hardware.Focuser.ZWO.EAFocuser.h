@@ -24,11 +24,14 @@ public:
     virtual void GoToPos( int ) override;
     virtual int GetPos() const override { return focuserPos; }
 
+    virtual int PrevPos() const override { return prevPos; }
+
 private:
     int id;
     int stepsToGo = 128;
     mutable int targetPos = INT_MIN;
     mutable int focuserPos = INT_MIN;
+    mutable int prevPos = INT_MIN;
     void syncMoveTo( int pos );
     bool isInsideMoveTo() const;
     void cancelMoveTo() const;

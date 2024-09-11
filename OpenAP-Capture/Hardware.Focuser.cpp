@@ -5,6 +5,7 @@
 
 #include "Hardware.Focuser.ZWO.EAFocuser.h"
 #include "Hardware.Focuser.DIYFocuser.h"
+#include "Hardware.Focuser.Mock.Focuser.h"
 
 using namespace Hardware;
 
@@ -13,6 +14,11 @@ std::shared_ptr<Focuser> Focuser::Open()
     std::shared_ptr<Focuser> focuser = ZWOFocuser::Open();
     if( focuser == 0 ) {
         focuser = DIYFocuser::Open();
+#ifdef QT_DEBUG
+        if( focuser == 0 ) {
+            focuser = MockFocuser::Open();
+        }
+#endif
     }
     return focuser;
 }

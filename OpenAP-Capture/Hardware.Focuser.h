@@ -25,6 +25,8 @@ public:
     virtual void GoToPos( int ) = 0;
     virtual int GetPos() const = 0;
 
+    virtual int PrevPos() const = 0;
+
     virtual ~Focuser() {}
 };
 

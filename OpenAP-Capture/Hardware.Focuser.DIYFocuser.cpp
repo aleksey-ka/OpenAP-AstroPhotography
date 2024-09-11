@@ -38,6 +38,10 @@ bool DIYFocuser::connect( const QString& portName )
         assert( serial->isOpen() );
 
         QObject::connect( serial, &QSerialPort::readyRead, this, &DIYFocuser::readSerial ) ;
+
+        focuserPos = 0;
+        prevPos = 0;
+
         qDebug() << "Connected to " << portName;
         return true;
     }
@@ -60,6 +64,7 @@ void DIYFocuser::Forward()
         cancelMoveTo();
         return;
     }
+    prevPos = focuserPos;
     focuserPos = INT_MIN;
     writeToSerial( QString( "FWD %1\n" ).arg( QString::number( stepsToGo ) ) );
 }
@@ -70,6 +75,7 @@ void DIYFocuser::Backward()
         cancelMoveTo();
         return;
     }
+    prevPos = focuserPos;
     focuserPos = INT_MIN;
     writeToSerial( QString( "BWD %1\n" ).arg( QString::number( stepsToGo ) ) );
 }
@@ -83,6 +89,7 @@ void DIYFocuser::MarkZero()
 void DIYFocuser::GoToPos( int pos )
 {
     if( !isInsideMoveTo() ) {
+        prevPos = focuserPos;
         focuserPos = INT_MIN;
         writeToSerial( QString( "POS GET\n" ) );
     }
