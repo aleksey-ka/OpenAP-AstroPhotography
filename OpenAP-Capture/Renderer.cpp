@@ -27,9 +27,9 @@ std::vector<uchar> downscaleTwice( const uchar* rgb, int byteWidth, int w, int h
         for( int j = 0; j < w / 2; j++ ) {
             const uchar* p = ptr + 6 * j;
             uchar* p2 = ptr2 + 3 * j;
-            p2[0] = ( p[0] + p[3] + p[byteWidth] + p[byteWidth + 3] ) / 4;
-            p2[1] = ( p[1] + p[4] + p[byteWidth + 1] + p[byteWidth + 4] ) / 4;
-            p2[2] = ( p[2] + p[5] + p[byteWidth + 2] + p[byteWidth + 5] ) / 4;
+            p2[0] = ( (int)p[0] + p[3] + p[byteWidth] + p[byteWidth + 3] ) / 4;
+            p2[1] = ( (int)p[1] + p[4] + p[byteWidth + 1] + p[byteWidth + 4] ) / 4;
+            p2[2] = ( (int)p[2] + p[5] + p[byteWidth + 2] + p[byteWidth + 5] ) / 4;
         }
     }
 
