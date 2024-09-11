@@ -342,8 +342,6 @@ void MainFrame::showZoom( bool update )
                 pen.setWidthF( 0.5 );
                 painter.setPen( pen );
                 painter.setRenderHint( QPainter::Antialiasing );
-                painter.drawEllipse( pixmap.width() / 2 - focusingHelper->R, pixmap.height() / 2 - focusingHelper->R, 2 * focusingHelper->R, 2 * focusingHelper->R );
-                painter.drawEllipse( pixmap.width() / 2 - focusingHelper->R_out, pixmap.height() / 2 - focusingHelper->R_out, 2 * focusingHelper->R_out, 2 * focusingHelper->R_out );
 
                 QFont font( "Consolas" );
                 font.setPointSizeF( 9 );
@@ -352,17 +350,22 @@ void MainFrame::showZoom( bool update )
                 if( focuser != 0 && focuserPos != INT_MIN ) {
                     painter.drawText( 5, pos += 15, QString( "FOCUSER %1 (%2)" ).arg( QString::number( focuserPos ), QString::number( focuser->StepsPerMove() ) ) );
                 }
-                painter.drawText( 5, pos += 15, QString( "HFD %1" ).arg( QString::number( focusingHelper->HFD, 'f', 2 ) ) );
-                if( focusingHelper->extra.size() > 0 ) {
-                    for( auto helper : focusingHelper->extra ) {
-                        painter.drawText( 5, pos += 15, QString( "HFD %1" ).arg( QString::number( helper->HFD, 'f', 2 ) ) );
+                if( focusingHelper->StarLocked ) {
+                    painter.drawEllipse( pixmap.width() / 2 - focusingHelper->R, pixmap.height() / 2 - focusingHelper->R, 2 * focusingHelper->R, 2 * focusingHelper->R );
+                    painter.drawEllipse( pixmap.width() / 2 - focusingHelper->R_out, pixmap.height() / 2 - focusingHelper->R_out, 2 * focusingHelper->R_out, 2 * focusingHelper->R_out );
+
+                    painter.drawText( 5, pos += 15, QString( "HFD %1" ).arg( QString::number( focusingHelper->HFD, 'f', 2 ) ) );
+                    if( focusingHelper->extra.size() > 0 ) {
+                        for( auto helper : focusingHelper->extra ) {
+                            painter.drawText( 5, pos += 15, QString( "HFD %1" ).arg( QString::number( helper->HFD, 'f', 2 ) ) );
+                        }
+                        painter.drawText( 5, pos += 15, QString( "dCX %1 (%2)" ).arg( QString::number( focusingHelper->dCX, 'f', 2 ), QString::number( focusingHelper->sigmadCX, 'f', 2 ) ) );
+                        painter.drawText( 5, pos += 15, QString( "dCY %1 (%2)" ).arg( QString::number( focusingHelper->dCY, 'f', 2 ), QString::number( focusingHelper->sigmadCY, 'f', 2 ) ) );
+                        painter.drawText( 5, pos += 15, QString( "L %1 (%2)" ).arg( QString::number( focusingHelper->L, 'f', 2 ), QString::number( focusingHelper->sigmaL, 'f', 2 ) ) );
+                    } else {
+                        painter.drawText( 5, pos += 15, QString( "dCX %1" ).arg( QString::number( focusingHelper->dCX, 'f', 2 ) ) );
+                        painter.drawText( 5, pos += 15, QString( "dCY %1" ).arg( QString::number( focusingHelper->dCY, 'f', 2 ) ) );
                     }
-                    painter.drawText( 5, pos += 15, QString( "dCX %1 (%2)" ).arg( QString::number( focusingHelper->dCX, 'f', 2 ), QString::number( focusingHelper->sigmadCX, 'f', 2 ) ) );
-                    painter.drawText( 5, pos += 15, QString( "dCY %1 (%2)" ).arg( QString::number( focusingHelper->dCY, 'f', 2 ), QString::number( focusingHelper->sigmadCY, 'f', 2 ) ) );
-                    painter.drawText( 5, pos += 15, QString( "L %1 (%2)" ).arg( QString::number( focusingHelper->L, 'f', 2 ), QString::number( focusingHelper->sigmaL, 'f', 2 ) ) );
-                } else {
-                    painter.drawText( 5, pos += 15, QString( "dCX %1" ).arg( QString::number( focusingHelper->dCX, 'f', 2 ) ) );
-                    painter.drawText( 5, pos += 15, QString( "dCY %1" ).arg( QString::number( focusingHelper->dCY, 'f', 2 ) ) );
                 }
 
                 if( debugMode ) {

@@ -304,22 +304,24 @@ std::shared_ptr<CGrayImage> CRawU16::ToGray( const CGrayU16Image* rgb16 )
     return result;
 }
 
-void CRawU16::GradientAscentToLocalMaximum( int& x, int& y, int size )
+bool CRawU16::GradientAscentToLocalMaximum( int& x, int& y, int size, int maxSteps )
 {
     auto gray = GrayU16( x - size / 2, y - size / 2, size, size );
     int _x = size / 2;
     int _y = size / 2;
-    CRawU16::GradientAscentToLocalMaximum( gray.get(), _x, _y, 25 );
-    CRawU16::GradientAscentToLocalMaximum( gray.get(), _x, _y, 3 );
+    bool bResult = CRawU16::GradientAscentToLocalMaximum( gray.get(), _x, _y, 25, maxSteps ) &&
+            CRawU16::GradientAscentToLocalMaximum( gray.get(), _x, _y, 3, maxSteps );
     x += _x - size / 2;
     y += _y - size / 2;
+    return bResult;
 }
 
-void CRawU16::GradientAscentToLocalMaximum( const CGrayU16Image* image, int& x, int& y, int window )
+bool CRawU16::GradientAscentToLocalMaximum( const CGrayU16Image* image, int& x, int& y, int window, int maxSteps )
 {
     int halfW = window / 2;
     int stride = image->Stride();
-    while( true ) {
+    int steps = 0;
+    while( steps < maxSteps ) {
         const ushort* p = image->ScanLine( y ) + x;
         int maxv = 0;
         int maxPos = 0;
@@ -329,7 +331,7 @@ void CRawU16::GradientAscentToLocalMaximum( const CGrayU16Image* image, int& x, 
             for( int j = -halfW; j <= halfW; j+= halfW ) {
                 const ushort* s = p + i * stride + j;
                 int v = 0;
-                // Sum values of pixels in 3x3 area
+                // Sum values of pixels in halfWxhalfW area
                 for( int n = -halfW; n <= halfW; n++ ) {
                     for( int m = -halfW; m <= halfW; m++ ) {
                         v += s[n * stride + m];
@@ -348,13 +350,15 @@ void CRawU16::GradientAscentToLocalMaximum( const CGrayU16Image* image, int& x, 
             case 1: y--; break;
             case 2: x++; y--; break;
             case 3: x--; break;
-            case 4: return;
+            case 4: return true;
             case 5: x++; break;
             case 6: x--; y++; break;
             case 7: y++; break;
             case 8: x++; y++; break;
         }
+        steps++;
     }
+    return false;
 }
 
 CPixelStatistics CRawU16::CalculateStatistics( const CGrayU16Image* image )
@@ -724,7 +728,7 @@ void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int imageSize,
 
     // Lock on the star (center on local maximum)
     CRawU16 rawU16( currentImage );
-    rawU16.GradientAscentToLocalMaximum( cx, cy, imageSize );
+    StarLocked = rawU16.GradientAscentToLocalMaximum( cx, cy, imageSize );
     auto image = rawU16.GrayU16( cx - imageSize / 2, cy - imageSize / 2, imageSize, imageSize );
 
     int width = image->Width();
@@ -734,6 +738,13 @@ void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int imageSize,
     qDebug() << "Median:" << s.Median << "Sigma:" << s.Sigma;
 
     int cVal = image->At( imageSize / 2, imageSize / 2 );
+    if( cVal < s.Median + 4.0 * s.Sigma ) {
+        StarLocked = false;
+    }
+
+    if( StarLocked ) {
+        qDebug() << "Star locked";
+    }
 
     int maxVal = 0;
     int halfMax = s.Median + ( cVal - s.Median ) / 2;
@@ -756,7 +767,6 @@ void CFocusingHelper::AddFrame( const CRawU16Image* currentImage, int imageSize,
     qDebug() << "Max val:" << maxVal;
     qDebug() << "Count at half max:" << count;
     qDebug() << "FWHM:" << 2 * sqrt ( count / M_PI );
-
 
     auto mask = starMask( image.get(), imageSize / 2, imageSize / 2, s.Median + s.Sigma, 16 );
     starMask( image.get(), imageSize / 2, imageSize / 2, s.Median + ( cVal - s.Median ) / 10, 32, mask );

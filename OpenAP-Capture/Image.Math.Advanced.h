@@ -70,8 +70,8 @@ public:
     static std::shared_ptr<CGrayU16Image> ToGrayU16( const CRgbU16Image* );
     static std::shared_ptr<CGrayImage> ToGray( const CGrayU16Image* );
 
-    void GradientAscentToLocalMaximum( int& x, int& y, int size );
-    static void GradientAscentToLocalMaximum( const CGrayU16Image*, int& x, int& y, int window );
+    bool GradientAscentToLocalMaximum( int& x, int& y, int size, int maxSteps = 300 );
+    static bool GradientAscentToLocalMaximum( const CGrayU16Image*, int& x, int& y, int window, int maxSteps );
 
     static CPixelStatistics CalculateStatistics( const CGrayU16Image* );
 
@@ -95,6 +95,7 @@ public:
     double HFD = 0;
     double CX = 0;
     double CY = 0;
+    bool StarLocked = false;
     std::shared_ptr<const CGrayImage> Mask;
     std::vector<std::pair<double,double>> Stars;
 
