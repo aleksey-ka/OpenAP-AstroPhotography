@@ -187,13 +187,13 @@ MainFrame::MainFrame( QWidget *parent ) :
            showZoom();
        }
    } );
-   connect( ui->zoomOffRadioButton, &QRadioButton::toggled, [=](bool checked ) { if( checked ) { zoom = 0; zoomView->hide(); } } );
-   connect( ui->zoomHalfRadioButton, &QRadioButton::toggled, [=](bool checked ) { if( checked ) showZoom(); } );
-   connect( ui->zoom1xRadioButton, &QRadioButton::toggled, [=](bool checked ) { if( checked ) showZoom(); } );
-   connect( ui->zoom2xRadioButton, &QRadioButton::toggled, [=](bool checked ) { if( checked ) showZoom(); } );
-   connect( ui->zoom4xRadioButton, &QRadioButton::toggled, [=](bool checked ) { if( checked ) showZoom(); } );
-   connect( ui->zoomCfaRadioButton, &QRadioButton::toggled, [=](bool checked ) { if( checked ) showZoom(); } );
-   connect( ui->stretchCheckBox, &QRadioButton::toggled, [=](bool checked ) { if( zoomView->isVisible() ) showZoom(); } );
+   connect( ui->zoomOffRadioButton, &QRadioButton::toggled, [=]( bool checked ) { if( checked ) { zoom = 0; zoomView->hide(); } } );
+   connect( ui->zoomHalfRadioButton, &QRadioButton::toggled, [=]( bool checked ) { if( checked ) showZoom(); } );
+   connect( ui->zoom1xRadioButton, &QRadioButton::toggled, [=]( bool checked ) { if( checked ) showZoom(); } );
+   connect( ui->zoom2xRadioButton, &QRadioButton::toggled, [=]( bool checked ) { if( checked ) showZoom(); } );
+   connect( ui->zoom4xRadioButton, &QRadioButton::toggled, [=]( bool checked ) { if( checked ) showZoom(); } );
+   connect( ui->zoomCfaRadioButton, &QRadioButton::toggled, [=]( bool checked ) { if( checked ) showZoom(); } );
+   connect( ui->stretchCheckBox, &QRadioButton::toggled, [=]( bool ) { if( zoomView->isVisible() ) showZoom(); } );
 
    connect( new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_R ), this ), &QShortcut::activated, [=]() {
        if( camera == 0 ) {
@@ -413,7 +413,7 @@ void MainFrame::showZoom( bool update )
 
             } else {
                 // Not in focusing mode
-                pixmap = focusingHelperPixmap( rendering, true, currentImage.get(), c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );
+                pixmap = focusingHelperPixmap( rendering, ui->stretchCheckBox->isChecked(), currentImage.get(), c.x() - imageSize / 2, c.y() - imageSize / 2, imageSize, imageSize );
             }
             if( scale > 1 ) {
                 pixmap = pixmap.scaled( imageSize * scale, imageSize * scale, Qt::IgnoreAspectRatio );
@@ -1418,11 +1418,13 @@ void MainFrame::on_filterWheelComboBox_currentIndexChanged( int index )
 
 void MainFrame::on_imageView_imagePressed( int cx, int cy, Qt::MouseButton, Qt::KeyboardModifiers modifiers )
 {
-    int scale = 2;
-    if( ui->showFullResolution->isChecked() ) {
-        scale = 1;
-    } else if( ui->showQuarterResolution->isChecked() ) {
+    int scale;
+    if( ui->showQuarterResolution->isChecked() ) {
         scale = 4;
+    } else if( ui->showFullResolution->isChecked() ) {
+        scale = 1;
+    } else {
+        scale = 2;
     }
     zoomCenter.setX( cx * scale );
     zoomCenter.setY( cy * scale );
