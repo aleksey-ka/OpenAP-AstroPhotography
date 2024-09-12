@@ -8,7 +8,7 @@
 
 class Renderer {
 public:
-    Renderer( const ushort* raw, int width, int height, int bitDepth );
+    Renderer( const ushort* raw, int width, int height, int bitDepth, bool isMono );
 
     QPixmap Render( int scale, int x = 0, int y = 0, int w = 0, int h = 0 );
     QPixmap RenderCFA( int x = 0, int y = 0, int w = 0, int h = 0 );
@@ -19,6 +19,7 @@ private:
     int width;
     int height;
     int bitDepth;
+    bool isMono;
 
     // Histogram data
     std::vector<uint> histR;

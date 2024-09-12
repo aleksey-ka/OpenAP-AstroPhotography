@@ -71,12 +71,12 @@ size_t CPixelStatistics::maxP( int channel, int start, int end ) const
 }
 
 CRawU16::CRawU16( const CRawU16Image* image ) :
-    CRawU16( image->RawPixels(), image->Width(), image->Height(), image->BitDepth() )
+    CRawU16( image->RawPixels(), image->Width(), image->Height(), image->BitDepth(), image->IsMono() )
 {
 }
 
-CRawU16::CRawU16( const ushort* _raw, int _width, int _height, int _bitDepth ) :
-    raw( _raw ), width( _width ), height( _height ), bitDepth( _bitDepth )
+CRawU16::CRawU16( const ushort* _raw, int _width, int _height, int _bitDepth, bool _isMono ) :
+    raw( _raw ), width( _width ), height( _height ), bitDepth( _bitDepth), isMono( _isMono )
 {
 
 }
@@ -92,8 +92,9 @@ std::shared_ptr<CRgbU16Image> CRawU16::DebayerRect( int x, int y, int w, int h )
 std::shared_ptr<CRgbU16Image> CRawU16::DebayerRectCFA( int x, int y, int w, int h ) const
 {
     auto result = std::make_shared<CRgbU16Image>( w, h );
+
     CDebayer_RawU16_CFA debayer( raw, width, height, bitDepth );
-    debayer.ToRgbU16( result->RgbPixels(), result->Stride(), x, y, w, h );
+    debayer.ToRgbU16( result->RgbPixels(), isMono, result->Stride(), x, y, w, h );
     return result;
 }
 

@@ -117,7 +117,7 @@ private:
     Tools tools;
 
     // Rendering
-    ulong render( const ushort* raw, int width, int height, int bitDepth );
+    ulong render( const ushort* raw, int width, int height, int bitDepth, bool isMono );
     QString formatImageInfo( const ImageInfo& );
 
     // Series Graphs

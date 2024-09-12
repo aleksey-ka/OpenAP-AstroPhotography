@@ -291,7 +291,7 @@ static QPixmap focusingHelperPixmap( int scale, bool stretch, bool renderCFA, co
             return Qt::CreatePixmap( CRawU16( image ).Stretch( scale, x0, y0, w, h ) );
         }
     } else {
-        Renderer renderer( image->Pixels(), image->Width(), image->Height(), image->BitDepth() );
+        Renderer renderer( image->Pixels(), image->Width(), image->Height(), image->BitDepth(), image->IsMono() );
         if( renderCFA ) {
             return renderer.RenderCFA( x0, y0, w, h );
         } else {
@@ -915,7 +915,7 @@ void MainFrame::imageReady()
 
         currentImage = result;
 
-        auto msec = render( result->RawPixels(), result->Width(), result->Height(), result->BitDepth() );
+        auto msec = render( result->RawPixels(), result->Width(), result->Height(), result->BitDepth(), result->IsMono() );
         qDebug() << "Rendered in " << msec << "msec";
 
         selectionStart = selectionEnd = -1;
@@ -1007,7 +1007,7 @@ void MainFrame::imageReady()
                 CPixelBuffer<uint16_t> result( currentImage->Width(), currentImage->Height() );
                 pixels_set_round_limit( result.Pixels(), diff.Pixels(), diff.Count(), currentImage->BitDepth() );
 
-                render( result.Pixels(), result.Width(), result.Height(), currentImage->BitDepth() );
+                render( result.Pixels(), result.Width(), result.Height(), currentImage->BitDepth(), currentImage->IsMono() );
             }
 
             ui->imageSeriesView->setVisible( true );
@@ -1144,7 +1144,7 @@ void MainFrame::imageReady()
                     view->update();
 
                     currentImage = CRawU16Image::LoadFromFile( graphImageInfo[selectionStart].FilePath.c_str() );
-                    render( currentImage->RawPixels(), currentImage->Width(), currentImage->Height(), currentImage->BitDepth() );
+                    render( currentImage->RawPixels(), currentImage->Width(), currentImage->Height(), currentImage->BitDepth(), currentImage->IsMono() );
                     ui->infoLabel->setText( formatImageInfo( currentImage->Info() ) );
                 }
             } );
@@ -1236,7 +1236,7 @@ void MainFrame::imageReady()
                         }
                         if( selectionStart >= 0 ) {
                             currentImage = CRawU16Image::LoadFromFile( graphImageInfo[selectionStart].FilePath.c_str() );
-                            render( currentImage->RawPixels(), currentImage->Width(), currentImage->Height(), currentImage->BitDepth() );
+                            render( currentImage->RawPixels(), currentImage->Width(), currentImage->Height(), currentImage->BitDepth(), currentImage->IsMono() );
                             ui->infoLabel->setText( formatImageInfo( currentImage->Info() ) );
                         }
                     }
@@ -1298,7 +1298,7 @@ void MainFrame::imageSaved()
     ui->infoLabel->setText( imageSavedWatcher.result() );
 }
 
-ulong MainFrame::render( const ushort* raw, int width, int height, int bitDepth )
+ulong MainFrame::render( const ushort* raw, int width, int height, int bitDepth, bool isMono )
 {
     auto start = std::chrono::steady_clock::now();
 
@@ -1308,10 +1308,10 @@ ulong MainFrame::render( const ushort* raw, int width, int height, int bitDepth 
     if( viewScale > 0 ) {
         QPixmap pixmap;
         if( ui->stretchCheckBox->isChecked() ) {
-            CRawU16 rawU16( raw, width, height, bitDepth );
+            CRawU16 rawU16( raw, width, height, bitDepth, isMono );
             pixmap = Qt::CreatePixmap( rawU16.Stretch( viewScale, 0, 0, width, height ) );
         } else {
-            Renderer renderer( raw, width, height, bitDepth );
+            Renderer renderer( raw, width, height, bitDepth, isMono );
             pixmap = renderer.Render( viewScale );
             ui->histogramView->setPixmap( renderer.RenderHistogram() );
         }

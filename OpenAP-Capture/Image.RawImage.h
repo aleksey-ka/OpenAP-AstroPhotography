@@ -45,6 +45,7 @@ public:
     unsigned short* RawPixels() { return Pixels(); };
 
     int BitDepth() const { return imageInfo.BitDepth; }
+    bool IsMono() const { return imageInfo.CFA.length() == 0; }
 
     const unsigned char* Buffer() const { return reinterpret_cast<const unsigned char*>( buffer.data() ); }
     unsigned char* Buffer() { return reinterpret_cast<unsigned char*>( buffer.data() ); }

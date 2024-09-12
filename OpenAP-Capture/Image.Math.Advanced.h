@@ -54,7 +54,7 @@ struct DetectionResults {
 class CRawU16 {
 public:
     CRawU16( const CRawU16Image* );
-    CRawU16( const unsigned short* raw, int width, int height, int bitDepth );
+    CRawU16( const unsigned short* raw, int width, int height, int bitDepth, bool isMono );
 
     std::shared_ptr<CRgbU16Image> DebayerRect( int x, int y, int width, int height ) const;
     std::shared_ptr<CRgbU16Image> DebayerRectCFA( int x, int y, int width, int height ) const;
@@ -80,6 +80,7 @@ private:
     int width;
     int height;
     int bitDepth;
+    bool isMono;
 
     std::shared_ptr<CRgbImage> stretchFullRes( int x, int y, int w, int h ) const;
     std::shared_ptr<CRgbImage> stretchHalfRes( int x, int y, int w, int h ) const;

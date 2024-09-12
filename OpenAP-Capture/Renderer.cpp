@@ -10,8 +10,8 @@
 
 #include <QPainter>
 
-Renderer::Renderer( const ushort* _raw, int _width, int _height, int _bitDepth ) :
-    raw( _raw ), width( _width ), height( _height ), bitDepth( _bitDepth )
+Renderer::Renderer( const ushort* _raw, int _width, int _height, int _bitDepth, bool _isMono ) :
+    raw( _raw ), width( _width ), height( _height ), bitDepth( _bitDepth ), isMono( _isMono )
 {
 
 }
@@ -108,7 +108,7 @@ QPixmap Renderer::RenderCFA( int x, int y, int W, int H )
     uchar* rgb = pixels.data();
 
     CDebayer_RawU16_CFA debayer( raw, width, height, bitDepth );
-    debayer.ToRgbU8( rgb, byteWidth, x, y, w, h, histR.data(), histG.data(), histB.data() );
+    debayer.ToRgbU8( rgb, isMono, byteWidth, x, y, w, h, histR.data(), histG.data(), histB.data() );
     maxValue = debayer.MaxValue;
     maxCount = debayer.MaxCount;
     minValue = debayer.MinValue;
