@@ -3,7 +3,7 @@
 
 #include "Hardware.FilterWheel.h"
 
-#include "Hardware.FilterWheel.ZWO.EFWheel.h"
+#include "Hardware.FilterWheel.ZWO.EFW.h"
 
 using namespace Hardware;
 

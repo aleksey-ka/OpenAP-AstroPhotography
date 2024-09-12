@@ -3,9 +3,9 @@
 
 #include "Hardware.Focuser.h"
 
-#include "Hardware.Focuser.ZWO.EAFocuser.h"
-#include "Hardware.Focuser.DIYFocuser.h"
-#include "Hardware.Focuser.Mock.Focuser.h"
+#include "Hardware.Focuser.ZWO.EAF.h"
+#include "Hardware.Focuser.DIY.ArduinoFocuser.h"
+#include "Hardware.Focuser.Mock.h"
 
 using namespace Hardware;
 

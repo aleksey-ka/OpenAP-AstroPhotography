@@ -3,8 +3,8 @@
 
 #include "Hardware.Camera.h"
 
-#include "Hardware.Camera.ZWO.ASICamera.h"
-#include "Hardware.Camera.MockCamera.h"
+#include "Hardware.Camera.ZWO.ASI.h"
+#include "Hardware.Camera.Mock.h"
 
 using namespace Hardware;
 

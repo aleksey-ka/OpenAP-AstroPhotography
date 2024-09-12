@@ -15,14 +15,14 @@ CONFIG += c++17
 
 SOURCES += \
         Hardware.Camera.cpp \
-        Hardware.Camera.MockCamera.cpp \
-        Hardware.Camera.ZWO.ASICamera.cpp \
+		Hardware.Camera.Mock.cpp \
+		Hardware.Camera.ZWO.ASI.cpp \
         Hardware.FilterWheel.cpp \
-        Hardware.FilterWheel.ZWO.EFWheel.cpp \
-        Hardware.Focuser.Mock.Focuser.cpp \
+		Hardware.FilterWheel.ZWO.EFW.cpp \
+		Hardware.Focuser.Mock.cpp \
         Hardware.Focuser.cpp \
-        Hardware.Focuser.DIYFocuser.cpp \
-        Hardware.Focuser.ZWO.EAFocuser.cpp \
+		Hardware.Focuser.DIY.ArduinoFocuser.cpp \
+		Hardware.Focuser.ZWO.EAF.cpp \
         Image.Debayer.CFA.cpp \
         Image.Debayer.HalfRes.cpp \
         Image.Debayer.HQLinear.cpp \
@@ -43,14 +43,14 @@ SOURCES += \
 
 HEADERS += \
         Hardware.Camera.h \
-        Hardware.Camera.MockCamera.h \
-        Hardware.Camera.ZWO.ASICamera.h \
+		Hardware.Camera.Mock.h \
+		Hardware.Camera.ZWO.ASI.h \
         Hardware.FilterWheel.h \
-        Hardware.FilterWheel.ZWO.EFWheel.h \
-        Hardware.Focuser.Mock.Focuser.h \
+		Hardware.FilterWheel.ZWO.EFW.h \
+		Hardware.Focuser.Mock.h \
         Hardware.Focuser.h \
-        Hardware.Focuser.DIYFocuser.h \
-        Hardware.Focuser.ZWO.EAFocuser.h \
+		Hardware.Focuser.DIY.ArduinoFocuser.h \
+		Hardware.Focuser.ZWO.EAF.h \
         Image.Debayer.h \
         Image.Debayer.CFA.h \
         Image.Debayer.HalfRes.h \

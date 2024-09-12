@@ -1,7 +1,7 @@
 // Copyright (C) 2020 Aleksey Kalyuzhny. Released under the terms of the
 // GNU General Public License version 3. See <http://www.gnu.org/licenses/>
 
-#include "Hardware.Camera.ZWO.ASICamera.h"
+#include "Hardware.Camera.ZWO.ASI.h"
 
 #include <cassert>
 #include <cstring>
